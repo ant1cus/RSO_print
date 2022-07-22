@@ -117,11 +117,9 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
     # Номер
     number = lineEdit_number.text().strip()
     if not file_num:
-        err_f = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/', 'c', 'с')
-        for el in range(0, len(number)):
-            if number[el] in ['С', 'с']:
-                number = number.replace(number[el], 'c')
-                break
+        err_f = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/', 'c', 'с', '-', 'Н', 'С', 'с')
+        if number[-1] in ['С', 'с']:
+            number = number.replace(number[-1], 'c')
         if not number:
             msgBox('УПС!', 'Не указан номер')
             return
@@ -130,7 +128,7 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             if not flag:
                 msgBox('УПС!', 'Есть лишние символы в номере')
                 return
-        if re.match('\w+/\w+/\w+c', number) is None:
+        if (re.match(r'\w+/\w+/\w+c', number) is None) and (re.match(r'НС-\w+c', number) is None):
             msgBox('УПС!', 'Секретный номер указан неверно')
             return
     # Исполнитель, заключение, предписание, протокол, печать

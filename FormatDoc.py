@@ -424,13 +424,21 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 doc_2.save(os.path.abspath(path_ + '\\2 экземпляр' + '\\' + el_))  # Сохраняем
                     percent_val += percent  # Увеличиваем прогресс
                     progress.emit(round(percent_val, 0))  # Посылаем значние в прогресс бар
-            num_1 = text_for_foot.rpartition('/')[0] + '/'
+            if '/' in num_1:
+                num_1 = text_for_foot.rpartition('/')[0] + '/'
+            else:
+                num_1 = text_for_foot.partition('-')[0] + '-'
             try:
-                num_2 = str(
-                    int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Добавляем номер для описи
+                # Добавляем номер для описи
+                if '/' in num_1:
+                    num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
+                else:
+                    num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
             except ValueError:
-                num_2 = str(
-                    int((text_for_foot.rpartition('/')[2]).rpartition('с')[0]) + 1)  # Добавляем номер для описи
+                if '/' in num_1:
+                    num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('с')[0]) + 1)
+                else:
+                    num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
             flag = 0
 
             # Форма 3
@@ -442,9 +450,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     logging.info("Вставляем колонтитул")
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number, executor,
                                   print_people, date, path_, 'Форма 3.docx')
-                    num_1 = text_for_foot.rpartition('/')[0] + '/'
-                    num_2 = str(
-                        int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Добавляем номер для описи
+                    if '/' in num_1:  # Добавляем номер для описи
+                        num_1 = text_for_foot.rpartition('/')[0] + '/'
+                        num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
+                    else:
+                        num_1 = text_for_foot.partition('-')[0] + '-'
+                        num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
                     logging.info("Количество страниц")
                     num_pages = pages_count('Форма 3.docx', path_old)
                     if firm:
@@ -526,7 +537,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         logging.info("Вставляем колонтитул")
                         insert_header(document, 11, value[1][0] + '\n(без приложения не секретно)\nЭкз.№ 1',
                                       text_for_foot, hdd_number, executor,
-                                      print_people, date, account_path, name_count)
+                                      print_people, date, account_path, name_count, fso)
                         flag_for_op = 1  # Чтобы не создавать, если это не необходимо
                     # Открываем необхоимую опись
                     document = docx.Document(os.path.abspath(account_path + name_count))
@@ -683,8 +694,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     for_27.append([text_for_foot, date, classified, firm,
                                    accompanying_doc.rpartition('\\')[2][:-5],
                                    executor_acc_sheet, '1', '№1', str(num_pages - 1)])
-            num_2 = str(
-                int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Увеличиваем номер
+            if '/' in num_1:  # Добавляем номер для описи
+                num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Увеличиваем номер
+            else:
+                num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
             # Добавляем форму 27
             if firm:
                 logging.info("Формируем форму 27")
@@ -825,8 +838,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c',
                                                               ws.cell(i, 3).value.strftime("%d.%m.%Y")]  # Делаем список
             else:  # Если нет файла номеров
-                self.num_1 = self.number.rpartition('/')[0] + '/'
-                self.num_2 = (self.number.rpartition('/')[2]).rpartition('c')[0]
+                if re.match(r'\w+/\w+/\w+c', self.number):
+                    self.num_1 = self.number.rpartition('/')[0] + '/'
+                    self.num_2 = self.number.rpartition('/')[2].rpartition('c')[0]
+                else:
+                    self.num_1 = self.number.partition('-')[0] + '-'
+                    self.num_2 = self.number.partition('-')[2].rpartition('c')[0]
             self.logging.info("Созданы секретные номера")
             if self.package:
                 for folder in os.listdir(self.path_old):
