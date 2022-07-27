@@ -195,6 +195,16 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         pass
                 doc_.save(os.path.abspath(path_new + '\\' + name_file_))  # Сохраняем
 
+            def change_date(docum):
+                for parag_ in docum.paragraphs:
+                    if re.findall(r'date', parag_.text):
+                        text_date = re.sub(r'date', date, parag_.text)
+                        parag_.text = text_date
+                        parag_.style = doc.styles['Normal']
+                        for runs_ in parag_.runs:
+                            runs_.font.size = Pt(pt_num)
+                        break
+
             os.chdir(path_old_)  # Меняем рабочую директорию
             # Параграф для колонтитула первой страницы
             text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
@@ -304,7 +314,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.size = Pt(pt_num)
                                     break
                             break
-                    doc.save(os.path.abspath(path_ + '\\' + name_el))  # Открываем
+                    doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
                 else:
                     if file_num:  # Если есть файл номеров
                         text_for_foot = dict_file[name_el.rpartition('.')[0]][0]  # Текст для нижнего колонтитула
@@ -315,8 +325,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         name_conclusion = name_el.rpartition('.')[0].rpartition(' ')[0]
                         conclusion_num[name_el] = text_for_foot
                         exec_people = conclusion
-                        # insert_header(doc, 11, text_first_header, text_for_foot, self.hdd_number,
-                        #                      self.conclusion, self.print_people, date, self.path_new, el)
+                        change_date(doc)
                     elif re.findall(r'протокол', name_el.lower()):
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
                         protocol[name_el] = text_for_foot
@@ -336,8 +345,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     run.font.size = Pt(pt_num)
                                 break
                         exec_people = executor
-                        # insert_header(doc, 11, text_first_header, text_for_foot, self.hdd_number, self.executor,
-                        #                      self.print_people, date, self.path_new, el)
+                        change_date(doc)
                     elif re.findall(r'предписание', name_el.lower()):
                         x = name_el.rpartition('.')[0].partition(' ')[2]
                         protocol_num_text = 'Уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
@@ -367,32 +375,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             if break_flag == 2:
                                 break
                         exec_people = prescription
-                        # insert_header(doc, 11, text_first_header, text_for_foot, self.hdd_number,
-                        #                      self.prescription, self.print_people, date, self.path_new, el)
-                    # while True:
-                    #     try:
+                        change_date(doc)
                     logging.info("Вставляем колонтитулы")
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
-                    # break
-                    # except PermissionError:
-                    #     self.messageChanged.emit('Вопрос', 'Документ ' + el +
-                    #                              ' открыт.\nЗакройте документ и повторите попытку.')
-                    # #     # while True:
-                    #     val = self.q.get()
-                    #     print(val)
-                    #     # if val == 1:
-                    #     #     pass
-                    #     if val == 2:
-                    #         pass
-                    #     elif val == 3:
-                    #         break
-                    #     elif val == 4:
-                    #         self.status.emit('Прервано пользователем')
-                    #         return
-                    # return False
-                    # if not date:
-                    #     date = self.date
                     logging.info("Определяем количество страниц")
                     if fso:
                         path_to_file = path_ + '\\' + docs[el_].rpartition('\\')[2]
