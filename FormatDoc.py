@@ -112,6 +112,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     try:
                         print(count_file)
                         print(file_path)
+                        pythoncom.CoInitializeEx(0)
                         name_file_pdf = count_file + '.pdf'
                         self.logging.info('Конвертируем в пдф ' + count_file)
                         docx2pdf.convert(file_path + '\\' + count_file, file_path + '\\' + name_file_pdf)
@@ -284,6 +285,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             for_27 = []
             accompanying_doc = ''  # Проверка на сопровод
             exec_people = ''  # Для исполнителя документов
+            text_for_foot = False
             if self.second_copy:
                 os.mkdir(path_ + '\\2 экземпляр')
             for el_ in docs:  # Для файлов в папке
@@ -410,21 +412,22 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 doc_2.save(os.path.abspath(path_ + '\\2 экземпляр' + '\\' + el_))  # Сохраняем
                     percent_val += percent  # Увеличиваем прогресс
                     progress.emit(round(percent_val, 0))  # Посылаем значние в прогресс бар
-            if '/' in num_1:
-                num_1 = text_for_foot.rpartition('/')[0] + '/'
-            else:
-                num_1 = text_for_foot.partition('-')[0] + '-'
-            try:
-                # Добавляем номер для описи
+            if text_for_foot:
                 if '/' in num_1:
-                    num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
+                    num_1 = text_for_foot.rpartition('/')[0] + '/'
                 else:
-                    num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
-            except ValueError:
-                if '/' in num_1:
-                    num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('с')[0]) + 1)
-                else:
-                    num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
+                    num_1 = text_for_foot.partition('-')[0] + '-'
+                try:
+                    # Добавляем номер для описи
+                    if '/' in num_1:
+                        num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
+                    else:
+                        num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
+                except ValueError:
+                    if '/' in num_1:
+                        num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('с')[0]) + 1)
+                    else:
+                        num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
             flag = 0
 
             # Форма 3

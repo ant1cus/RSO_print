@@ -84,6 +84,7 @@ class PrintDoc(QThread):  # Поток для печати
                 docs.sort(key=sort)  # Сортировка
                 docs = natsorted(docs)
                 if print_order:
+                    logging.info('Есть порядок печати')
                     quantity_docs = {'Заключение': 0, 'Протокол': 0, 'Приложение': 0, 'Предписание': 0}
                     docs_name = {}
                     for element in docs:
@@ -114,6 +115,7 @@ class PrintDoc(QThread):  # Поток для печати
                                             'Сопроводит'] for j in docs if re.findall(i.lower(), j.lower())]
                     docs_ = docs_ + docs_sec
                 else:
+                    logging.info('Нет порядка печати')
                     docs_ = [j for i in ['Заключение', 'Протокол', 'Предписание', 'Форма 3', 'Опись',
                                          'Сопроводит', 'Приложение'] for j in docs if re.findall(i.lower(), j.lower())]
                 docs_not = [i for i in docs if i not in docs_]
