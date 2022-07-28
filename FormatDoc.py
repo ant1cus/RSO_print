@@ -196,14 +196,14 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         pass
                 doc_.save(os.path.abspath(path_new + '\\' + name_file_))  # Сохраняем
 
-            def change_date(docum):
+            def change_date(docum, param):
                 for parag_ in docum.paragraphs:
                     if re.findall(r'date', parag_.text):
                         text_date = re.sub(r'date', date, parag_.text)
                         parag_.text = text_date
                         parag_.style = doc.styles['Normal']
                         for runs_ in parag_.runs:
-                            runs_.font.size = Pt(pt_num)
+                            runs_.font.size = Pt(12) if param else Pt(pt_num)
                         break
 
             os.chdir(path_old_)  # Меняем рабочую директорию
@@ -285,7 +285,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             for_27 = []
             accompanying_doc = ''  # Проверка на сопровод
             exec_people = ''  # Для исполнителя документов
-            text_for_foot = False
+            text_for_foot = ''
             if self.second_copy:
                 os.mkdir(path_ + '\\2 экземпляр')
             for el_ in docs:  # Для файлов в папке
@@ -327,7 +327,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         name_conclusion = name_el.rpartition('.')[0].rpartition(' ')[0]
                         conclusion_num[name_el] = text_for_foot
                         exec_people = conclusion
-                        change_date(doc)
+                        change_date(doc, True)
                     elif re.findall(r'протокол', name_el.lower()):
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
                         protocol[name_el] = text_for_foot
@@ -338,16 +338,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             x = name_el.rpartition('.')[0].partition(' ')[2]
                             conclusion_num_text = 'Уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
                                                   + ' от ' + date
-                        for p in doc.paragraphs:
+                        for val_p, p in enumerate(doc.paragraphs):
                             if re.findall(r'\[ЗАКЛНОМ]', p.text):
                                 text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
                                 p.text = text
                                 p.style = doc.styles['Normal']
+                                doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                 for run in p.runs:
                                     run.font.size = Pt(pt_num)
                                 break
                         exec_people = executor
-                        change_date(doc)
+                        change_date(doc, False)
                     elif re.findall(r'предписание', name_el.lower()):
                         x = name_el.rpartition('.')[0].partition(' ')[2]
                         protocol_num_text = 'Уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
@@ -359,11 +360,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             conclusion_num_text = 'Уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
                                                   ' от ' + date
                         break_flag = 0
-                        for p in doc.paragraphs:
+                        for val_p, p in enumerate(doc.paragraphs):
                             if re.findall(r'\[ЗАКЛНОМ]', p.text):
                                 text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
                                 p.text = text
                                 p.style = doc.styles['Normal']
+                                doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                 for run in p.runs:
                                     run.font.size = Pt(pt_num)
                                 break_flag += 1
@@ -371,13 +373,14 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 text = re.sub(r'\[ПРОТНОМ]', protocol_num_text, p.text)
                                 p.text = text
                                 p.style = doc.styles['Normal']
+                                doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                 for run in p.runs:
                                     run.font.size = Pt(pt_num)
                                 break_flag += 1
                             if break_flag == 2:
                                 break
                         exec_people = prescription
-                        change_date(doc)
+                        change_date(doc, False)
                     logging.info("Вставляем колонтитулы")
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
