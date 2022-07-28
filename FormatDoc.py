@@ -197,9 +197,26 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 doc_.save(os.path.abspath(path_new + '\\' + name_file_))  # Сохраняем
 
             def change_date(docum, param):
+                RU_MONTH_VALUES = {
+                    1: 'января',
+                    2: 'февраля',
+                    3: 'марта',
+                    4: 'апреля',
+                    5: 'мая',
+                    6: 'июня',
+                    7: 'июля',
+                    8: 'августа',
+                    9: 'сентября',
+                    10: 'октября',
+                    11: 'ноября',
+                    12: 'декабря'
+                }
                 for parag_ in docum.paragraphs:
                     if re.findall(r'date', parag_.text):
-                        text_date = re.sub(r'date', date, parag_.text)
+                        text_date = re.sub(r'date', "«{}» {} {} г.".format(date.partition('.')[0],
+                                                                           RU_MONTH_VALUES[int(date.partition('.')[2].partition('.')[0])],
+                                                                           date.rpartition('.')[2]),
+                                           parag_.text)
                         parag_.text = text_date
                         parag_.style = doc.styles['Normal']
                         for runs_ in parag_.runs:
