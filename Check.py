@@ -1,5 +1,6 @@
 import os
 import re
+import time
 
 from PyQt5.QtWidgets import QMessageBox
 
@@ -146,6 +147,11 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
         i += 1
     # Дата
     date = lineEdit_date.text().strip()
+    try:
+        valid_date = time.strptime(date, '%d.%m.%Y')
+    except ValueError:
+        msgBox('УПС!', 'Формат даты указан неверно! (необходимый формат: dd.mm.yyyy)')
+        return
     account = None
     flag_inventory = None
     account_post = None

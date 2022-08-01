@@ -874,6 +874,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                           self.flag_inventory, self.account_post,
                                                           self.account_signature, self.account_path,
                                                           self.executor_acc_sheet, self.service, False)
+                    docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
+                    for txt_file in docs_txt:
+                        shutil.copy(txt_file, path)
             else:
                 format_doc_(self.path_old, self.classified, self.list_item, self.num_scroll, self.account,
                             self.firm, self.logging, self.status, self.path_new, self.file_num, self.num_1, self.num_2,
@@ -881,6 +884,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             self.print_people, self.progress, self.flag_inventory,
                             self.account_post, self.account_signature, self.account_path, self.executor_acc_sheet,
                             self.service, self.path_form_27)
+                docs_txt = [file for file in os.listdir(self.path_old) if file[-4:] == '.txt']  # Список txt
+                for txt_file in docs_txt:
+                    shutil.copy(txt_file, self.path_new)
             self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
             self.logging.info("\n***********************************************************************************\n")
             self.status.emit('Готово!')  # Посылаем значние если готово
