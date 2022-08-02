@@ -154,15 +154,13 @@ class FormatDoc(QThread):  # Если требуется вставить кол
 
             def insert_header(doc_, pt_count, text_first_header_, text_for_foot_, hdd_number_, exec_,
                               print_people_, date_, path_new, name_file_, fso_):
-                style_ = doc_.styles['Normal']
-                font_ = style_.font
-                font_.name = 'TimesNewRoman'
-                font_.size = Pt(pt_count)
                 header_ = doc_.sections[0].first_page_header  # Верхний колонтитул первой страницы
                 head_1 = header_.paragraphs[0]  # Параграф
                 head_1.insert_paragraph_before(text_first_header_)  # Вставялем перед колонитулом
                 head_1 = header_.paragraphs[0]  # Выбираем новый первый параграф
-                head_1.style = doc_.styles['Normal']
+                for header_styles in head_1.runs:
+                    header_styles.font.size = Pt(pt_count)
+                    header_styles.font.name = 'Times New Roman'
                 head_1_format = head_1.paragraph_format  # Настройки параграфа
                 head_1_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
                 footer_ = doc_.sections[0].first_page_footer  # Нижний колонтитул первой страницы
@@ -184,7 +182,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                            "\nОтп. 1 экз. в адрес\nс НЖМД, уч. № ЖД - " + hdd_number_ + \
                                            "\nИсп. " + exec_ + "\nПеч. " + print_people_ + "\n" + \
                                            date_ + "\nб/ч"
-                foot_.paragraphs[0].style = doc.styles['Normal']
+                for footer_style in foot_.paragraphs[0].runs:
+                    footer_style.font.size = Pt(pt_count)
+                    footer_style.font.name = 'Times New Roman'
                 if fso_:
                     if 'заключение' in name_file_.lower():
                         path_new = path_new + '\\' + 'Материалы по специальной проверке технических средств'
@@ -218,9 +218,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                                            date.rpartition('.')[2]),
                                            parag_.text)
                         parag_.text = text_date
-                        parag_.style = doc.styles['Normal']
                         for runs_ in parag_.runs:
                             runs_.font.size = Pt(12) if param else Pt(pt_num)
+                            runs_.font.name = 'Times New Roman'
                         break
 
             os.chdir(path_old_)  # Меняем рабочую директорию
@@ -328,9 +328,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     text = re.sub(r'\[ПРОТНОМ]', 'к протоколу уч. № ' + appendix_num[0] + ' от ' + date,
                                                   p.text)
                                     p.text = text
-                                    p.style = doc.styles['Normal']
                                     for run in p.runs:
                                         run.font.size = Pt(pt_num)
+                                        run.font.name = 'Times New Roman'
                                     break
                             break
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
@@ -359,10 +359,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             if re.findall(r'\[ЗАКЛНОМ]', p.text):
                                 text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
                                 p.text = text
-                                p.style = doc.styles['Normal']
                                 doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                 for run in p.runs:
                                     run.font.size = Pt(pt_num)
+                                    run.font.name = 'Times New Roman'
                                 break
                         exec_people = executor
                         change_date(doc, False)
@@ -381,18 +381,18 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             if re.findall(r'\[ЗАКЛНОМ]', p.text):
                                 text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
                                 p.text = text
-                                p.style = doc.styles['Normal']
                                 doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                 for run in p.runs:
                                     run.font.size = Pt(pt_num)
+                                    run.font.name = 'Times New Roman'
                                 break_flag += 1
                             if re.findall(r'\[ПРОТНОМ]', p.text):
                                 text = re.sub(r'\[ПРОТНОМ]', protocol_num_text, p.text)
                                 p.text = text
-                                p.style = doc.styles['Normal']
                                 doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                 for run in p.runs:
                                     run.font.size = Pt(pt_num)
+                                    run.font.name = 'Times New Roman'
                                 break_flag += 1
                             if break_flag == 2:
                                 break
@@ -425,9 +425,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     if re.findall(r'№1', p_2.text):
                                         text = re.sub(r'№1', '№2', p_2.text)
                                         p_2.text = text
-                                        p_2.style = doc.styles['Normal']
                                         for run in p_2.runs:
                                             run.font.size = Pt(11)
+                                            run.font.name = 'Times New Roman'
                                         break
                                 doc_2.save(os.path.abspath(path_ + '\\2 экземпляр' + '\\' + el_))  # Сохраняем
                     percent_val += percent  # Увеличиваем прогресс
@@ -593,10 +593,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 status.emit('Добавление данных в сопроводительный лист')  # Сообщение в статус бар
                 doc = docx.Document(accompanying_doc)
                 accompanying_doc = os.path.abspath(path_ + '\\' + os.path.basename(accompanying_doc))
-                style = doc.styles['Normal']
-                font = style.font
-                font.name = 'TimesNewRoman'
-                font.size = Pt(11)
                 para = True  # Для вставки если сделали не особую первую страницу
                 if doc.sections[0].different_first_page_header_footer:
                     header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
@@ -638,7 +634,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 numbering += 1
                                 for run in p.runs:
                                     run.font.size = Pt(14)
-                                # p.style = doc.styles['Normal']
+                                    run.font.name = 'Times New Roman'
                         else:
                             file_account = [i_ for i_ in os.listdir(path_) if i_.endswith('.docx') and
                                             ('приложение' not in i_.lower())]
@@ -670,7 +666,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 numbering += 1
                                 for run in p.runs:
                                     run.font.size = Pt(14)
-                                # p.style = doc.styles['Normal']
+                                    run.font.name = 'Times New Roman'
                             if len_appendix:
                                 page = 'листе' if int(len_appendix) == 1 else 'листах'
                                 text = 'Приложение А, на ' + str(len_appendix) + ' ' + page + ' , несекретно.'
