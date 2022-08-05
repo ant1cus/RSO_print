@@ -196,7 +196,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         pass
                 doc_.save(os.path.abspath(path_new + '\\' + name_file_))  # Сохраняем
 
-            def change_date(docum, param):
+            def change_date(docum, param):  # Параметр используется для шрифта
                 RU_MONTH_VALUES = {
                     1: 'января',
                     2: 'февраля',
@@ -325,7 +325,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 and re.findall(number_protocol, appendix_num[4]):
                             for p in doc.paragraphs:
                                 if re.findall(r'\[ПРОТНОМ]', p.text):
-                                    text = re.sub(r'\[ПРОТНОМ]', 'к протоколу уч. № ' + appendix_num[0] + ' от ' + date,
+                                    text = re.sub(r'\[ПРОТНОМ]', 'к протоколу уч. № ' + appendix_num[0] + ' от date',
                                                   p.text)
                                     p.text = text
                                     for run in p.runs:
@@ -333,6 +333,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.name = 'Times New Roman'
                                     break
                             break
+                    change_date(doc, False)
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
                 else:
                     if file_num:  # Если есть файл номеров
