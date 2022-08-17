@@ -324,8 +324,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         if re.findall('протокол', appendix_num[4].lower()) \
                                 and re.findall(number_protocol, appendix_num[4]):
                             for p in doc.paragraphs:
-                                if re.findall(r'\[ПРОТНОМ]', p.text):
-                                    text = re.sub(r'\[ПРОТНОМ]', 'к протоколу уч. № ' + appendix_num[0] + ' от date',
+                                if re.findall(r'date', p.text):
+                                    text = re.sub(r'date', 'к протоколу уч. № ' + appendix_num[0] + ' от date',
                                                   p.text)
                                     p.text = text
                                     for run in p.runs:
