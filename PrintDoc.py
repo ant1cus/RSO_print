@@ -28,20 +28,20 @@ class PrintDoc(QThread):  # Поток для печати
     status = pyqtSignal(str)  # Сигнал для статус бара
     messageChanged = pyqtSignal(str, str)  # Сигнал, если ошибка
 
-    def __init__(self, output):  # Список значений для работы потока
+    def __init__(self, incoming_data):  # Список значений для работы потока
         QThread.__init__(self)
         # Присваиваем значения
-        self.path_old = output[0]
-        self.account_num_path = output[1]
-        self.add_path_account_num = output[2]
-        self.print_flag = output[3]
-        self.name_printer = output[4]
-        self.path_form27 = output[5]
-        self.print_order = output[6]
-        self.service = output[7]
-        self.path_for_def = output[8]
-        self.logging = output[9]
-        self.package = output[10]
+        self.path_old = incoming_data['path_old']
+        self.account_num_path = incoming_data['account_num_path']
+        self.add_path_account_num = incoming_data['add_path_account_num']
+        self.print_flag = incoming_data['print_flag']
+        self.name_printer = incoming_data['name_printer']
+        self.path_form27 = incoming_data['path_form27']
+        self.print_order = incoming_data['print_order']
+        self.service = incoming_data['service']
+        self.path_for_def = incoming_data['path_for_def']
+        self.logging = incoming_data['logging']
+        self.package = incoming_data['package']
 
     def run(self):
 

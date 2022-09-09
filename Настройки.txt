@@ -17,8 +17,8 @@
     "path_file_num": null,
     "path_form_27": "C:\\Users\\abykovskiy\\Desktop\\Конечные\\Форма 27.xlsx",
     "path_form_27_create": "C:\\Users\\abykovskiy\\Desktop\\Конечные",
-    "path_new": "C:\\Users\\abykovskiy\\Desktop\\Конечные",
-    "path_old": "c:\\users\\abykovskiy\\desktop\\2",
+    "path_new": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\конец",
+    "path_old": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\начало",
     "path_old_print": "C:\\Users\\abykovskiy\\Desktop\\Конечные",
     "prescription": "Додылев",
     "print_people": "Галуза"

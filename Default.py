@@ -36,17 +36,18 @@ class Button(QLineEdit):
 
 
 class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки по умолчанию
-    def __init__(self, parent):
+    def __init__(self, parent, path):
         super().__init__()
         self.setupUi(self)
         self.parent = parent
+        self.path_for_default = path
         # Имена на английском и русском
         self.name_eng = ['path_old', 'path_new', 'path_file_num',
                          'classified', 'num_scroll', 'list_item', 'number', 'executor', 'conclusion', 'prescription',
                          'print_people', 'date', 'executor_acc_sheet',
                          'account_post', 'account_signature', 'account_path',
                          'firm', 'path_form_27_create',
-                         'path_old_print', 'account_numbers', 'path_form_27',
+                         'path_old_print', 'account_numbers', 'path_form_27', 'add_account_num',
                          'HDD_number']
         self.name_rus = ['Путь к исходным файлам', 'Путь к конечным файлам', 'Путь к файлу номеров',
                          'Гриф секретности', 'Номер экземпляра', 'Пункт перечня', 'Номер', 'Исполнитель', 'Заключение',
@@ -54,8 +55,8 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                          'Должность', 'ФИО подпись', 'Путь к описи',
                          'Организация', 'Форма 27 (сохранение)',
                          'Путь к файлам для печати', 'Путь к учетным номерам', 'Форма 27 для печати',
-                         'Номер НЖМД']
-        with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), "r", encoding='utf-8-sig') as f:  # Открываем
+                         'Путь к доп. файлу уч. ном.', 'Номер НЖМД']
+        with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), "r", encoding='utf-8-sig') as f:  # Открываем
             self.data = json.load(f)  # Загружаем данные
         self.buttongroup_add = QButtonGroup()
         self.buttongroup_add.buttonClicked[int].connect(self.add_button_clicked)
@@ -99,7 +100,7 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                 else:  # Если нет текста, то удаляем значение
                     self.data[self.name_eng[self.name_rus.index(self.line[el].text())]] = None
                     # self.data.pop(self.name_eng[self.name_rus.index(self.line[el].text())], None)
-        with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), 'w', encoding='utf-8-sig') as f:  # Пишем в файл
+        with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), 'w', encoding='utf-8-sig') as f:  # Пишем в файл
             json.dump(self.data, f, ensure_ascii=False, sort_keys=True, indent=4)
         self.close()  # Закрываем
 
@@ -107,7 +108,7 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         os.chdir(pathlib.Path.cwd())
         if self.sender() and self.sender().text() == 'Принять':
             event.accept()
-            with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), "r", encoding='utf-8-sig') as f:  # Открываем
+            with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), "r", encoding='utf-8-sig') as f:
                 data = json.load(f)  # Загружаем данные
             self.parent.default_date(data)
             # self.parent.close()

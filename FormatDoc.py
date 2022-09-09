@@ -11,6 +11,7 @@ import docx
 import docx2pdf
 import fitz
 import numpy
+import numpy as np
 import openpyxl
 import pythoncom
 import pandas as pd
@@ -28,34 +29,35 @@ class FormatDoc(QThread):  # Если требуется вставить кол
     status = pyqtSignal(str)  # Сигнал для статус бара
     messageChanged = pyqtSignal(str, str)
 
-    def __init__(self, output):  # Список переданных элементов.
+    def __init__(self, incoming_data):  # Список переданных элементов.
         QThread.__init__(self)
-        self.path_old = output[0]
-        self.path_new = output[1]
-        self.file_num = output[2]
-        self.classified = output[3]
-        self.num_scroll = output[4]
-        self.list_item = output[5]
-        self.number = output[6]
-        self.executor = output[7]
-        self.conclusion = output[8]
-        self.prescription = output[9]
-        self.print_people = output[10]
-        self.date = output[11]
-        self.executor_acc_sheet = output[12]
-        self.account = output[13]
-        self.flag_inventory = output[14]
-        self.account_post = output[15]
-        self.account_signature = output[16]
-        self.account_path = output[17]
-        self.firm = output[18]
-        self.path_form_27 = output[19]
-        self.second_copy = output[20]
-        self.service = output[21]
-        self.hdd_number = output[22]
-        self.q = output[23]
-        self.logging = output[24]
-        self.package = output[25]
+        self.path_old = incoming_data['path_old']
+        self.path_new = incoming_data['path_new']
+        self.file_num = incoming_data['file_num']
+        self.classified = incoming_data['classified']
+        self.num_scroll = incoming_data['num_scroll']
+        self.list_item = incoming_data['list_item']
+        self.number = incoming_data['number']
+        self.executor = incoming_data['executor']
+        self.conclusion = incoming_data['conclusion']
+        self.prescription = incoming_data['prescription']
+        self.print_people = incoming_data['print_people']
+        self.date = incoming_data['date']
+        self.executor_acc_sheet = incoming_data['executor_acc_sheet']
+        self.account = incoming_data['account']
+        self.flag_inventory = incoming_data['flag_inventory']
+        self.account_post = incoming_data['account_post']
+        self.account_signature = incoming_data['account_signature']
+        self.account_path = incoming_data['account_path']
+        self.firm = incoming_data['firm']
+        self.path_form_27 = incoming_data['form_27']
+        self.second_copy = incoming_data['second_copy']
+        self.service = incoming_data['service']
+        self.hdd_number = incoming_data['hdd_number']
+        self.q = incoming_data['q']
+        self.logging = incoming_data['logging']
+        self.package = incoming_data['package']
+        self.report_rso = incoming_data['action_MO']
         self.num_1 = self.num_2 = 0
 
     def run(self):
@@ -303,6 +305,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             accompanying_doc = ''  # Проверка на сопровод
             exec_people = ''  # Для исполнителя документов
             text_for_foot = ''
+            if self.report_rso:
+                file_mo = [mo for mo in os.listdir(path_old_) if mo[-3:] == 'txt' and 'F19' in mo]
+                df_report_rso = pd.read_csv(path_old_ + '\\' + file_mo, delimiter='|', encoding='ANSI', names=[
+                                                    'Порядковый номер лицензиата',
+                                                    'Серийный номер комплекта',
+                                                    'Серийный номер системного блока', 'удалить'])
+                df_report_rso['Порядковый номер лицензиата'] = df_report_rso['Порядковый номер лицензиата'].astype(str)
+                df_report_rso['№'] = np.arange(1, 1+len(df_report_rso))
+                df_report_rso = df_report_rso.reindex(columns=['№',
+                                                               'Порядковый номер лицензиата',
+                                                               'Серийный номер комплекта',
+                                                               'Серийный номер системного блока',
+                                                               'Заключение',
+                                                               'Кол-во листов закл.',
+                                                               'Протокол',
+                                                               'Кол-во листов прот.',
+                                                               'Предписание',
+                                                               'Кол-во листов пред.',
+                                                               'Сумма листов на комплект'])
             if self.second_copy:
                 os.mkdir(path_ + '\\2 экземпляр')
             for el_ in docs:  # Для файлов в папке
@@ -350,11 +371,11 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
                         protocol[name_el] = text_for_foot
                         if len(conclusion_num) == 1:
-                            conclusion_num_text = 'Уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) \
+                            conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) \
                                                   + ' от ' + date
                         else:
                             x = name_el.rpartition('.')[0].partition(' ')[2]
-                            conclusion_num_text = 'Уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
+                            conclusion_num_text = 'уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
                                                   + ' от ' + date
                         for val_p, p in enumerate(doc.paragraphs):
                             if re.findall(r'\[ЗАКЛНОМ]', p.text):
@@ -369,13 +390,14 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         change_date(doc, False)
                     elif re.findall(r'предписание', name_el.lower()):
                         x = name_el.rpartition('.')[0].partition(' ')[2]
-                        protocol_num_text = 'Уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
+                        protocol_num_text = 'уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
                                             ' от ' + date
                         if len(conclusion_num) == 1:
-                            conclusion_num_text = 'Уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
+                            conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
                                                   ' от ' + date
                         else:
-                            conclusion_num_text = 'Уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
+                            conclusion_num_text = 'уч. № ' +\
+                                                  str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
                                                   ' от ' + date
                         break_flag = 0
                         for val_p, p in enumerate(doc.paragraphs):
@@ -384,6 +406,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 p.text = text
                                 doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                 for run in p.runs:
+                                    run.font.bold = False
                                     run.font.size = Pt(pt_num)
                                     run.font.name = 'Times New Roman'
                                 break_flag += 1
@@ -431,8 +454,60 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                             run.font.name = 'Times New Roman'
                                         break
                                 doc_2.save(os.path.abspath(path_ + '\\2 экземпляр' + '\\' + el_))  # Сохраняем
+                    if self.report_rso:
+                        ind = False
+                        number_licensee = name_el[:-5].rpartition(' ')[2]
+                        name_document = name_el[:-5].partition(' ')[0]
+                        if name_document == 'Заключение':
+                            ind = 4
+                        elif name_document == 'Протокол':
+                            ind = 6
+                        elif name_document == 'Предписание':
+                            ind = 8
+                        if ind:
+                            index_df = df_report_rso[df_report_rso['Порядковый номер лицензиата']
+                                                     == number_licensee].index.to_list()[0]
+                            df_report_rso.iloc[index_df, [ind, ind + 1]] = ['№ ' + text_for_foot + ' от ' + date + ' г.',
+                                                                            num_pages - 1]
                     percent_val += percent  # Увеличиваем прогресс
                     progress.emit(round(percent_val, 0))  # Посылаем значние в прогресс бар
+            if self.report_rso:
+                logging.info("Формируем отчет для МВД")
+                status.emit('Формируем отчет для МВД')
+                df_report_rso['Сумма листов на комплект'] = df_report_rso[['Кол-во листов закл.',
+                                                                           'Кол-во листов прот.',
+                                                                           'Кол-во листов пред.']].sum(axis=1)
+                df_report_rso.to_excel(self.path_new + '\\Отчёт для МО.xlsx', sheet_name='Отчётная таблица', index=False)
+                wb_to_rso = openpyxl.load_workbook(self.path_new + '\\Отчёт для МО.xlsx')
+                ws_to_rso = wb_to_rso.active
+                thin = openpyxl.styles.Side(border_style="thin", color="000000")
+                for pos, el in enumerate([4.29, 19.71, 17.29, 18.29, 28, 9.29, 28, 9.29, 28, 9.29, 16.14]):
+                    ws_to_rso.column_dimensions[get_column_letter(pos + 1)].width = el
+                    ws_to_rso.cell(1, pos + 1).alignment = openpyxl.styles.Alignment(horizontal="center",
+                                                                                     vertical="center", wrap_text=True)
+                    if 'Кол-во' in ws_to_rso.cell(1, pos + 1).value:
+                        ws_to_rso.cell(1, pos + 1).value = 'Кол-во листов'
+                ws_to_rso.freeze_panes = 'A2'
+                ws_to_rso.auto_filter.ref = ws_to_rso.dimensions
+                for row in range(1, ws_to_rso.max_row + 1):
+                    for col in range(1, ws_to_rso.max_column + 1):
+                        ws_to_rso.cell(row, col).border = openpyxl.styles.Border(top=thin, left=thin,
+                                                                                 right=thin, bottom=thin)
+                        if row == 1:
+                            ws_to_rso.row_dimensions[row].height = 38.5
+                            ws_to_rso.cell(row, col).fill = openpyxl.styles.PatternFill(start_color='000000',
+                                                                                        end_color='000000',
+                                                                                        fill_type="solid")
+                            ws_to_rso.cell(row, col).font = openpyxl.styles.Font(color='ffffff')
+                        if col not in [5, 7, 9]:
+                            ws_to_rso.cell(row, col).alignment = openpyxl.styles.Alignment(horizontal="center",
+                                                                                           vertical="center",
+                                                                                           wrap_text=True)
+                        else:
+                            if row != 1:
+                                ws_to_rso.cell(row, col).alignment = openpyxl.styles.Alignment(horizontal="left",
+                                                                                               vertical="center")
+                wb_to_rso.save(self.path_new + '\\Отчёт для МО.xlsx')
             if text_for_foot:
                 if '/' in num_1:
                     num_1 = text_for_foot.rpartition('/')[0] + '/'
@@ -454,6 +529,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             # Форма 3
             if flag_inventory == 40:
                 if 'Форма 3.docx' in [os.path.basename(i_) for i_ in docs_not]:
+                    status.emit('Формируем форму 3')
                     logging.info("Формируем форму 3")
                     doc = docx.Document(os.path.abspath(path_old + '\\' + 'Форма 3.docx'))  # Открываем
                     text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонитула
@@ -475,6 +551,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             # Если необходимо печатать опись
             if account:  # Если активирована опись
                 logging.info("Формируем опись")
+                status.emit('Формируем опись')
 
                 def sort(len_, d):  # Ф-я для записи в необходимом порядке
                     if len_ <= 40:  # Если одной описи хватает для записи документов
@@ -637,10 +714,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     run.font.size = Pt(14)
                                     run.font.name = 'Times New Roman'
                         else:
-                            file_account = [i_ for i_ in os.listdir(path_) if i_.endswith('.docx') and
-                                            ('приложение' not in i_.lower())]
-                            if service:
-                                file_account = [i_ for i_ in file_account if 'протокол' not in i_.lower()]
+                            # file_account = [i_ for i_ in os.listdir(path_) if i_.endswith('.docx') and
+                            #                 ('приложение' not in i_.lower())]
+                            # docs_ = [j_ for i_ in ['Заключение', 'Протокол', 'Предписание'] for j_ in file_account if
+                            #          re.findall(i_.lower(), j_.lower())]
+                            # if service:
+                            #     docs_ = [i_ for i_ in docs_ if 'протокол' not in i_.lower()]
                             file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
                             len_appendix = 0
                             for file in file_appendix:
@@ -650,24 +729,32 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                        xml_content.decode())[0]  # Ищем кол-во страниц
                                     len_appendix += int(pages)
                             numbering = 1
-                            for file in file_account:
-                                with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
-                                    xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
-                                    pages = re.findall(r'<Pages>(\w*)</Pages>',
-                                                       xml_content.decode())[0]  # Ищем кол-во страниц
-                                page = 'листе' if int(pages) == 1 else 'листах'
-                                doc_old = docx.Document(path_ + '\\' + file)  # Открываем
-                                footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-                                foot = footer.paragraphs[0]  # Параграф
-                                foot_text = foot.text  # Текст нижнего колонитула
-                                text = file.partition(' ')[0] + ', уч. № ' + foot_text + ', экз. № 1, на ' + \
-                                       str(int(pages) - 1) + ' ' + page + ' , секретно, только в адрес.'
-                                p.add_run('\n' + str(numbering) + '. ' + text)
-                                p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
-                                numbering += 1
-                                for run in p.runs:
-                                    run.font.size = Pt(14)
-                                    run.font.name = 'Times New Roman'
+                            ness_file = ['Заключение', 'Предписание'] if self.service else ['Заключение',
+                                                                                            'Протокол',
+                                                                                            'Предписание']
+                            for file in for_27:
+                                if file[4].partition(' ')[0] in ness_file:
+                                    page = 'листе' if int(file[8]) == 1 else 'листах'
+                                    text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз. № 1, на ' + \
+                                           file[8] + ' ' + page + ' , секретно, только в адрес.'
+                            # for file in docs_:
+                                # with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
+                                #     xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
+                                #     pages = re.findall(r'<Pages>(\w*)</Pages>',
+                                #                        xml_content.decode())[0]  # Ищем кол-во страниц
+                                # page = 'листе' if int(pages) == 1 else 'листах'
+                                # doc_old = docx.Document(path_ + '\\' + file)  # Открываем
+                                # footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
+                                # foot = footer.paragraphs[0]  # Параграф
+                                # foot_text = foot.text  # Текст нижнего колонитула
+                                # text = file.partition(' ')[0] + ', уч. № ' + foot_text + ', экз. № 1, на ' + \
+                                #        str(int(pages) - 1) + ' ' + page + ' , секретно, только в адрес.'
+                                    p.add_run('\n' + str(numbering) + '. ' + text)
+                                    p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
+                                    numbering += 1
+                                    for run in p.runs:
+                                        run.font.size = Pt(14)
+                                        run.font.name = 'Times New Roman'
                             if len_appendix:
                                 page = 'листе' if int(len_appendix) == 1 else 'листах'
                                 text = 'Приложение А, на ' + str(len_appendix) + ' ' + page + ' , несекретно.'
@@ -676,6 +763,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 numbering += 1
                                 for run in p.runs:
                                     run.font.size = Pt(14)
+                                    run.font.name = 'Times New Roman'
                 doc.add_section()  # Добавляем последнюю страницу
                 if para:
                     last = doc.sections[len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы

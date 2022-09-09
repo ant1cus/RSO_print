@@ -50,15 +50,15 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_print.clicked.connect(self.printing)  # Кнопка распечатать
         self.pushButton_insert.clicked.connect(self.insert_head_foot)  # Кнопка вставить
         # Баттоны для кнопок открыть
-        self.pushButton_old.clicked.connect((lambda: self.browse(1)))
-        self.pushButton_new.clicked.connect((lambda: self.browse(2)))
-        self.pushButton_file_num.clicked.connect((lambda: self.browse(3)))
-        self.pushButton_account.clicked.connect((lambda: self.browse(4)))
-        self.pushButton_open_form_27.clicked.connect((lambda: self.browse(5)))
-        self.pushButton_old_print.clicked.connect((lambda: self.browse(6)))
-        self.pushButton_path_form27_print.clicked.connect((lambda: self.browse(7)))
-        self.pushButton_account_numbers.clicked.connect((lambda: self.browse(8)))
-        self.pushButton_add_account_numbers.clicked.connect((lambda: self.browse(9)))
+        self.pushButton_old.clicked.connect((lambda: self.browse(0)))
+        self.pushButton_new.clicked.connect((lambda: self.browse(1)))
+        self.pushButton_file_num.clicked.connect((lambda: self.browse(2)))
+        self.pushButton_account.clicked.connect((lambda: self.browse(3)))
+        self.pushButton_open_form_27.clicked.connect((lambda: self.browse(4)))
+        self.pushButton_old_print.clicked.connect((lambda: self.browse(5)))
+        self.pushButton_path_form27_print.clicked.connect((lambda: self.browse(6)))
+        self.pushButton_account_numbers.clicked.connect((lambda: self.browse(7)))
+        self.pushButton_add_account_numbers.clicked.connect((lambda: self.browse(8)))
         # Для выбора принтера по умолчанию
         self.comboBox_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_printer.currentTextChanged.connect(self.text_changed)
@@ -77,7 +77,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                          'print_people', 'date', 'executor_acc_sheet',
                          'account_post', 'account_signature', 'account_path',
                          'firm', 'path_form_27_create',
-                         'path_old_print', 'account_numbers', 'path_form_27',
+                         'path_old_print', 'account_numbers', 'path_form_27', 'add_account_num',
                          'HDD_number']
         # Грузим значения по умолчанию
         try:
@@ -89,13 +89,14 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                 data = {}
 
         # Линии для заполнения
-        self.line = [self.lineEdit_old, self.lineEdit_new, self.lineEdit_file_num,
+        self.line = [self.lineEdit_path_old, self.lineEdit_path_new, self.lineEdit_path_file_num,
                      self.comboBox_classified, self.lineEdit_num_scroll, self.lineEdit_list_item, self.lineEdit_number,
                      self.lineEdit_executor, self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
                      self.lineEdit_date, self.lineEdit_executor_acc_sheet,
-                     self.lineEdit_account_post, self.lineEdit_account_signature, self.lineEdit_account_path,
+                     self.lineEdit_account_post, self.lineEdit_account_signature, self.lineEdit_path_account,
                      self.lineEdit_firm, self.lineEdit_path_form_27_create,
-                     self.lineEdit_old_print, self.lineEdit_account_numbers, self.lineEdit_path_form_27_print]
+                     self.lineEdit_path_old_print, self.lineEdit_path_account_numbers, self.lineEdit_path_form_27_print,
+                     self.lineEdit_path_add_account_numbers]
         self.hdd_number = None
         self.default_date(data)
         qt_rectangle = self.frameGeometry()
@@ -132,7 +133,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def default_settings(self):  # Запускаем окно с настройками по умолчанию.
         self.close()
-        window_add = DefaultWindow(self)
+        window_add = DefaultWindow(self, self.path_for_default)
         window_add.show()
 
     def on_message_changed(self, title, description):  # Для вывода сообщений
@@ -152,28 +153,29 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def browse(self, num):  # Для кнопки открыть
         directory = None
-        if num in [3, 7, 8, 9]:  # Если необходимо открыть файл
+        if num in [2, 6, 7, 8]:  # Если необходимо открыть файл
             directory = QFileDialog.getOpenFileName(self, "Find Files", QDir.currentPath())
-        elif num in [1, 2, 4, 5, 6]:  # Если необходимо открыть директорию
+        elif num in [0, 1, 3, 4, 5]:  # Если необходимо открыть директорию
             directory = QFileDialog.getExistingDirectory(self, "Find Files", QDir.currentPath())
         # Список линий
-        line = [self.lineEdit_old, self.lineEdit_new, self.lineEdit_file_num,
-                self.lineEdit_account_path, self.lineEdit_path_form_27_create,
-                self.lineEdit_old_print, self.lineEdit_path_form_27_print, self.lineEdit_account_numbers,
-                self.lineEdit_add_account_numbers]
+        line = [self.lineEdit_path_old, self.lineEdit_path_new, self.lineEdit_path_file_num,
+                self.lineEdit_path_account, self.lineEdit_path_form_27_create,
+                self.lineEdit_path_old_print, self.lineEdit_path_form_27_print, self.lineEdit_path_account_numbers,
+                self.lineEdit_path_add_account_numbers]
         if directory:  # Если нажать кнопку отркыть в диалоге выбора
-            if num in [3, 7, 8, 9]:  # Если файлы
+            if num in [2, 6, 7, 8]:  # Если файлы
                 if directory[0]:  # Если есть файл, чтобы не очищалось поле
-                    line[num - 1].setText(directory[0])
+                    line[num].setText(directory[0])
             else:  # Если директории
-                line[num - 1].setText(directory)
+                line[num].setText(directory)
 
     def text_changed(self):  # Если изменился выбор принтера
         self.lineEdit_printer.setText(self.comboBox_printer.currentText())
 
     def insert_head_foot(self):
         # Проверка введенных данных перед запуском потока
-        output = doc_format(self.lineEdit_old, self.lineEdit_new, self.lineEdit_file_num, self.radioButton_FSB_df,
+        output = doc_format(self.lineEdit_path_old, self.lineEdit_path_new, self.lineEdit_path_file_num,
+                            self.radioButton_FSB_df,
                             self.radioButton_FSTEK_df, self.comboBox_classified, self.lineEdit_num_scroll,
                             self.lineEdit_list_item, self.lineEdit_number, self.lineEdit_executor,
                             self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
@@ -181,37 +183,41 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                             self.label_prescription, self.label_print, self.label_executor_acc_sheet,
                             self.lineEdit_date, self.groupBox_inventory_insert, self.radioButton_40_num,
                             self.radioButton_all_doc, self.lineEdit_account_post,
-                            self.lineEdit_account_signature, self.lineEdit_account_path, self.hdd_number,
+                            self.lineEdit_account_signature, self.lineEdit_path_account, self.hdd_number,
                             self.groupBox_form27_insert, self.lineEdit_firm, self.lineEdit_path_form_27_create,
                             self.groupBox_second_copy, self.checkBoxd_conclusion, self.checkBox_protocol,
-                            self.checkBox_preciption,
-                            self.q, logging, self.action_package)
-        if output:  # Если всё прошло запускаем поток
+                            self.checkBox_preciption, self.action_package, self.action_report_MO)
+        if type(output) == list:
+            self.on_message_changed(output[0], output[1])
+            return
+        else:  # Если всё прошло запускаем поток
+            output['q'], output['logging'] = self.q, logging
             self.thread = FormatDoc(output)
             self.thread.progress.connect(self.progressBar.setValue)
             self.thread.status.connect(self.show_mess)
             self.thread.messageChanged.connect(self.on_message_changed)
             self.thread.finished.connect(self.stop_thread)
             self.thread.start()
-        else:
-            return
 
     def printing(self):
         # Проверка введенных данных перед запуском потока
-        output = doc_print(self.radioButton_FSB_print, self.radioButton_FSTEK_print, self.lineEdit_old_print,
-                           self.lineEdit_account_numbers, self.checkBox_add_account_numbers,
-                           self.lineEdit_add_account_numbers, self.checkBox_form_27, self.lineEdit_path_form_27_print,
+        output = doc_print(self.radioButton_FSB_print, self.radioButton_FSTEK_print, self.lineEdit_path_old_print,
+                           self.lineEdit_path_account_numbers, self.checkBox_add_account_numbers,
+                           self.lineEdit_path_add_account_numbers, self.checkBox_form_27,
+                           self.lineEdit_path_form_27_print,
                            self.button_gr, self.lineEdit_printer, self.checkBox_print_order, self.path_for_default,
-                           logging, self.action_package)
-        if output:  # Если все прошло
+                           self.action_package)
+        if type(output) == list:
+            self.on_message_changed(output[0], output[1])
+            return
+        else:  # Если всё прошло запускаем поток
+            output['logging'] = logging
             self.thread = PrintDoc(output)
             self.thread.progress.connect(self.progressBar.setValue)
             self.thread.status.connect(self.show_mess)
             self.thread.messageChanged.connect(self.on_message_changed)
             self.thread.start()
             self.thread.finished.connect(self.stop_thread)
-        else:
-            return
 
     def stop_thread(self):  # Завершение потока
         os.chdir(self.path_for_default)
