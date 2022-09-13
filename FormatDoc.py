@@ -302,7 +302,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             protocol = {}
             dict_40 = []  # Словарь для описи
             for_27 = []
-            accompanying_doc = ''  # Проверка на сопровод
+            accompanying_doc = []  # Проверка на сопровод или запрос
             exec_people = ''  # Для исполнителя документов
             text_for_foot = ''
             if self.report_rso:
@@ -326,6 +326,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                                'Сумма листов на комплект'])
             if self.second_copy:
                 os.mkdir(path_ + '\\2 экземпляр')
+            name_protocol = False
+            name_conclusion = False
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 if type(docs) is dict:
@@ -333,8 +335,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 logging.info("Преобразуем " + name_el)
                 if name_el.lower() == 'форма 3.docx':
                     continue
-                elif re.findall('сопроводит', name_el.lower()):
-                    accompanying_doc = el_
+                elif re.findall('сопроводит', name_el.lower()) or re.findall('запрос', name_el.lower()):
+                    accompanying_doc.append(el_)
                     continue
                 pythoncom.CoInitializeEx(0)
                 status.emit('Форматируем документ ' + name_el)
@@ -370,28 +372,31 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     elif re.findall(r'протокол', name_el.lower()):
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
                         protocol[name_el] = text_for_foot
-                        if len(conclusion_num) == 1:
+                        if len(conclusion_num) == 0:
+                            conclusion_num_text = False
+                        elif len(conclusion_num) == 1:
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) \
                                                   + ' от ' + date
                         else:
                             x = name_el.rpartition('.')[0].partition(' ')[2]
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
                                                   + ' от ' + date
-                        for val_p, p in enumerate(doc.paragraphs):
-                            if re.findall(r'\[ЗАКЛНОМ]', p.text):
-                                text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
-                                p.text = text
-                                doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-                                for run in p.runs:
-                                    run.font.size = Pt(pt_num)
-                                    run.font.name = 'Times New Roman'
-                                break
+                        if conclusion_num_text:
+                            for val_p, p in enumerate(doc.paragraphs):
+                                if re.findall(r'\[ЗАКЛНОМ]', p.text):
+                                    text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
+                                    p.text = text
+                                    doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+                                    for run in p.runs:
+                                        run.font.size = Pt(pt_num)
+                                        run.font.name = 'Times New Roman'
+                                    break
                         exec_people = executor
                         change_date(doc, False)
                     elif re.findall(r'предписание', name_el.lower()):
                         x = name_el.rpartition('.')[0].partition(' ')[2]
                         protocol_num_text = 'уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
-                                            ' от ' + date
+                                            ' от ' + date if name_protocol else False
                         if len(conclusion_num) == 1:
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
                                                   ' от ' + date
@@ -400,26 +405,31 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                   str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
                                                   ' от ' + date
                         break_flag = 0
-                        for val_p, p in enumerate(doc.paragraphs):
-                            if re.findall(r'\[ЗАКЛНОМ]', p.text):
-                                text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
-                                p.text = text
-                                doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-                                for run in p.runs:
-                                    run.font.bold = False
-                                    run.font.size = Pt(pt_num)
-                                    run.font.name = 'Times New Roman'
-                                break_flag += 1
-                            if re.findall(r'\[ПРОТНОМ]', p.text):
-                                text = re.sub(r'\[ПРОТНОМ]', protocol_num_text, p.text)
-                                p.text = text
-                                doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-                                for run in p.runs:
-                                    run.font.size = Pt(pt_num)
-                                    run.font.name = 'Times New Roman'
-                                break_flag += 1
-                            if break_flag == 2:
-                                break
+                        if conclusion_num_text or protocol_num_text:
+                            for val_p, p in enumerate(doc.paragraphs):
+                                if re.findall(r'\[ЗАКЛНОМ]', p.text):
+                                    text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
+                                    p.text = text
+                                    doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+                                    for run in p.runs:
+                                        run.font.bold = False
+                                        run.font.size = Pt(pt_num)
+                                        run.font.name = 'Times New Roman'
+                                    break_flag += 1
+                                if protocol_num_text:
+                                    if re.findall(r'\[ПРОТНОМ]', p.text):
+                                        text = re.sub(r'\[ПРОТНОМ]', protocol_num_text, p.text)
+                                        p.text = text
+                                        doc.paragraphs[val_p].paragraph_format.alignment =\
+                                            WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+                                        for run in p.runs:
+                                            run.font.size = Pt(pt_num)
+                                            run.font.name = 'Times New Roman'
+                                        break_flag += 1
+                                else:
+                                    break_flag += 1
+                                if break_flag == 2:
+                                    break
                         exec_people = prescription
                         change_date(doc, False)
                     logging.info("Вставляем колонтитулы")
@@ -663,131 +673,138 @@ class FormatDoc(QThread):  # Если требуется вставить кол
 
             # Добавление сопровода
             if accompanying_doc:
-                logging.info("Добавляем сопровод")
-                if not account:
-                    text_for_foot = num_1 + num_2 + 'c'
-                else:
-                    text_for_foot = num_1 + str(int(num_2) + 1) + 'c'
-                status.emit('Добавление данных в сопроводительный лист')  # Сообщение в статус бар
-                doc = docx.Document(accompanying_doc)
-                accompanying_doc = os.path.abspath(path_ + '\\' + os.path.basename(accompanying_doc))
-                para = True  # Для вставки если сделали не особую первую страницу
-                if doc.sections[0].different_first_page_header_footer:
-                    header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
-                    doc.sections[0].footer.paragraphs[0].text = text_for_foot
-                else:
-                    para = False
-                    header = doc.sections[0].header
-                head = header.paragraphs[0]  # Параграф
-                head.insert_paragraph_before(text_first_header)  # Вставялем перед колонитулом
-                head = header.paragraphs[0]  # Выбираем новый первый параграф
-                head_format = head.paragraph_format  # Настройки параграфа
-                head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
-                for p in doc.paragraphs:  # Для каждого параграфа
-                    if re.findall(r'registration_number', p.text):  # Ищем метку
-                        p.text = re.sub(r'registration_number', text_for_foot + ' от ' + date, p.text)
-                        for run in p.runs:
-                            run.font.size = Pt(14)
-                    elif re.findall(r'Приложения:', p.text):
-                        if account:
-                            file_account = [i_ for i_ in os.listdir(account_path) if re.findall(r'Опись', i_)]
-                            numbering = 1
-                            for file in file_account:
-                                number = re.findall(r'№(\d*)', file)[0]  # Номер описи
-                                docx2pdf.convert(account_path + '\\' + file,
-                                                 account_path + '\\' + file + '.pdf')  # Конвертируем
-                                input_file = fitz.open(account_path + '\\' + file + '.pdf')  # Открываем пдф
-                                pages = input_file.page_count - 1  # Получаем кол-во страниц
-                                input_file.close()  # Закрываем
-                                os.remove(account_path + '\\' + file + '.pdf')  # Удаляем pdf документ
-                                page = 'листе' if pages == 1 else 'листах'  # Для правильной формулировки
-                                doc_old = docx.Document(account_path + '\\' + file)  # Открываем
-                                footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-                                foot = footer.paragraphs[0]  # Параграф
-                                foot_text = foot.text  # Текст нижнего колонитула
-                                text = 'Приложение согласно описи №' + str(number) + ' на ' + str(pages) + ' ' \
-                                       + page + ', уч. № ' + foot_text + ', экз. № 1, секретно, только в адрес.'
-                                p.add_run('\n' + str(numbering) + '. ' + text)
-                                p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
-                                numbering += 1
-                                for run in p.runs:
-                                    run.font.size = Pt(14)
-                                    run.font.name = 'Times New Roman'
+                for acc_doc in accompanying_doc:
+                    logging.info("Добавляем " + acc_doc)
+                    if not text_for_foot:
+                        text_for_foot = num_1 + num_2 + 'c'
+                    else:
+                        if '/' in num_1:  # Добавляем номер для описи
+                            num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
                         else:
-                            # file_account = [i_ for i_ in os.listdir(path_) if i_.endswith('.docx') and
-                            #                 ('приложение' not in i_.lower())]
-                            # docs_ = [j_ for i_ in ['Заключение', 'Протокол', 'Предписание'] for j_ in file_account if
-                            #          re.findall(i_.lower(), j_.lower())]
-                            # if service:
-                            #     docs_ = [i_ for i_ in docs_ if 'протокол' not in i_.lower()]
-                            file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
-                            len_appendix = 0
-                            for file in file_appendix:
-                                with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
-                                    xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
-                                    pages = re.findall(r'<Pages>(\w*)</Pages>',
-                                                       xml_content.decode())[0]  # Ищем кол-во страниц
-                                    len_appendix += int(pages)
-                            numbering = 1
-                            ness_file = ['Заключение', 'Предписание'] if self.service else ['Заключение',
-                                                                                            'Протокол',
-                                                                                            'Предписание']
-                            for file in for_27:
-                                if file[4].partition(' ')[0] in ness_file:
-                                    page = 'листе' if int(file[8]) == 1 else 'листах'
-                                    text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз. № 1, на ' + \
-                                           file[8] + ' ' + page + ' , секретно, только в адрес.'
-                            # for file in docs_:
-                                # with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
-                                #     xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
-                                #     pages = re.findall(r'<Pages>(\w*)</Pages>',
-                                #                        xml_content.decode())[0]  # Ищем кол-во страниц
-                                # page = 'листе' if int(pages) == 1 else 'листах'
-                                # doc_old = docx.Document(path_ + '\\' + file)  # Открываем
-                                # footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-                                # foot = footer.paragraphs[0]  # Параграф
-                                # foot_text = foot.text  # Текст нижнего колонитула
-                                # text = file.partition(' ')[0] + ', уч. № ' + foot_text + ', экз. № 1, на ' + \
-                                #        str(int(pages) - 1) + ' ' + page + ' , секретно, только в адрес.'
+                            num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
+                        text_for_foot = num_1 + num_2 + 'c'
+                    status.emit('Добавление данных в ' + acc_doc)  # Сообщение в статус бар
+                    acc_doc_path = os.path.abspath(path_ + '\\' + os.path.basename(acc_doc))
+                    shutil.copy(path_old_ + '\\' + acc_doc, path_ + '\\')
+                    doc = docx.Document(path_ + '\\' + acc_doc)
+                    para = True  # Для вставки если сделали не особую первую страницу
+                    if doc.sections[0].different_first_page_header_footer:
+                        header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
+                        doc.sections[0].footer.paragraphs[0].text = text_for_foot
+                    else:
+                        para = False
+                        header = doc.sections[0].header
+                    head = header.paragraphs[0]  # Параграф
+                    head.insert_paragraph_before(text_first_header)  # Вставялем перед колонитулом
+                    head = header.paragraphs[0]  # Выбираем новый первый параграф
+                    head_format = head.paragraph_format  # Настройки параграфа
+                    head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
+                    for p in doc.paragraphs:  # Для каждого параграфа
+                        if re.findall(r'registration_number', p.text):  # Ищем метку
+                            p.text = re.sub(r'registration_number', text_for_foot + ' от ' + date, p.text)
+                            print(p.text)
+                            for run in p.runs:
+                                run.font.size = Pt(14)
+                        elif re.findall(r'Приложения:', p.text) and 'Запрос' not in acc_doc:
+                            if account:
+                                file_account = [i_ for i_ in os.listdir(account_path) if re.findall(r'Опись', i_)]
+                                numbering = 1
+                                for file in file_account:
+                                    number = re.findall(r'№(\d*)', file)[0]  # Номер описи
+                                    docx2pdf.convert(account_path + '\\' + file,
+                                                     account_path + '\\' + file + '.pdf')  # Конвертируем
+                                    input_file = fitz.open(account_path + '\\' + file + '.pdf')  # Открываем пдф
+                                    pages = input_file.page_count - 1  # Получаем кол-во страниц
+                                    input_file.close()  # Закрываем
+                                    os.remove(account_path + '\\' + file + '.pdf')  # Удаляем pdf документ
+                                    page = 'листе' if pages == 1 else 'листах'  # Для правильной формулировки
+                                    doc_old = docx.Document(account_path + '\\' + file)  # Открываем
+                                    footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
+                                    foot = footer.paragraphs[0]  # Параграф
+                                    foot_text = foot.text  # Текст нижнего колонитула
+                                    text = 'Приложение согласно описи №' + str(number) + ' на ' + str(pages) + ' ' \
+                                           + page + ', уч. № ' + foot_text + ', экз. № 1, секретно, только в адрес.'
                                     p.add_run('\n' + str(numbering) + '. ' + text)
                                     p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
                                     numbering += 1
                                     for run in p.runs:
                                         run.font.size = Pt(14)
                                         run.font.name = 'Times New Roman'
-                            if len_appendix:
-                                page = 'листе' if int(len_appendix) == 1 else 'листах'
-                                text = 'Приложение А, на ' + str(len_appendix) + ' ' + page + ' , несекретно.'
-                                p.add_run('\n' + str(numbering) + '. ' + text)
-                                p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
-                                numbering += 1
-                                for run in p.runs:
-                                    run.font.size = Pt(14)
-                                    run.font.name = 'Times New Roman'
-                doc.add_section()  # Добавляем последнюю страницу
-                if para:
-                    last = doc.sections[len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
-                    last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
-                    foot = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
-                    foot.is_linked_to_previous = False  # Отвязываем
-                else:
-                    last = doc.sections[len(doc.sections) - 1].header  # Колонтитул для последней страницы
-                    last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
-                    foot = doc.sections[len(doc.sections) - 1].footer  # Нижний колонтитул
-                    foot.is_linked_to_previous = False  # Отвязываем
-                # Текст для фонарика
-                foot.paragraphs[0].text = "Уч. № " + text_for_foot + \
-                                          "\nОтп. 2 экз.\n№ 1 - в адрес\n№ 2 - в дело \nс НЖМД, уч. № ЖД - " \
-                                          + hdd_number + "\nИсп. " \
-                                          + executor_acc_sheet + "\nПеч. " + print_people + \
-                                          "\n" + date + "\nБ/ч"
-                doc.save(accompanying_doc)  # Сохраняем
-                num_pages = pages_count(os.path.basename(accompanying_doc),
-                                        accompanying_doc.rpartition('\\')[0])
-                if firm:
-                    for_27.append([text_for_foot, date, classified, firm,
-                                   accompanying_doc.rpartition('\\')[2][:-5],
-                                   executor_acc_sheet, '1', '№1', str(num_pages - 1)])
+                            else:
+                                # file_account = [i_ for i_ in os.listdir(path_) if i_.endswith('.docx') and
+                                #                 ('приложение' not in i_.lower())]
+                                # docs_ = [j_ for i_ in ['Заключение', 'Протокол', 'Предписание'] for j_ in file_account if
+                                #          re.findall(i_.lower(), j_.lower())]
+                                # if service:
+                                #     docs_ = [i_ for i_ in docs_ if 'протокол' not in i_.lower()]
+                                file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
+                                len_appendix = 0
+                                for file in file_appendix:
+                                    with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
+                                        xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
+                                        pages = re.findall(r'<Pages>(\w*)</Pages>',
+                                                           xml_content.decode())[0]  # Ищем кол-во страниц
+                                        len_appendix += int(pages)
+                                numbering = 1
+                                ness_file = ['Заключение', 'Предписание'] if self.service else ['Заключение',
+                                                                                                'Протокол',
+                                                                                                'Предписание']
+                                for file in for_27:
+                                    if file[4].partition(' ')[0] in ness_file:
+                                        page = 'листе' if int(file[8]) == 1 else 'листах'
+                                        text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз. № 1, на ' + \
+                                               file[8] + ' ' + page + ' , секретно, только в адрес.'
+                                # for file in docs_:
+                                    # with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
+                                    #     xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
+                                    #     pages = re.findall(r'<Pages>(\w*)</Pages>',
+                                    #                        xml_content.decode())[0]  # Ищем кол-во страниц
+                                    # page = 'листе' if int(pages) == 1 else 'листах'
+                                    # doc_old = docx.Document(path_ + '\\' + file)  # Открываем
+                                    # footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
+                                    # foot = footer.paragraphs[0]  # Параграф
+                                    # foot_text = foot.text  # Текст нижнего колонитула
+                                    # text = file.partition(' ')[0] + ', уч. № ' + foot_text + ', экз. № 1, на ' + \
+                                    #        str(int(pages) - 1) + ' ' + page + ' , секретно, только в адрес.'
+                                        p.add_run('\n' + str(numbering) + '. ' + text)
+                                        p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
+                                        numbering += 1
+                                        for run in p.runs:
+                                            run.font.size = Pt(14)
+                                            run.font.name = 'Times New Roman'
+                                if len_appendix:
+                                    page = 'листе' if int(len_appendix) == 1 else 'листах'
+                                    text = 'Приложение А, на ' + str(len_appendix) + ' ' + page + ' , несекретно.'
+                                    p.add_run('\n' + str(numbering) + '. ' + text)
+                                    p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
+                                    numbering += 1
+                                    for run in p.runs:
+                                        run.font.size = Pt(14)
+                                        run.font.name = 'Times New Roman'
+                    doc.add_section()  # Добавляем последнюю страницу
+                    if para:
+                        last = doc.sections[len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
+                        last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
+                        foot = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
+                        foot.is_linked_to_previous = False  # Отвязываем
+                    else:
+                        last = doc.sections[len(doc.sections) - 1].header  # Колонтитул для последней страницы
+                        last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
+                        foot = doc.sections[len(doc.sections) - 1].footer  # Нижний колонтитул
+                        foot.is_linked_to_previous = False  # Отвязываем
+                    # Текст для фонарика
+                    foot.paragraphs[0].text = "Уч. № " + text_for_foot + \
+                                              "\nОтп. 2 экз.\n№ 1 - в адрес\n№ 2 - в дело \nс НЖМД, уч. № ЖД - " \
+                                              + hdd_number + "\nИсп. " \
+                                              + executor_acc_sheet + "\nПеч. " + print_people + \
+                                              "\n" + date + "\nБ/ч"
+                    doc.save(path_ + '\\' + acc_doc)  # Сохраняем
+                    num_pages = pages_count(acc_doc,
+                                            acc_doc_path.rpartition('\\')[0])
+                    if firm:
+                        for_27.append([text_for_foot, date, classified, firm,
+                                       acc_doc_path.rpartition('\\')[2][:-5],
+                                       executor_acc_sheet, '1', '№1', str(num_pages - 1)])
             if '/' in num_1:  # Добавляем номер для описи
                 num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Увеличиваем номер
             else:
