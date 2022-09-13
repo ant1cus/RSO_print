@@ -55,7 +55,7 @@ class PrintDoc(QThread):  # Поток для печати
                 docs = [i for i in os.listdir('.') if i[-4:] == 'docx' and '~' not in i]  # Список файлов
                 logging.info('Второй сопровод')
                 for el in docs:  # Для второго сопровода
-                    if re.findall('сопроводит', el.lower()):
+                    if re.findall('сопроводит', el.lower()) or re.findall('запрос', el.lower()):
                         shutil.copy(el, el.rpartition('.')[0] + ' (2 экз.).docx', follow_symlinks=True)
                         doc = docx.Document(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
                         style = doc.styles['Normal']
@@ -508,7 +508,7 @@ class PrintDoc(QThread):  # Поток для печати
                             logging.info(traceback.format_exc())
                     logging.info('Удаляем пдф ' + name_pdf)
                     os.remove(path_old + '\\' + name_pdf)
-                    if re.findall(r'сопроводит', el.lower()):
+                    if re.findall(r'сопроводит', el.lower()) or re.findall(r'запрос', el.lower()):
                         if re.findall(r'экз', el.lower()):
                             os.remove(path_old + '\\' + el)
                     if el.partition(' ')[0].lower() in ['протокол', 'приложение'] and service:
