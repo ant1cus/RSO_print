@@ -397,24 +397,30 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         x = name_el.rpartition('.')[0].partition(' ')[2]
                         protocol_num_text = 'уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
                                             ' от ' + date if name_protocol else False
-                        if len(conclusion_num) == 1:
-                            conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
-                                                  ' от ' + date
-                        else:
-                            conclusion_num_text = 'уч. № ' +\
-                                                  str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
-                                                  ' от ' + date
+                        try:
+                            if len(conclusion_num) == 1:
+                                conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
+                                                      ' от ' + date
+                            else:
+                                conclusion_num_text = 'уч. № ' +\
+                                                      str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
+                                                      ' от ' + date
+                        except KeyError:
+                            conclusion_num_text = False
                         break_flag = 0
                         if conclusion_num_text or protocol_num_text:
                             for val_p, p in enumerate(doc.paragraphs):
-                                if re.findall(r'\[ЗАКЛНОМ]', p.text):
-                                    text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
-                                    p.text = text
-                                    doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-                                    for run in p.runs:
-                                        run.font.bold = False
-                                        run.font.size = Pt(pt_num)
-                                        run.font.name = 'Times New Roman'
+                                if conclusion_num_text:
+                                    if re.findall(r'\[ЗАКЛНОМ]', p.text):
+                                        text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
+                                        p.text = text
+                                        doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+                                        for run in p.runs:
+                                            run.font.bold = False
+                                            run.font.size = Pt(pt_num)
+                                            run.font.name = 'Times New Roman'
+                                        break_flag += 1
+                                else:
                                     break_flag += 1
                                 if protocol_num_text:
                                     if re.findall(r'\[ПРОТНОМ]', p.text):

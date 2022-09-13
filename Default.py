@@ -62,32 +62,30 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.buttongroup_add.buttonClicked[int].connect(self.add_button_clicked)
         self.pushButton_ok.clicked.connect(self.accept)  # Принять
         self.pushButton_cancel.clicked.connect(lambda: self.close())  # Отмена
-        self.i = 0  # Счетчик
         self.line = {}  # Для имен
         self.name = {}  # Для значений
         self.button = {}  # Для кнопки «изменить»
-        for el in self.name_rus:  # Заполняем
-            self.line[self.i] = QLabel(self.frame_sett)  # Помещаем в фрейм
-            self.line[self.i].setText(el)  # Название элемента
-            self.line[self.i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
-            self.line[self.i].setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)  # Размеры виджета
-            self.line[self.i].setDisabled(True)  # Делаем неактивным, чтобы нельзя было просто так редактировать
-            self.gridLayout_8.addWidget(self.line[self.i], self.i, 0)  # Добавляем виджет
-            self.name[self.i] = Button(self.frame_sett)  # Помещаем в фрейм
+        for i, el in enumerate(self.name_rus):  # Заполняем
+            self.line[i] = QLabel(self.groupBox_sett)  # Помещаем в фрейм
+            self.line[i].setText(el)  # Название элемента
+            self.line[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
+            self.line[i].setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)  # Размеры виджета
+            self.line[i].setDisabled(True)  # Делаем неактивным, чтобы нельзя было просто так редактировать
+            self.gridLayout_sett.addWidget(self.line[i], i, 0)  # Добавляем виджет
+            self.name[i] = Button(self.groupBox_sett)  # Помещаем в фрейм
             try:  # Проверяем есть ли значение
-                self.name[self.i].setText(self.data[self.name_eng[self.name_rus.index(el)]])
+                self.name[i].setText(self.data[self.name_eng[self.name_rus.index(el)]])
             except KeyError:
                 pass
-            self.name[self.i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
-            self.name[self.i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
-            self.name[self.i].setDisabled(True)  # Неактивный
-            self.gridLayout_8.addWidget(self.name[self.i], self.i, 1)  # Помещаем в фрейм
-            self.button[self.i] = QPushButton("Изменить", self.frame_sett)  # Создаем кнопку
-            self.button[self.i].setFont(QFont("Times", 12, QFont.Light))  # Размер шрифта
-            self.button[self.i].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Размеры виджета
-            self.buttongroup_add.addButton(self.button[self.i], self.i)  # Добавляем в группу
-            self.gridLayout_8.addWidget(self.button[self.i], self.i, 2)  # Добавляем в фрейм по месту
-            self.i += 1  # Увеличиваем счетчик
+            self.name[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
+            self.name[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
+            self.name[i].setDisabled(True)  # Неактивный
+            self.gridLayout_sett.addWidget(self.name[i], i, 1)  # Помещаем в фрейм
+            self.button[i] = QPushButton("Изменить", self.groupBox_sett)  # Создаем кнопку
+            self.button[i].setFont(QFont("Times", 12, QFont.Light))  # Размер шрифта
+            self.button[i].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Размеры виджета
+            self.buttongroup_add.addButton(self.button[i], i)  # Добавляем в группу
+            self.gridLayout_sett.addWidget(self.button[i], i, 2)  # Добавляем в фрейм по месту
 
     def add_button_clicked(self, number):  # Если кликнули по кнопке
         self.name[number].setEnabled(True)  # Делаем активным для изменения
