@@ -31,17 +31,17 @@ class PrintDoc(QThread):  # Поток для печати
     def __init__(self, incoming_data):  # Список значений для работы потока
         QThread.__init__(self)
         # Присваиваем значения
-        self.path_old = incoming_data['path_old']
-        self.account_num_path = incoming_data['account_num_path']
+        self.path_old = incoming_data['path_old_print']
+        self.account_num_path = incoming_data['path_account_num']
         self.add_path_account_num = incoming_data['add_path_account_num']
         self.print_flag = incoming_data['print_flag']
         self.name_printer = incoming_data['name_printer']
-        self.path_form27 = incoming_data['path_form27']
+        self.path_form27 = incoming_data['path_form_27']
         self.print_order = incoming_data['print_order']
         self.service = incoming_data['service']
-        self.path_for_def = incoming_data['path_for_def']
+        self.path_for_def = incoming_data['path_for_default']
         self.logging = incoming_data['logging']
-        self.package = incoming_data['package']
+        self.package = incoming_data['package_']
 
     def run(self):
 

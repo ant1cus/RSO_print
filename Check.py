@@ -283,6 +283,6 @@ def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, lineEdit_old_print
         return ['УПС!', 'Не выбран принтер']
     print_order = True if checkBox_print_order.isChecked() else False
     return {'path_old_print': path_old_print, 'path_account_num': path_account_num,
-            'add_path_account_num': add_path_account_num, 'print_flag': print_flag, 'print_name': print_name,
+            'add_path_account_num': add_path_account_num, 'print_flag': print_flag, 'name_printer': print_name,
             'path_form_27': path_form_27, 'print_order': print_order, 'service': service,
             'path_for_default': path_for_default, 'package_': package_}
