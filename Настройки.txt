@@ -1,25 +1,3 @@
 ﻿{
-    "HDD_number": "123456",
-    "accompainig_sheet": "c:\\users\\abykovskiy\\desktop\\сопроводит сп си.docx",
-    "account_numbers": "C:/Users/abykovskiy/Desktop/опись/Файл учетных номеров № Mc 123.xlsx",
-    "account_path": "C:/Users/abykovskiy/Desktop/Конечные",
-    "account_post": "Зам",
-    "account_signature": "ЗамЗам",
-    "classified": "ДСП",
-    "conclusion": "Валуев",
-    "date": "10.05.2021",
-    "executor": "Додылев",
-    "executor_acc_sheet": "Арцупова",
-    "firm": "Большая компания 24",
-    "list_item": "п.п.3",
-    "num_scroll": "1",
-    "number": "15/17/18c",
-    "path_file_num": null,
-    "path_form_27": "C:\\Users\\abykovskiy\\Desktop\\Конечные\\Форма 27.xlsx",
-    "path_form_27_create": "C:\\Users\\abykovskiy\\Desktop\\Конечные",
-    "path_new": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\конец",
-    "path_old": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\начало",
-    "path_old_print": "C:\\Users\\abykovskiy\\Desktop\\Конечные",
-    "prescription": "Додылев",
-    "print_people": "Галуза"
+    "statement": "Шит"
 }

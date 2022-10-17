@@ -58,6 +58,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.logging = incoming_data['logging']
         self.package = incoming_data['package']
         self.report_rso = incoming_data['action_MO']
+        self.act = incoming_data['act']
+        self.statement = incoming_data['statement']
+        self.number_instance = incoming_data['number_instance']
         self.num_1 = self.num_2 = 0
 
     def run(self):
@@ -66,7 +69,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         firm, logging, status, path_, file_num, num_1, num_2,
                         date, conclusion, executor, prescription, hdd_number,
                         print_people, progress, flag_inventory,
-                        account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27):
+                        account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
+                        number_instance):
             def cell_write(style_for_doc, text_for_insert, number_rows=0):  # Заполнение ячеек в таблице в описи
                 cells = table.rows[number_rows].cells  # Номер строки
                 number_col = 0  # Номер столбца
@@ -325,7 +329,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                                'Кол-во листов пред.',
                                                                'Сумма листов на комплект'])
             if self.second_copy:
-                os.mkdir(path_ + '\\2 экземпляр')
+                for element in number_instance:
+                    os.mkdir(path_ + '\\' + str(element) + ' экземпляр')
             name_protocol = False
             name_conclusion = False
             for el_ in docs:  # Для файлов в папке
@@ -364,7 +369,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         date = dict_file[name_el.rpartition('.')[0]][1]  # Дата
                     else:
                         text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонитула
-                    if re.findall(r'заключение'.lower(), name_el.lower()):
+                    if re.findall(r'заключение', name_el.lower()):
                         name_conclusion = name_el.rpartition('.')[0].rpartition(' ')[0]
                         conclusion_num[name_el] = text_for_foot
                         exec_people = conclusion
@@ -395,9 +400,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         change_date(doc, False)
                     elif re.findall(r'предписание', name_el.lower()):
                         x = name_el.rpartition('.')[0].partition(' ')[2]
-                        protocol_num_text = 'уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
-                                            ' от ' + date if name_protocol else False
-                        try:
+                        if name_protocol:
+                            protocol_num_text = 'уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
+                                                ' от ' + date if protocol[name_protocol + ' ' + x + '.docx'] else False
+                        else:
+                            protocol_num_text = False
+                        if name_conclusion:
                             if len(conclusion_num) == 1:
                                 conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
                                                       ' от ' + date
@@ -405,7 +413,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 conclusion_num_text = 'уч. № ' +\
                                                       str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
                                                       ' от ' + date
-                        except KeyError:
+                        else:
                             conclusion_num_text = False
                         break_flag = 0
                         if conclusion_num_text or protocol_num_text:
@@ -414,7 +422,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     if re.findall(r'\[ЗАКЛНОМ]', p.text):
                                         text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
                                         p.text = text
-                                        doc.paragraphs[val_p].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+                                        doc.paragraphs[val_p].paragraph_format.alignment =\
+                                            WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                         for run in p.runs:
                                             run.font.bold = False
                                             run.font.size = Pt(pt_num)
@@ -439,6 +448,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         exec_people = prescription
                         change_date(doc, False)
                     logging.info("Вставляем колонтитулы")
+                    if re.findall(r'акт', name_el.lower()):
+                        exec_people = self.act
+                        change_date(doc, False)
+                    if re.findall(r'утверждение', name_el.lower()):
+                        exec_people = self.statement
+                        change_date(doc, False)
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
                     logging.info("Определяем количество страниц")
@@ -454,22 +469,26 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     if not file_num:  # Если нет файла номеров
                         num_2 = str(int(num_2) + 1)  # Увеличиваем значение для учетного номера
                     if self.second_copy:
-                        for index, (value1, value2) in enumerate(zip(self.second_copy, ['заключение',
-                                                                                        'протокол', 'предписание'])):
-                            if value1 and re.findall(value2, el_.lower()):
-                                for_27.append([False, False, False, False, name_el[:-5], False, '2',
-                                               False, str(num_pages - 1)])
-                                shutil.copy2(path_ + '\\' + el_, path_ + '\\2 экземпляр')
-                                doc_2 = docx.Document(os.path.abspath(path_ + '\\2 экземпляр' + '\\' + el_))
-                                for p_2 in doc_2.sections[0].first_page_header.paragraphs:
-                                    if re.findall(r'№1', p_2.text):
-                                        text = re.sub(r'№1', '№2', p_2.text)
-                                        p_2.text = text
-                                        for run in p_2.runs:
-                                            run.font.size = Pt(11)
-                                            run.font.name = 'Times New Roman'
-                                        break
-                                doc_2.save(os.path.abspath(path_ + '\\2 экземпляр' + '\\' + el_))  # Сохраняем
+                        for number_folder in number_instance:
+                            for index, (value1, value2) in enumerate(zip(self.second_copy, ['заключение',
+                                                                                            'протокол',
+                                                                                            'предписание'])):
+                                if value1 and re.findall(value2, el_.lower()):
+                                    for_27.append([text_for_foot, False, False, False, name_el[:-5], False,
+                                                   str(number_folder), False, str(num_pages - 1)])
+                                    shutil.copy2(path_ + '\\' + el_, path_ + '\\' + str(number_folder) + ' экземпляр')
+                                    doc_2 = docx.Document(os.path.abspath(path_ + '\\' + str(number_folder) +
+                                                                          ' экземпляр' + '\\' + el_))
+                                    for p_2 in doc_2.sections[0].first_page_header.paragraphs:
+                                        if re.findall(r'№1', p_2.text):
+                                            text = re.sub(r'№1', '№' + str(number_folder), p_2.text)
+                                            p_2.text = text
+                                            for run in p_2.runs:
+                                                run.font.size = Pt(11)
+                                                run.font.name = 'Times New Roman'
+                                            break
+                                    doc_2.save(os.path.abspath(path_ + '\\' + str(number_folder) +
+                                                               ' экземпляр' + '\\' + el_))  # Сохраняем
                     if self.report_rso:
                         ind = False
                         number_licensee = name_el[:-5].rpartition(' ')[2]
@@ -483,8 +502,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         if ind:
                             index_df = df_report_rso[df_report_rso['Порядковый номер лицензиата']
                                                      == number_licensee].index.to_list()[0]
-                            df_report_rso.iloc[index_df, [ind, ind + 1]] = ['№ ' + text_for_foot + ' от ' + date + ' г.',
-                                                                            num_pages - 1]
+                            df_report_rso.iloc[index_df, [ind, ind + 1]] = ['№ ' + text_for_foot + ' от ' +
+                                                                            date + ' г.', num_pages - 1]
                     percent_val += percent  # Увеличиваем прогресс
                     progress.emit(round(percent_val, 0))  # Посылаем значние в прогресс бар
             if self.report_rso:
@@ -851,12 +870,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                          'Местонахождение документа(номер дела и листа, номер акта на уничтожение'
                                          ' и дата)': [],
                                          'Примечание': []})
+                factor = 3
                 for element in for_27:
                     status.emit('Добавление данных в 27 форму (' + element[4] + ')')  # Сообщение в статус бар
                     num = 0  # Номер столбца
-                    if element[6] == '2':
-                        table_df.loc[(i_ - 3), table_name[6]] = '2'
-                        table_df.loc[i_, table_name[6]] = '№2'
+                    if False not in element:
+                        factor = 3
+                    if element[6] != '1':
+                        if int(element[6]) > 2:
+                            factor += 2
+                        table_df.loc[(i_ - factor), table_name[6]] = element[6]
+                        table_df.loc[i_, table_name[6]] = '№' + element[6]
                         table_df.loc[i_, table_name[7]] = element[8]
                         i_ += 1
                         table_df.loc[i_] = pd.Series([numpy.NaN for i_ in range(0, len(table_name))], index=table_name)
@@ -870,14 +894,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 i_ += 1
                         i_ += 1
                         if re.findall(r'сопроводит', element[4].lower()):
-                            table_df.loc[i_] = pd.Series([numpy.NaN for i_ in range(0, len(table_name))], index=table_name)
+                            table_df.loc[i_] = pd.Series([numpy.NaN for i_ in range(0, len(table_name))],
+                                                         index=table_name)
                             i_ += 1
                             table_df.loc[i_, table_name[6]] = '№2'
                             table_df.loc[i_, table_name[7]] = table_df.loc[(i_ - 2), table_name[7]]
                             i_ += 1
-                            table_df.loc[i_] = pd.Series([numpy.NaN for i_ in range(0, len(table_name))], index=table_name)
+                            table_df.loc[i_] = pd.Series([numpy.NaN for i_ in range(0, len(table_name))],
+                                                         index=table_name)
                         if for_27.index(element) != len(for_27) - 1:
-                            table_df.loc[i_] = pd.Series([numpy.NaN for i_ in range(0, len(table_name))], index=table_name)
+                            table_df.loc[i_] = pd.Series([numpy.NaN for i_ in range(0, len(table_name))],
+                                                         index=table_name)
                             i_ += 1
                     percent_val += percent  # Увеличиваем прогресс
                     progress.emit(round(percent_val, 0))  # Обновляем прогресс бар
@@ -981,7 +1008,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                           self.hdd_number, self.print_people, self.progress,
                                                           self.flag_inventory, self.account_post,
                                                           self.account_signature, self.account_path,
-                                                          self.executor_acc_sheet, self.service, False)
+                                                          self.executor_acc_sheet, self.service, False,
+                                                          self.number_instance)
                     docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
                     for txt_file in docs_txt:
                         shutil.copy(txt_file, path)
@@ -991,7 +1019,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             self.date, self.conclusion, self.executor, self.prescription, self.hdd_number,
                             self.print_people, self.progress, self.flag_inventory,
                             self.account_post, self.account_signature, self.account_path, self.executor_acc_sheet,
-                            self.service, self.path_form_27)
+                            self.service, self.path_form_27, self.number_instance)
                 docs_txt = [file for file in os.listdir(self.path_old) if file[-4:] == '.txt']  # Список txt
                 for txt_file in docs_txt:
                     shutil.copy(txt_file, self.path_new)

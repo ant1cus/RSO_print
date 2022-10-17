@@ -5,6 +5,7 @@ import pathlib
 import re
 import shutil
 import socket
+import time
 import traceback
 import zipfile
 
@@ -31,28 +32,56 @@ class PrintDoc(QThread):  # Поток для печати
     def __init__(self, incoming_data):  # Список значений для работы потока
         QThread.__init__(self)
         # Присваиваем значения
-        self.path_old = incoming_data['path_old']
-        self.account_num_path = incoming_data['account_num_path']
+        self.path_old = incoming_data['path_old_print']
+        self.account_num_path = incoming_data['path_account_num']
         self.add_path_account_num = incoming_data['add_path_account_num']
         self.print_flag = incoming_data['print_flag']
         self.name_printer = incoming_data['name_printer']
-        self.path_form27 = incoming_data['path_form27']
+        self.path_form27 = incoming_data['path_form_27']
         self.print_order = incoming_data['print_order']
         self.service = incoming_data['service']
-        self.path_for_def = incoming_data['path_for_def']
+        self.path_for_def = incoming_data['path_for_default']
         self.logging = incoming_data['logging']
-        self.package = incoming_data['package']
+        self.package = incoming_data['package_']
 
     def run(self):
 
         def print_doc(path_old, account_num_path, add_path_account_num, print_flag, name_printer, path_form27,
                       print_order, service, path_for_def, logging, status, progress):
+
+            def rm(folder_path):
+                try:
+                    while len(os.listdir(folder_path)) != 0:
+                        time.sleep(0.5)
+                        for file_object in os.listdir(folder_path):
+                            flag_ = True
+                            while flag_:
+                                try:
+                                    file_object_path = os.path.join(folder_path, file_object)
+                                    try:
+                                        if os.path.isfile(file_object_path) or os.path.islink(file_object_path):
+                                            os.remove(file_object_path)
+                                        else:
+                                            try:
+                                                shutil.rmtree(file_object_path)
+                                            except FileNotFoundError:
+                                                pass
+                                    except OSError:
+                                        os.remove(folder_path)
+                                    flag_ = False
+                                except BaseException:
+                                    pass
+                except NotADirectoryError:
+                    os.remove(folder_path)
+                time.sleep(0.05)
+                shutil.rmtree(folder_path)
+
             try:  # Ловим ошибку чтобы программа не вылетала молча
                 # Проверка на количество листов и учетных номеров
                 num_of_sheets = 0
                 os.chdir(path_old)  # Меняем рабочую директорию
                 percent_val = 0  # Отсылаемое значение в прогресс бар
-                docs = [i for i in os.listdir('.') if i[-4:] == 'docx' and '~' not in i]  # Список файлов
+                docs = [i for i in os.listdir() if i[-4:] == 'docx' and '~' not in i]  # Список файлов
                 logging.info('Второй сопровод')
                 for el in docs:  # Для второго сопровода
                     if re.findall('сопроводит', el.lower()) or re.findall('запрос', el.lower()):
@@ -71,8 +100,38 @@ class PrintDoc(QThread):  # Поток для печати
                             for run in head.runs:
                                 run.font.size = Pt(11)
                             doc.save(os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx'))
+                            pythoncom.CoInitializeEx(0)
+                            count_file = os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
+                            name_file_pdf = count_file + '.pdf'
+                            self.logging.info('Конвертируем в пдф ' + count_file)
+                            docx2pdf.convert(count_file, name_file_pdf)
+                            input_file_pdf = fitz.open(name_file_pdf)  # Открываем пдф
+                            count_page = input_file_pdf.page_count  # Получаем кол-во страниц
+                            input_file_pdf.close()  # Закрываем
+                            self.logging.info('Удаляем пдф ' + count_file)
+                            os.remove(name_file_pdf)  # Удаляем пдф документ
+                            self.logging.info('Вставляем страницы в ворд ' + count_file)
+                            temp_docx = count_file
+                            temp_zip = count_file + ".zip"
+                            temp_folder = os.path.join(os.getcwd() + '\\', "template")
+                            os.rename(temp_docx, temp_zip)
+                            os.mkdir(os.getcwd() + '\\zip')
+                            with zipfile.ZipFile(temp_zip) as my_document:
+                                my_document.extractall(temp_folder)
+                            pages_xml = os.path.join(temp_folder, "docProps", "app.xml")
+                            string = open(pages_xml, 'r', encoding='utf-8').read()
+                            string = re.sub(r"<Pages>(\w*)</Pages>",
+                                            "<Pages>" + str(count_page) + "</Pages>", string)
+                            with open(pages_xml, "wb") as file_wb:
+                                file_wb.write(string.encode("UTF-8"))
+                            self.logging.info('Получаем ворд из зип ' + count_file)
+                            os.remove(temp_zip)
+                            shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
+                            os.rename(temp_zip, temp_docx)  # rename zip file to docx
+                            rm(temp_folder)
+                            rm(os.getcwd() + '\\zip')
                             break
-                docs = [i for i in os.listdir('.') if i[-4:] == 'docx' and '~' not in i]  # Список файлов
+                docs = [i for i in os.listdir() if i[-4:] == 'docx' and '~' not in i]  # Список файлов
 
                 def sort(input_str):  # Ф-я для сортировка
                     try:
@@ -341,7 +400,7 @@ class PrintDoc(QThread):  # Поток для печати
                                                     break
                                                 else:
                                                     ws.cell(row, 17).value = 'Уч. ном. ' + number
-                                    wb.save(filename=path_form27_file[0])
+                                    wb.save(filename=path_form27.rpartition('\\')[0] + '\\' + path_form27_file[0])
                                     wb.close()
                                 if print_flag == 'Односторонняя':  # Если печать односторонняя - печатаем
                                     status.emit('Печатаем документ ' + str(el))
@@ -519,11 +578,7 @@ class PrintDoc(QThread):  # Поток для печати
                     progress.emit(int(percent_val))  # Посылаем значение в прогресс бар
             except Exception as e:  # Если ошибка
                 self.status.emit('Ошибка')  # Сообщение в статус бар
-                with open(path_for_def / 'log.txt', 'w') as f:  # Запоминаем трейс
-                    print('--------------------------------------', file=f)
-                    print(e, file=f)
-                    print('--------------------------------------', file=f)
-                    print(traceback.format_exc(), file=f)
+                self.logging.error("Ошибка:\n " + str(e) + '\n' + traceback.format_exc())
 
         time_start = datetime.datetime.now()
         self.progress.emit(0)  # Обнуление прогресс бара
@@ -544,18 +599,18 @@ class PrintDoc(QThread):  # Поток для печати
                 ex = print_doc(path_, self.account_num_path, self.add_path_account_num, self.print_flag,
                                self.name_printer, path_form27_, self.print_order, self.service, self.path_for_def,
                                self.logging, self.status, self.progress)
-                # if path_form27_:
-                #     form_27_name(path_form27_)
                 if ex:
                     print(ex)
                     self.messageChanged.emit("ВНИМАНИЕ!", ex)
                     return
         else:
-            print_doc(self.path_old, self.account_num_path, self.add_path_account_num, self.print_flag,
-                      self.name_printer, self.path_form27, self.print_order, self.service, self.path_for_def,
-                      self.logging, self.status, self.progress)
-            # if self.path_form27:
-            #     form_27_name(self.path_form27)
+            ex = print_doc(self.path_old, self.account_num_path, self.add_path_account_num, self.print_flag,
+                           self.name_printer, self.path_form27, self.print_order, self.service, self.path_for_def,
+                           self.logging, self.status, self.progress)
+            if ex:
+                print(ex)
+                self.messageChanged.emit("ВНИМАНИЕ!", ex)
+                return
         self.progress.emit(100)  # Завершаем прогресс бар
         self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
         self.logging.info("\n***********************************************************************************\n")

@@ -44,14 +44,14 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         # Имена на английском и русском
         self.name_eng = ['path_old', 'path_new', 'path_file_num',
                          'classified', 'num_scroll', 'list_item', 'number', 'executor', 'conclusion', 'prescription',
-                         'print_people', 'date', 'executor_acc_sheet',
+                         'print_people', 'date', 'executor_acc_sheet', 'act', 'statement',
                          'account_post', 'account_signature', 'account_path',
                          'firm', 'path_form_27_create',
                          'path_old_print', 'account_numbers', 'path_form_27', 'add_account_num',
                          'HDD_number']
         self.name_rus = ['Путь к исходным файлам', 'Путь к конечным файлам', 'Путь к файлу номеров',
-                         'Гриф секретности', 'Номер экземпляра', 'Пункт перечня', 'Номер', 'Исполнитель', 'Заключение',
-                         'Предписание', 'Печать', 'Дата', 'Исполнитель сопровода',
+                         'Гриф секретности', 'Номер экземпляра', 'Пункт перечня', 'Номер', 'Протокол', 'Заключение',
+                         'Предписание', 'Печать', 'Дата', 'Сопровод', 'Акт', 'Утверждение',
                          'Должность', 'ФИО подпись', 'Путь к описи',
                          'Организация', 'Форма 27 (сохранение)',
                          'Путь к файлам для печати', 'Путь к учетным номерам', 'Форма 27 для печати',
@@ -109,8 +109,6 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
             with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), "r", encoding='utf-8-sig') as f:
                 data = json.load(f)  # Загружаем данные
             self.parent.default_date(data)
-            # self.parent.close()
-            # MainWindow().show()
             self.parent.show()
         else:
             event.accept()

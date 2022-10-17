@@ -6,18 +6,18 @@ import time
 def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df, radioButton_FSTEK_df,
                comboBox_classified, lineEdit_num_scroll, lineEdit_list_item, lineEdit_number, lineEdit_executor,
                lineEdit_conclusion, lineEdit_prescription, lineEdit_print, lineEdit_executor_acc_sheet, label_executor,
-               label_conclusion, label_prescription, label_print, label_executor_acc_sheet, lineEdit_date,
+               label_conclusion, label_prescription, label_print, label_executor_acc_sheet, lineEdit_date, lineEdit_act,
+               lineEdit_statement,
                groupBox_inventory_insert, radioButton_40_num, radioButton_all_doc, lineEdit_account_post,
                lineEdit_account_signature, lineEdit_account_path, hdd_number, groupBox_form27_insert, lineEdit_firm,
-               lineEdit_path_form_27_create, qroupBox_second_copy, checkBox_conclusion, checkBox_protocol,
-               checkBox_preciption, package, action_MO):  # Ф-я для проверки введенных значений
-    def chek(n, e):  # Ф-я для проверки элементов
-        f = 0
-        for elem in e:
-            if n == elem:
-                f = 1
-                return f
-        return f
+               lineEdit_path_form_27_create, qroupBox_instance, lineEdit_number_instance, checkBox_conclusion,
+               checkBox_protocol, checkBox_preciption, package, action_MO):  # Ф-я для проверки введенных значений
+
+    def check(n, e):
+        for el in e:
+            if n == el:
+                return False
+        return True
 
     package_ = True if package.isChecked() else False
     action_MO_ = True if action_MO.isChecked() else False
@@ -100,18 +100,18 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
     # Номер
     number = lineEdit_number.text().strip()
     if not file_num:
-        err_f = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/', 'c', 'с', '-', 'Н', 'С', 'с')
         if number[-1] in ['С', 'с']:
             number = number.replace(number[-1], 'c')
         if not number:
             return ['УПС!', 'Не указан номер']
         for i in number:
-            flag = chek(i, err_f)
-            if not flag:
+            if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/', 'c', 'с', '-', 'Н', 'С', 'с')):
                 return ['УПС!', 'Есть лишние символы в номере']
-        if (re.match(r'\w+/\w+/\w+c', number) is None) and (re.match(r'НС-\w+c', number) is None):
+        if (re.match(r'\w+/\w+/\w+c$', number) is None) and (re.match(r'НС-\w+c$', number) is None):
             return ['УПС!', 'Секретный номер указан неверно']
     # Исполнитель, заключение, предписание, протокол, печать
+    act = lineEdit_act.text().strip()
+    statement = lineEdit_statement.text().strip()
     executor = lineEdit_executor.text().strip()
     conclusion = lineEdit_conclusion.text().strip()
     prescription = lineEdit_prescription.text().strip()
@@ -126,7 +126,7 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
     # Дата
     date = lineEdit_date.text().strip()
     try:
-        valid_date = time.strptime(date, '%d.%m.%Y')
+        time.strptime(date, '%d.%m.%Y')
     except ValueError:
         return ['УПС!', 'Формат даты указан неверно! (необходимый формат: dd.mm.yyyy)']
     account = None
@@ -171,7 +171,35 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             else:
                 return ['УПС!', 'Указанный путь для 27 формы не является директорией']
     second_copy = []
-    if qroupBox_second_copy.isChecked():
+    complect = None
+    if qroupBox_instance.isChecked():
+        number_instance = lineEdit_number_instance.text().strip()
+        for i in number_instance:
+            if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '-', ',', '.')):
+                return ['УПС!', 'Есть лишние символы в номерах экземпляров']
+        complect_num = number_instance.replace(' ', '').replace(',', '.')
+        if complect_num[0] == '.' or complect_num[0] == '-':
+            return ['УПС!', 'Первый символ введён не верно']
+        if complect_num[-1] == '.' or complect_num[-1] == '-':
+            return ['УПС!', 'Последний символ введён не верно']
+        for i in range(len(complect_num)):
+            if complect_num[i] == '.' or complect_num[i] == '-':
+                if complect_num[i + 1] == '.' or complect_num[i + 1] == '-':
+                    return ['УПС!', 'Два разделителя номеров подряд']
+        complect = []
+        for element in complect_num.split('.'):
+            if '-' in element:
+                num1, num2 = int(element.partition('-')[0]), int(element.partition('-')[2])
+                if num1 >= num2:
+                    return ['УПС!', 'Диапазон номеров экземпляров указан не верно']
+                else:
+                    for el in range(num1, num2 + 1):
+                        complect.append(el)
+            else:
+                complect.append(element)
+        complect.sort()
+        if len(complect) != len(set(complect)):
+            return ['УПС!', 'Есть повторения в номерах экземпляров']
         second_copy = [True if i.isChecked() else False for i in [checkBox_conclusion, checkBox_protocol,
                                                                   checkBox_preciption]]
         if all(i is False for i in second_copy):
@@ -182,7 +210,8 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             'executor_acc_sheet': executor_acc_sheet, 'account': account, 'flag_inventory': flag_inventory,
             'account_post': account_post, 'account_signature': account_signature, 'account_path': account_path,
             'firm': firm, 'form_27': form_27, 'second_copy': second_copy, 'service': service, 'hdd_number': hdd_number,
-            'package': package_, 'action_MO': action_MO_}
+            'package': package_, 'action_MO': action_MO_, 'act': act, 'statement': statement,
+            'number_instance': complect}
 
 
 def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, lineEdit_old_print, lineEdit_account_numbers,
@@ -283,6 +312,6 @@ def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, lineEdit_old_print
         return ['УПС!', 'Не выбран принтер']
     print_order = True if checkBox_print_order.isChecked() else False
     return {'path_old_print': path_old_print, 'path_account_num': path_account_num,
-            'add_path_account_num': add_path_account_num, 'print_flag': print_flag, 'print_name': print_name,
+            'add_path_account_num': add_path_account_num, 'print_flag': print_flag, 'name_printer': print_name,
             'path_form_27': path_form_27, 'print_order': print_order, 'service': service,
             'path_for_default': path_for_default, 'package_': package_}

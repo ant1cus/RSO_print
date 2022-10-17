@@ -8,6 +8,7 @@ import Main
 import about
 from Default import DefaultWindow
 from AccountNum import AccountNumWindow
+from NumberInstance import NumberInstance
 from Check import doc_format, doc_print
 from PrintDoc import PrintDoc
 from FormatDoc import FormatDoc
@@ -33,6 +34,11 @@ def about():  # Открываем окно с описанием
 
 def account_number():  # Запускаем окно для создания файла учетных номеров.
     window_add = AccountNumWindow()
+    window_add.exec_()
+
+
+def create_instance(self):  # Запускаем окно для создания экземпляров.
+    window_add = NumberInstance()
     window_add.exec_()
 
 
@@ -65,6 +71,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.lineEdit_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
         # Кнопки в меню
         self.action_default.triggered.connect(self.default_settings)
+        self.action_instance.triggered.connect(create_instance)
         self.action_about.triggered.connect(about)
         self.action_account_number.triggered.connect(account_number)
         # Группа для кнопок принтера
@@ -74,7 +81,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         # Имена в файле
         self.name_eng = ['path_old', 'path_new', 'path_file_num',
                          'classified', 'num_scroll', 'list_item', 'number', 'executor', 'conclusion', 'prescription',
-                         'print_people', 'date', 'executor_acc_sheet',
+                         'print_people', 'date', 'executor_acc_sheet', 'act', 'statement',
                          'account_post', 'account_signature', 'account_path',
                          'firm', 'path_form_27_create',
                          'path_old_print', 'account_numbers', 'path_form_27', 'add_account_num',
@@ -92,7 +99,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.line = [self.lineEdit_path_old, self.lineEdit_path_new, self.lineEdit_path_file_num,
                      self.comboBox_classified, self.lineEdit_num_scroll, self.lineEdit_list_item, self.lineEdit_number,
                      self.lineEdit_executor, self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
-                     self.lineEdit_date, self.lineEdit_executor_acc_sheet,
+                     self.lineEdit_date, self.lineEdit_executor_acc_sheet, self.lineEdit_act, self.lineEdit_statement,
                      self.lineEdit_account_post, self.lineEdit_account_signature, self.lineEdit_path_account,
                      self.lineEdit_firm, self.lineEdit_path_form_27_create,
                      self.lineEdit_path_old_print, self.lineEdit_path_account_numbers, self.lineEdit_path_form_27_print,
@@ -181,12 +188,14 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                             self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
                             self.lineEdit_executor_acc_sheet, self.label_executor, self.label_conclusion,
                             self.label_prescription, self.label_print, self.label_executor_acc_sheet,
-                            self.lineEdit_date, self.groupBox_inventory_insert, self.radioButton_40_num,
+                            self.lineEdit_date, self.lineEdit_act, self.lineEdit_statement,
+                            self.groupBox_inventory_insert, self.radioButton_40_num,
                             self.radioButton_all_doc, self.lineEdit_account_post,
                             self.lineEdit_account_signature, self.lineEdit_path_account, self.hdd_number,
                             self.groupBox_form27_insert, self.lineEdit_firm, self.lineEdit_path_form_27_create,
-                            self.groupBox_second_copy, self.checkBoxd_conclusion, self.checkBox_protocol,
-                            self.checkBox_preciption, self.action_package, self.action_report_MO)
+                            self.groupBox_instance, self.lineEdit_number_instance, self.checkBoxd_conclusion,
+                            self.checkBox_protocol, self.checkBox_preciption, self.action_package,
+                            self.action_report_MO)
         if type(output) == list:
             self.on_message_changed(output[0], output[1])
             return
