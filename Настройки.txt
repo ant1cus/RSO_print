@@ -1,3 +1,16 @@
 ﻿{
+    "data-HDD_number": "29c",
+    "data-classified": "C",
+    "data-conclusion": "derg",
+    "data-date": "30.03.2023",
+    "data-executor_acc_sheet": "qwer",
+    "data-list_item": "gg1",
+    "data-num_scroll": "1",
+    "data-number": "12/13/1c",
+    "data-prescription": "lkj",
+    "data-print_people": "ufk",
+    "data-protocol": "Bv",
+    "insert-path_new": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\конец",
+    "insert-path_old": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\начало",
     "statement": "Шит"
 }

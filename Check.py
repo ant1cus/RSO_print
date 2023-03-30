@@ -4,8 +4,8 @@ import time
 
 
 def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df, radioButton_FSTEK_df,
-               comboBox_classified, lineEdit_num_scroll, lineEdit_list_item, lineEdit_number, lineEdit_executor,
-               lineEdit_conclusion, lineEdit_prescription, lineEdit_print, lineEdit_executor_acc_sheet, label_executor,
+               comboBox_classified, lineEdit_num_scroll, lineEdit_list_item, lineEdit_number, lineEdit_protocol,
+               lineEdit_conclusion, lineEdit_prescription, lineEdit_print, lineEdit_executor_acc_sheet, label_protocol,
                label_conclusion, label_prescription, label_print, label_executor_acc_sheet, lineEdit_date, lineEdit_act,
                lineEdit_statement,
                groupBox_inventory_insert, radioButton_40_num, radioButton_all_doc, lineEdit_account_post,
@@ -14,8 +14,8 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
                checkBox_protocol, checkBox_preciption, package, action_MO):  # Ф-я для проверки введенных значений
 
     def check(n, e):
-        for el in e:
-            if n == el:
+        for symbol in e:
+            if n == symbol:
                 return False
         return True
 
@@ -30,12 +30,10 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             return ['УПС!', 'Папка с исходными документами пуста']
         if package_:
             docs = []
-            error = [i for i in os.listdir(path_old) if os.path.isfile(path_old + '\\' + i)]
-            if error:
-                return ['УПС!', 'В директории для пакетного преобразования присутствуют файлы']
             for folder in os.listdir(path_old):
-                # Ошибка если есть файлы старого формата
-                docs = docs + [i for i in os.listdir(path_old + '\\' + folder) if i[-3:] == 'doc']
+                if os.path.isdir(path_old + '\\' + folder):
+                    # Ошибка если есть файлы старого формата
+                    docs += [i for i in os.listdir(path_old + '\\' + folder) if i[-3:] == 'doc']
 
         else:
             error = [i for i in os.listdir(path_old) if os.path.isdir(path_old + '\\' + i) and
@@ -77,11 +75,10 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
     # Ведомство
     if radioButton_FSB_df.isChecked():
         service = True
+    elif radioButton_FSTEK_df.isChecked():
+        service = False
     else:
-        if radioButton_FSTEK_df.isChecked():
-            service = False
-        else:
-            return ['УПС!', 'Не выбрано ведомство для вставки колонтитулов']
+        return ['УПС!', 'Не выбрано ведомство для вставки колонтитулов']
     # Гриф секретности
     class_ = {'ДСП': 'Для служебного пользования', 'С': 'Секретно', 'СС': 'Совершенно секретно',
               'ОВ': 'Особой важности'}
@@ -112,14 +109,14 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
     # Исполнитель, заключение, предписание, протокол, печать
     act = lineEdit_act.text().strip()
     statement = lineEdit_statement.text().strip()
-    executor = lineEdit_executor.text().strip()
+    protocol = lineEdit_protocol.text().strip()
     conclusion = lineEdit_conclusion.text().strip()
     prescription = lineEdit_prescription.text().strip()
     print_people = lineEdit_print.text().strip()
     executor_acc_sheet = lineEdit_executor_acc_sheet.text().strip()
-    list_label = [label_executor, label_conclusion, label_prescription, label_print, label_executor_acc_sheet]
+    list_label = [label_protocol, label_conclusion, label_prescription, label_print, label_executor_acc_sheet]
     i = 0
-    for element in [executor, conclusion, prescription, print_people, executor_acc_sheet]:
+    for element in [protocol, conclusion, prescription, print_people, executor_acc_sheet]:
         if not element:
             return ['УПС!', 'Не указан(а) ' + list_label[i].text()]
         i += 1
@@ -205,7 +202,7 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
         if all(i is False for i in second_copy):
             return ['УПС!', 'Не выбран ни один документ для второго экземпляра']
     return {'path_old': path_old, 'path_new': path_new, 'file_num': file_num, 'classified': classified,
-            'num_scroll': num_scroll, 'list_item': list_item, 'number': number, 'executor': executor,
+            'num_scroll': num_scroll, 'list_item': list_item, 'number': number, 'protocol': protocol,
             'conclusion': conclusion, 'prescription': prescription, 'print_people': print_people, 'date': date,
             'executor_acc_sheet': executor_acc_sheet, 'account': account, 'flag_inventory': flag_inventory,
             'account_post': account_post, 'account_signature': account_signature, 'account_path': account_path,
@@ -214,18 +211,22 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             'number_instance': complect}
 
 
-def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, lineEdit_old_print, lineEdit_account_numbers,
+def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, checkBox_conclusion_print, checkBox_protocol_print,
+              checkBox_preciption_print, lineEdit_old_print, lineEdit_account_numbers,
               checkBox_add_account_numbers, lineEdit_add_account_numbers, checkBox_form_27, lineEdit_path_form_27_print,
               button_gr, lineEdit_printer, checkBox_print_order, path_for_default, package):
     # Ведомство
     package_ = True if package.isChecked() else False
     if radioButton_FSB_print.isChecked():
         service = True
+    elif radioButton_FSTEK_print.isChecked():
+        service = False
     else:
-        if radioButton_FSTEK_print.isChecked():
-            service = False
-        else:
-            return ['УПС!', 'Не выбрано ведомство при печати документов']
+        return ['УПС!', 'Не выбрано ведомство при печати документов']
+    document_list = {i: True if j.isChecked() else False for i, j in zip(['заключение', 'протокол', 'предписание'],
+                                                                         [checkBox_conclusion_print,
+                                                                          checkBox_protocol_print,
+                                                                          checkBox_preciption_print])}
     path_old_print = lineEdit_old_print.text().strip()
     if not path_old_print:
         return ['УПС!', 'Путь к исходным документам для печати пуст']
@@ -314,4 +315,4 @@ def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, lineEdit_old_print
     return {'path_old_print': path_old_print, 'path_account_num': path_account_num,
             'add_path_account_num': add_path_account_num, 'print_flag': print_flag, 'name_printer': print_name,
             'path_form_27': path_form_27, 'print_order': print_order, 'service': service,
-            'path_for_default': path_for_default, 'package_': package_}
+            'path_for_default': path_for_default, 'package_': package_, 'document_list': document_list}

@@ -38,7 +38,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.num_scroll = incoming_data['num_scroll']
         self.list_item = incoming_data['list_item']
         self.number = incoming_data['number']
-        self.executor = incoming_data['executor']
+        self.protocol = incoming_data['protocol']
         self.conclusion = incoming_data['conclusion']
         self.prescription = incoming_data['prescription']
         self.print_people = incoming_data['print_people']
@@ -178,8 +178,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 # Выравниваем по левому краю
                 doc_.sections[0].footer.paragraphs[0].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
                 doc_.add_section()  # Добавляем последнюю страницу
-                last_ = doc_.sections[
-                    len(doc_.sections) - 1].first_page_header  # Колонтитул для последней страницы
+                last_ = doc_.sections[len(doc_.sections) - 1].first_page_header  # Колонтитул для последней страницы
                 last_.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
                 foot_ = doc_.sections[len(doc_.sections) - 1].first_page_footer  # Нижний колонтитул
                 foot_.is_linked_to_previous = False  # Отвязываем
@@ -192,7 +191,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     footer_style.font.size = Pt(pt_count)
                     footer_style.font.name = 'Times New Roman'
                 if fso_:
-                    if 'заключение' in name_file_.lower():
+                    if 'заключение' in name_file_.lower() or 'акт' in name_file_.lower():
                         path_new = path_new + '\\' + 'Материалы по специальной проверке технических средств'
                     else:
                         path_new = path_new + '\\' + 'Материалы по специальным исследованиям технических средств'
@@ -220,7 +219,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 for parag_ in docum.paragraphs:
                     if re.findall(r'date', parag_.text):
                         text_date = re.sub(r'date', "«{}» {} {} г.".format(date.partition('.')[0],
-                                                                           RU_MONTH_VALUES[int(date.partition('.')[2].partition('.')[0])],
+                                                                           RU_MONTH_VALUES[int(
+                                                                               date.partition('.')[2].partition('.')[
+                                                                                   0])],
                                                                            date.rpartition('.')[2]),
                                            parag_.text)
                         parag_.text = text_date
@@ -237,6 +238,14 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 if os.path.isdir(folder_):
                     fso = True
                     break
+
+            def sort(input_str):  # Ф-я для сортировка
+
+                try:
+                    return float(input_str.partition('.')[2][:-5])
+                except ValueError:
+                    return 1
+
             if fso:
                 docs = {}
                 docs_not = {}
@@ -246,13 +255,22 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             self.messageChanged.emit('УПС!', 'Название папки «Материалы по специальной проверке'
                                                              ' технических средств» написано с ошибками')
                             return
-                        docs[os.listdir(path_old_ + '\\' + folder_)[0]] = path_old_ + '\\' + folder_
+                        file = os.listdir(path_old_ + '\\' + folder_)
+                        file.sort(key=sort)  # Сортировка
+                        file = natsorted(file)
+                        for name_element in ['акт', 'заключение']:
+                            for element in file:
+                                if name_element in element.lower():
+                                    docs[element] = path_old_ + '\\' + folder_
+                        # docs[os.listdir(path_old_ + '\\' + folder_)[0]] = path_old_ + '\\' + folder_
                     elif 'исследованиям' in folder_.lower():
                         if folder_ != 'Материалы по специальным исследованиям технических средств':
                             self.messageChanged.emit('УПС!', 'Название папки «Материалы по специальным исследованиям'
                                                              ' технических средств» написано с ошибками')
                             return
                         file = os.listdir(path_old_ + '\\' + folder_)
+                        file.sort(key=sort)  # Сортировка
+                        file = natsorted(file)
                         for name_element in ['протокол', 'предписание']:
                             for element in file:
                                 if name_element in element.lower():
@@ -267,17 +285,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     if 'сопроводит' in element.lower():
                         docs[element] = path_old_
                 docx_for_progress = len(docs)
-
             else:
                 docs = [file for file in os.listdir() if file[-4:] == 'docx']  # Список документов
-
-                def sort(input_str):  # Ф-я для сортировка
-
-                    try:
-                        return float(input_str.partition('.')[2][:-5])
-                    except ValueError:
-                        return 1
-
                 docs.sort(key=sort)  # Сортировка
                 docs = natsorted(docs)
                 docs_ = [j_ for i_ in
@@ -312,11 +321,11 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             if self.report_rso:
                 file_mo = [mo for mo in os.listdir(path_old_) if mo[-3:] == 'txt' and 'F19' in mo]
                 df_report_rso = pd.read_csv(path_old_ + '\\' + file_mo, delimiter='|', encoding='ANSI', names=[
-                                                    'Порядковый номер лицензиата',
-                                                    'Серийный номер комплекта',
-                                                    'Серийный номер системного блока', 'удалить'])
+                    'Порядковый номер лицензиата',
+                    'Серийный номер комплекта',
+                    'Серийный номер системного блока', 'удалить'])
                 df_report_rso['Порядковый номер лицензиата'] = df_report_rso['Порядковый номер лицензиата'].astype(str)
-                df_report_rso['№'] = np.arange(1, 1+len(df_report_rso))
+                df_report_rso['№'] = np.arange(1, 1 + len(df_report_rso))
                 df_report_rso = df_report_rso.reindex(columns=['№',
                                                                'Порядковый номер лицензиата',
                                                                'Серийный номер комплекта',
@@ -399,7 +408,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         exec_people = executor
                         change_date(doc, False)
                     elif re.findall(r'предписание', name_el.lower()):
-                        x = name_el.rpartition('.')[0].partition(' ')[2]
+                        x = name_el.rpartition('.')[0].rpartition(' ')[2]
+                        print(name_protocol)
                         if name_protocol:
                             protocol_num_text = 'уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
                                                 ' от ' + date if protocol[name_protocol + ' ' + x + '.docx'] else False
@@ -410,7 +420,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
                                                       ' от ' + date
                             else:
-                                conclusion_num_text = 'уч. № ' +\
+                                conclusion_num_text = 'уч. № ' + \
                                                       str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
                                                       ' от ' + date
                         else:
@@ -422,7 +432,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     if re.findall(r'\[ЗАКЛНОМ]', p.text):
                                         text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
                                         p.text = text
-                                        doc.paragraphs[val_p].paragraph_format.alignment =\
+                                        doc.paragraphs[val_p].paragraph_format.alignment = \
                                             WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                         for run in p.runs:
                                             run.font.bold = False
@@ -435,7 +445,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     if re.findall(r'\[ПРОТНОМ]', p.text):
                                         text = re.sub(r'\[ПРОТНОМ]', protocol_num_text, p.text)
                                         p.text = text
-                                        doc.paragraphs[val_p].paragraph_format.alignment =\
+                                        doc.paragraphs[val_p].paragraph_format.alignment = \
                                             WD_PARAGRAPH_ALIGNMENT.JUSTIFY
                                         for run in p.runs:
                                             run.font.size = Pt(pt_num)
@@ -463,22 +473,40 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     else:
                         num_pages = pages_count(name_el, path_)
                     for_27.append([text_for_foot, date, classified, firm, name_el[:-5], executor, '1',
-                                   '№1', str(num_pages - 1)])
+                                   '№ 1', str(num_pages - 1)])
                     if account:  # Если активирована опись добавляем
                         dict_40.append({name_el: [classified, text_for_foot, num_scroll, str(num_pages - 1)]})
                     if not file_num:  # Если нет файла номеров
                         num_2 = str(int(num_2) + 1)  # Увеличиваем значение для учетного номера
                     if self.second_copy:
                         for number_folder in number_instance:
-                            for index, (value1, value2) in enumerate(zip(self.second_copy, ['заключение',
-                                                                                            'протокол',
-                                                                                            'предписание'])):
+                            if fso:
+                                documents = ['акт', 'заключение', 'протокол', 'предписание']
+                                if self.second_copy[0] and len(self.second_copy) == 3:
+                                    self.second_copy.insert(0, True)
+                                path_start = path_to_file
+                                if 'заключение' in name_el.lower() or 'акт' in name_el.lower():
+                                    path_for_copy = path_to_file.rpartition('\\')[0] + \
+                                                    '\\' + str(number_folder) + ' экземпляр' + '\\' + \
+                                                    'Материалы по специальной проверке технических средств'
+                                else:
+                                    path_for_copy = path_to_file.rpartition('\\')[0] + \
+                                                    '\\' + str(number_folder) + ' экземпляр' + '\\' + \
+                                                    'Материалы по специальным исследованиям технических средств'
+                                try:
+                                    os.mkdir(path_for_copy)
+                                except FileExistsError:
+                                    pass
+                            else:
+                                documents = ['заключение', 'протокол', 'предписание']
+                                path_start = path_
+                                path_for_copy = path_ + '\\' + str(number_folder) + ' экземпляр'
+                            for index, (value1, value2) in enumerate(zip(self.second_copy, documents)):
                                 if value1 and re.findall(value2, el_.lower()):
                                     for_27.append([text_for_foot, False, False, False, name_el[:-5], False,
-                                                   str(number_folder), False, str(num_pages - 1)])
-                                    shutil.copy2(path_ + '\\' + el_, path_ + '\\' + str(number_folder) + ' экземпляр')
-                                    doc_2 = docx.Document(os.path.abspath(path_ + '\\' + str(number_folder) +
-                                                                          ' экземпляр' + '\\' + el_))
+                                                   '1', '№ ' + str(number_folder), str(num_pages - 1)])
+                                    shutil.copy2(path_start + '\\' + el_, path_for_copy)
+                                    doc_2 = docx.Document(os.path.abspath(path_for_copy + '\\' + el_))
                                     for p_2 in doc_2.sections[0].first_page_header.paragraphs:
                                         if re.findall(r'№1', p_2.text):
                                             text = re.sub(r'№1', '№' + str(number_folder), p_2.text)
@@ -487,8 +515,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                 run.font.size = Pt(11)
                                                 run.font.name = 'Times New Roman'
                                             break
-                                    doc_2.save(os.path.abspath(path_ + '\\' + str(number_folder) +
-                                                               ' экземпляр' + '\\' + el_))  # Сохраняем
+                                    for p_2 in doc_2.sections[len(doc_2.sections) - 1].first_page_footer.paragraphs:
+                                        if re.findall(r'Отп. 1 экз. в адрес', p_2.text):
+                                            text = re.sub(r'Отп. 1 экз. в адрес',
+                                                          'Отп. ' + str(number_folder) + ' экз. в адрес',
+                                                          p_2.text)
+                                            p_2.text = text
+                                            for run in p_2.runs:
+                                                run.font.size = Pt(11)
+                                                run.font.name = 'Times New Roman'
+                                            break
+                                    doc_2.save(os.path.abspath(path_for_copy + '\\' + el_))  # Сохраняем
                     if self.report_rso:
                         ind = False
                         number_licensee = name_el[:-5].rpartition(' ')[2]
@@ -512,7 +549,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 df_report_rso['Сумма листов на комплект'] = df_report_rso[['Кол-во листов закл.',
                                                                            'Кол-во листов прот.',
                                                                            'Кол-во листов пред.']].sum(axis=1)
-                df_report_rso.to_excel(self.path_new + '\\Отчёт для МО.xlsx', sheet_name='Отчётная таблица', index=False)
+                df_report_rso.to_excel(self.path_new + '\\Отчёт для МО.xlsx', sheet_name='Отчётная таблица',
+                                       index=False)
                 wb_to_rso = openpyxl.load_workbook(self.path_new + '\\Отчёт для МО.xlsx')
                 ws_to_rso = wb_to_rso.active
                 thin = openpyxl.styles.Side(border_style="thin", color="000000")
@@ -543,7 +581,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 ws_to_rso.cell(row, col).alignment = openpyxl.styles.Alignment(horizontal="left",
                                                                                                vertical="center")
                 wb_to_rso.save(self.path_new + '\\Отчёт для МО.xlsx')
-            if text_for_foot:
+            if text_for_foot and num_1 and num_2:
                 if '/' in num_1:
                     num_1 = text_for_foot.rpartition('/')[0] + '/'
                 else:
@@ -581,7 +619,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     num_pages = pages_count('Форма 3.docx', path_old)
                     if firm:
                         for_27.append([text_for_foot, date, classified, firm, 'Форма 3.docx', executor,
-                                       '1', '№1', str(num_pages - 1)])
+                                       '1', '№ 1', str(num_pages - 1)])
 
             # Если необходимо печатать опись
             if account:  # Если активирована опись
@@ -693,21 +731,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         number = doc.sections[0].first_page_footer.paragraphs[0].text
                         num_pages = pages_count(el, account_path)
                         if firm:
-                            for_27.append([number, date, classified, firm, el, executor, '1', '№1',
+                            for_27.append([number, date, classified, firm, el, executor, '1', '№ 1',
                                            str(num_pages - 1)])
 
             # Добавление сопровода
             if accompanying_doc:
                 for acc_doc in accompanying_doc:
                     logging.info("Добавляем " + acc_doc)
-                    if not text_for_foot:
-                        text_for_foot = num_1 + num_2 + 'c'
+                    if file_num:  # Если есть файл номеров
+                        text_for_foot = dict_file[acc_doc.rpartition('.')[0]][0]  # Текст для нижнего колонтитула
+                        date = dict_file[acc_doc.rpartition('.')[0]][1]  # Дата
                     else:
-                        if '/' in num_1:  # Добавляем номер для описи
-                            num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
+                        if not text_for_foot:
+                            text_for_foot = num_1 + num_2 + 'c'
                         else:
-                            num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
-                        text_for_foot = num_1 + num_2 + 'c'
+                            if '/' in num_1:  # Добавляем номер для описи
+                                num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
+                            else:
+                                num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
+                            text_for_foot = num_1 + num_2 + 'c'
                     status.emit('Добавление данных в ' + acc_doc)  # Сообщение в статус бар
                     acc_doc_path = os.path.abspath(path_ + '\\' + os.path.basename(acc_doc))
                     shutil.copy(path_old_ + '\\' + acc_doc, path_ + '\\')
@@ -777,20 +819,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 for file in for_27:
                                     if file[4].partition(' ')[0] in ness_file:
                                         page = 'листе' if int(file[8]) == 1 else 'листах'
-                                        text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз. № 1, на ' + \
-                                               file[8] + ' ' + page + ' , секретно, только в адрес.'
-                                # for file in docs_:
-                                    # with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
-                                    #     xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
-                                    #     pages = re.findall(r'<Pages>(\w*)</Pages>',
-                                    #                        xml_content.decode())[0]  # Ищем кол-во страниц
-                                    # page = 'листе' if int(pages) == 1 else 'листах'
-                                    # doc_old = docx.Document(path_ + '\\' + file)  # Открываем
-                                    # footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-                                    # foot = footer.paragraphs[0]  # Параграф
-                                    # foot_text = foot.text  # Текст нижнего колонитула
-                                    # text = file.partition(' ')[0] + ', уч. № ' + foot_text + ', экз. № 1, на ' + \
-                                    #        str(int(pages) - 1) + ' ' + page + ' , секретно, только в адрес.'
+                                        text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз.' + file[7] + \
+                                               ' , на ' + file[8] + ' ' + page + ' , секретно, только в адрес.'
                                         p.add_run('\n' + str(numbering) + '. ' + text)
                                         p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
                                         numbering += 1
@@ -808,7 +838,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.name = 'Times New Roman'
                     doc.add_section()  # Добавляем последнюю страницу
                     if para:
-                        last = doc.sections[len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
+                        last = doc.sections[
+                            len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
                         last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
                         foot = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
                         foot.is_linked_to_previous = False  # Отвязываем
@@ -829,11 +860,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     if firm:
                         for_27.append([text_for_foot, date, classified, firm,
                                        acc_doc_path.rpartition('\\')[2][:-5],
-                                       executor_acc_sheet, '1', '№1', str(num_pages - 1)])
-            if '/' in num_1:  # Добавляем номер для описи
-                num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Увеличиваем номер
-            else:
-                num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
+                                       executor_acc_sheet, '1', '№ 1', str(num_pages - 1)])
+            if not file_num:
+                if '/' in num_1:  # Добавляем номер для возврата
+                    num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Увеличиваем номер
+                else:
+                    num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
             # Добавляем форму 27
             if firm:
                 logging.info("Формируем форму 27")
@@ -964,6 +996,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 path_f27 = path_form_27 + '\\Форма 27.xlsx' if path_form_27 else path_ + '\\Форма 27.xlsx'
                 form_27_name(path_f27)
             return num_1, num_2
+
         time_start = datetime.datetime.now()
         self.progress.emit(0)  # Обновляем статус бар
         self.status.emit('Начинаем')
@@ -976,11 +1009,11 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 ws = wb.active  # Делаем активным первый лист.
                 for i in range(1, ws.max_row + 1):  # Пока есть значения
                     if ws.cell(i, 1).value:
-                        cv = ws.cell(i, 1).value.partition(' ')[0].lower()  # Получаем значние
-                        if cv == 'заключение' or cv == 'предписание' or cv == 'протокол' or cv == 'форма' \
-                                or cv == 'опись' or cv == 'сопроводит':
-                            dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c',
-                                                              ws.cell(i, 3).value.strftime("%d.%m.%Y")]  # Делаем список
+                        # cv = ws.cell(i, 1).value.partition(' ')[0].lower()  # Получаем значние
+                        # if cv == 'заключение' or cv == 'предписание' or cv == 'протокол' or cv == 'форма' \
+                        #         or cv == 'опись' or cv == 'сопроводит' or cv == 'акт':
+                        dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c',
+                                                          ws.cell(i, 3).value.strftime("%d.%m.%Y")]  # Делаем список
             else:  # Если нет файла номеров
                 if re.match(r'\w+/\w+/\w+c', self.number):
                     self.num_1 = self.number.rpartition('/')[0] + '/'
@@ -991,32 +1024,38 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             self.logging.info("Созданы секретные номера")
             if self.package:
                 for folder in os.listdir(self.path_old):
-                    os.chdir(self.path_old + '\\' + folder)
-                    path_old = self.path_old + '\\' + folder
-                    path = self.path_new + '\\' + folder
-                    try:
-                        os.mkdir(path)
-                    except FileExistsError:
-                        self.status.emit('Ошибка')  # Сообщение в статус бар
-                        self.messageChanged.emit('УПС!', 'В конечной папке уже присутствует папка «'
-                                                 + path.rpartition('\\')[2] + '». Удалите или переместите её.')
-                        return
-                    self.num_1, self. num_2 = format_doc_(path_old, self.classified, self.list_item, self.num_scroll,
-                                                          self.account, self.firm, self.logging, self.status, path,
-                                                          self.file_num, self.num_1, self.num_2, self.date,
-                                                          self.conclusion, self.executor, self.prescription,
-                                                          self.hdd_number, self.print_people, self.progress,
-                                                          self.flag_inventory, self.account_post,
-                                                          self.account_signature, self.account_path,
-                                                          self.executor_acc_sheet, self.service, False,
-                                                          self.number_instance)
+                    if os.path.isdir(self.path_old + '\\' + folder):
+                        os.chdir(self.path_old + '\\' + folder)
+                        path_old = self.path_old + '\\' + folder
+                        path = self.path_new + '\\' + folder
+                        try:
+                            os.mkdir(path)
+                        except FileExistsError:
+                            self.status.emit('Ошибка')  # Сообщение в статус бар
+                            self.messageChanged.emit('УПС!', 'В конечной папке уже присутствует папка «'
+                                                     + path.rpartition('\\')[2] + '». Удалите или переместите её.')
+                            return
+                    else:
+                        os.chdir(self.path_old)
+                        path_old = self.path_old
+                        path = self.path_new
+                    self.num_1, self.num_2 = format_doc_(path_old, self.classified, self.list_item,
+                                                         self.num_scroll,
+                                                         self.account, self.firm, self.logging, self.status, path,
+                                                         self.file_num, self.num_1, self.num_2, self.date,
+                                                         self.conclusion, self.protocol, self.prescription,
+                                                         self.hdd_number, self.print_people, self.progress,
+                                                         self.flag_inventory, self.account_post,
+                                                         self.account_signature, self.account_path,
+                                                         self.executor_acc_sheet, self.service, False,
+                                                         self.number_instance)
                     docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
                     for txt_file in docs_txt:
                         shutil.copy(txt_file, path)
             else:
                 format_doc_(self.path_old, self.classified, self.list_item, self.num_scroll, self.account,
                             self.firm, self.logging, self.status, self.path_new, self.file_num, self.num_1, self.num_2,
-                            self.date, self.conclusion, self.executor, self.prescription, self.hdd_number,
+                            self.date, self.conclusion, self.protocol, self.prescription, self.hdd_number,
                             self.print_people, self.progress, self.flag_inventory,
                             self.account_post, self.account_signature, self.account_path, self.executor_acc_sheet,
                             self.service, self.path_form_27, self.number_instance)

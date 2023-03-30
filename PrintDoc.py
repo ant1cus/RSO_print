@@ -43,6 +43,7 @@ class PrintDoc(QThread):  # Поток для печати
         self.path_for_def = incoming_data['path_for_default']
         self.logging = incoming_data['logging']
         self.package = incoming_data['package_']
+        self.document_list = incoming_data['document_list']
 
     def run(self):
 
@@ -75,6 +76,39 @@ class PrintDoc(QThread):  # Поток для печати
                     os.remove(folder_path)
                 time.sleep(0.05)
                 shutil.rmtree(folder_path)
+
+            # def list_count(name_doc):
+            #     pythoncom.CoInitializeEx(0)
+            #     name_doc_start = os.path.abspath(os.getcwd() + '\\' + name_doc)
+            #     name_doc_file_pdf = name_doc_start + '.pdf'
+            #     self.logging.info('Конвертируем в пдф ' + name_doc_start)
+            #     docx2pdf.convert(name_doc_start, name_doc_file_pdf)
+            #     doc_file_pdf = fitz.open(name_doc_file_pdf)  # Открываем пдф
+            #     doc_page = doc_file_pdf.page_count  # Получаем кол-во страниц
+            #     doc_file_pdf.close()  # Закрываем
+            #     self.logging.info('Удаляем пдф ' + name_doc_start)
+            #     os.remove(name_doc_file_pdf)  # Удаляем пдф документ
+            #     self.logging.info('Вставляем страницы в ворд ' + name_doc_start)
+            #     temp_docx_ = name_doc_start
+            #     temp_zip_ = name_doc_start + ".zip"
+            #     temp_folder_ = os.path.join(os.getcwd() + '\\', "template")
+            #     os.rename(temp_docx_, temp_zip_)
+            #     os.mkdir(os.getcwd() + '\\zip')
+            #     with zipfile.ZipFile(temp_zip_) as my_document_:
+            #         my_document_.extractall(temp_folder_)
+            #     pages_xml_ = os.path.join(temp_folder_, "docProps", "app.xml")
+            #     string_ = open(pages_xml_, 'r', encoding='utf-8').read()
+            #     string_ = re.sub(r"<Pages>(\w*)</Pages>",
+            #                      "<Pages>" + str(doc_page) + "</Pages>", string_)
+            #     with open(pages_xml_, "wb") as file_wb_:
+            #         file_wb_.write(string_.encode("UTF-8"))
+            #     self.logging.info('Получаем ворд из зип ' + name_doc_start)
+            #     os.remove(temp_zip_)
+            #     shutil.make_archive(temp_zip_.replace(".zip", ""), 'zip', temp_folder_)
+            #     os.rename(temp_zip_, temp_docx_)  # rename zip file to docx
+            #     rm(temp_folder_)
+            #     rm(os.getcwd() + '\\zip')
+            #     return doc_page
 
             try:  # Ловим ошибку чтобы программа не вылетала молча
                 # Проверка на количество листов и учетных номеров
@@ -194,18 +228,34 @@ class PrintDoc(QThread):  # Поток для печати
                     with zipfile.ZipFile(os.getcwd() + '\\' + dp) as my_doc:
                         xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
                         pages_ = re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())  # Ищем кол-во страниц
-                        ns = int(pages_[0]) - 1 if int(pages_[0]) > 1 else int(pages_[0])  # Общее кол-во страниц
+                        if int(pages_[0]) > 1:
+                            ns = int(pages_[0]) - 1
+                        else:
+                            ns = int(pages_[0])
+                            # ns = list_count(dp)  # Для проверки, вдруг изменилось количество страниц
                     return ns
 
                 for doc_path in docs:
                     if doc_path.endswith('.docx'):
                         if service:
-                            if re.findall('протокол', doc_path.lower()):
+                            if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
+                                continue
+                            elif re.findall('протокол', doc_path.lower()) and self.document_list['протокол'] is False:
+                                continue
+                            elif re.findall('предписание', doc_path.lower())\
+                                    and self.document_list['предписание'] is False:
                                 continue
                             else:
                                 num_of_sheets += list_doc(doc_path)
                         else:
-                            if re.findall('приложение', doc_path.lower()):
+                            if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
+                                continue
+                            elif re.findall('протокол', doc_path.lower()) and self.document_list['протокол'] is False:
+                                continue
+                            elif re.findall('предписание', doc_path.lower())\
+                                    and self.document_list['предписание'] is False:
+                                continue
+                            elif re.findall('приложение', doc_path.lower()):
                                 continue
                             else:
                                 num_of_sheets += list_doc(doc_path)
@@ -296,7 +346,6 @@ class PrintDoc(QThread):  # Поток для печати
                 user_name = getpass.getuser()
                 printer = QtPrintSupport.QPrinterInfo.defaultPrinterName()
                 computer_name = socket.gethostname()
-                print(docs)
                 logging.info('Номера для печати')
                 logging.info(len(acc_num_for_print))
                 logging.info(acc_num_for_print)
@@ -340,10 +389,20 @@ class PrintDoc(QThread):  # Поток для печати
                                     elif print_jobs:  # Если в очереди что-то есть
                                         jobs = 2
                             else:
-                                if service:
-                                    if re.findall('протокол', el.lower()):
-                                        flag_for_exit = False
-                                        continue
+                                if re.findall('заключение', el.lower()) and self.document_list['заключение'] is False:
+                                    flag_for_exit = False
+                                    continue
+                                elif re.findall('протокол', el.lower()) and self.document_list['протокол'] is False:
+                                    flag_for_exit = False
+                                    continue
+                                elif re.findall('предписание', el.lower()) and\
+                                        self.document_list['предписание'] is False:
+                                    flag_for_exit = False
+                                    continue
+                                # if service:
+                                #     if re.findall('протокол', el.lower()):
+                                #         flag_for_exit = False
+                                #         continue
                                 input_file = fitz.open(path_old + '\\' + name_pdf)  # Открываем пдф
                                 num_start = acc_num_for_print[num_for_print]
                                 logging.info('Вставляем номера листов ' + str(el))

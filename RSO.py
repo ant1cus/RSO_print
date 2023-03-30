@@ -37,7 +37,7 @@ def account_number():  # Запускаем окно для создания ф�
     window_add.exec_()
 
 
-def create_instance(self):  # Запускаем окно для создания экземпляров.
+def create_instance():  # Запускаем окно для создания экземпляров.
     window_add = NumberInstance()
     window_add.exec_()
 
@@ -79,13 +79,31 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         # Если изменяем начальный номер
         self.path_for_default = pathlib.Path.cwd()  # Путь для файла настроек
         # Имена в файле
-        self.name_eng = ['path_old', 'path_new', 'path_file_num',
-                         'classified', 'num_scroll', 'list_item', 'number', 'executor', 'conclusion', 'prescription',
-                         'print_people', 'date', 'executor_acc_sheet', 'act', 'statement',
-                         'account_post', 'account_signature', 'account_path',
-                         'firm', 'path_form_27_create',
-                         'path_old_print', 'account_numbers', 'path_form_27', 'add_account_num',
-                         'HDD_number']
+        self.list = {'insert-path_old': ['Путь к исходным файлам', self.lineEdit_path_old],
+                     'insert-path_new': ['Путь к конечным файлам', self.lineEdit_path_new],
+                     'insert-path_file_num': ['Путь к файлу номеров', self.lineEdit_path_file_num],
+                     'data-classified': ['Гриф секретности', self.comboBox_classified],
+                     'data-num_scroll': ['Номер экземпляра', self.lineEdit_num_scroll],
+                     'data-list_item': ['Пункт перечня', self.lineEdit_list_item],
+                     'data-number': ['Номер', self.lineEdit_number],
+                     'data-protocol': ['Протокол', self.lineEdit_protocol],
+                     'data-conclusion': ['Заключение', self.lineEdit_conclusion],
+                     'data-prescription': ['Предписание', self.lineEdit_prescription],
+                     'data-print_people': ['Печать', self.lineEdit_print],
+                     'data-date': ['Дата', self.lineEdit_date],
+                     'data-executor_acc_sheet': ['Сопровод', self.lineEdit_executor_acc_sheet],
+                     'data-act': ['Акт', self.lineEdit_act],
+                     'data-statement': ['Утверждение', self.lineEdit_statement],
+                     'account-account_post': ['Должность', self.lineEdit_account_post],
+                     'account-account_signature': ['ФИО подпись', self.lineEdit_account_signature],
+                     'account-account_path': ['Путь к описи', self.lineEdit_path_account],
+                     'form27-firm': ['Организация', self.lineEdit_firm],
+                     'form27-path_form_27_create': ['Форма 27 (вставка)', self.lineEdit_path_form_27_create],
+                     'print-path_old_print': ['Путь к файлам для печати', self.lineEdit_path_old_print],
+                     'print-account_numbers': ['Путь к учетным номерам', self.lineEdit_path_account_numbers],
+                     'print-path_form_27': ['Форма 27 (печать)', self.lineEdit_path_form_27_print],
+                     'print-add_account_num': ['Путь к доп. файлу уч. ном.', self.lineEdit_path_add_account_numbers],
+                     'data-HDD_number': 'Номер НЖМД'}
         # Грузим значения по умолчанию
         try:
             with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), "r", encoding='utf-8-sig') as f:
@@ -94,16 +112,6 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), "w", encoding='utf-8-sig') as f:
                 json.dump({}, f, ensure_ascii=False, sort_keys=True, indent=4)
                 data = {}
-
-        # Линии для заполнения
-        self.line = [self.lineEdit_path_old, self.lineEdit_path_new, self.lineEdit_path_file_num,
-                     self.comboBox_classified, self.lineEdit_num_scroll, self.lineEdit_list_item, self.lineEdit_number,
-                     self.lineEdit_executor, self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
-                     self.lineEdit_date, self.lineEdit_executor_acc_sheet, self.lineEdit_act, self.lineEdit_statement,
-                     self.lineEdit_account_post, self.lineEdit_account_signature, self.lineEdit_path_account,
-                     self.lineEdit_firm, self.lineEdit_path_form_27_create,
-                     self.lineEdit_path_old_print, self.lineEdit_path_account_numbers, self.lineEdit_path_form_27_print,
-                     self.lineEdit_path_add_account_numbers]
         self.hdd_number = None
         self.default_date(data)
         qt_rectangle = self.frameGeometry()
@@ -113,9 +121,9 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.thread = None
 
     def default_date(self, d):
-        for el in d:  # Проверяем все загруженные данные
-            if el in self.name_eng:
-                if el == 'classified':  # Если элемент гриф секретности
+        for el in self.list:
+            if el in d:
+                if el == 'data-classified':  # Если элемент гриф секретности
                     index = 0
                     if d[el] is None:
                         self.comboBox_classified.setCurrentIndex(0)
@@ -133,10 +141,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                 index = self.comboBox_classified.findText(text_element[text])
                             break  # Прерываем цикл
                     self.comboBox_classified.setCurrentIndex(index)  # Помещаем соответствующий элемент
-                elif el == 'HDD_number':
+                elif el == 'data-HDD_number':
                     self.hdd_number = d[el]
                 else:  # Если любой другой элемент
-                    self.line[self.name_eng.index(el)].setText(d[el])  # Помещаем значение
+                    self.list[el][1].setText(d[el])  # Помещаем значение
 
     def default_settings(self):  # Запускаем окно с настройками по умолчанию.
         self.close()
@@ -182,19 +190,19 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
     def insert_head_foot(self):
         # Проверка введенных данных перед запуском потока
         output = doc_format(self.lineEdit_path_old, self.lineEdit_path_new, self.lineEdit_path_file_num,
-                            self.radioButton_FSB_df,
-                            self.radioButton_FSTEK_df, self.comboBox_classified, self.lineEdit_num_scroll,
-                            self.lineEdit_list_item, self.lineEdit_number, self.lineEdit_executor,
+                            self.radioButton_FSB_df, self.radioButton_FSTEK_df,
+                            self.comboBox_classified, self.lineEdit_num_scroll,
+                            self.lineEdit_list_item, self.lineEdit_number, self.lineEdit_protocol,
                             self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
-                            self.lineEdit_executor_acc_sheet, self.label_executor, self.label_conclusion,
+                            self.lineEdit_executor_acc_sheet, self.label_protocol, self.label_conclusion,
                             self.label_prescription, self.label_print, self.label_executor_acc_sheet,
                             self.lineEdit_date, self.lineEdit_act, self.lineEdit_statement,
                             self.groupBox_inventory_insert, self.radioButton_40_num,
                             self.radioButton_all_doc, self.lineEdit_account_post,
                             self.lineEdit_account_signature, self.lineEdit_path_account, self.hdd_number,
                             self.groupBox_form27_insert, self.lineEdit_firm, self.lineEdit_path_form_27_create,
-                            self.groupBox_instance, self.lineEdit_number_instance, self.checkBoxd_conclusion,
-                            self.checkBox_protocol, self.checkBox_preciption, self.action_package,
+                            self.groupBox_instance, self.lineEdit_number_instance, self.checkBox_conclusion_instance,
+                            self.checkBox_protocol_instance, self.checkBox_preciption_instance, self.action_package,
                             self.action_report_MO)
         if type(output) == list:
             self.on_message_changed(output[0], output[1])
@@ -210,7 +218,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def printing(self):
         # Проверка введенных данных перед запуском потока
-        output = doc_print(self.radioButton_FSB_print, self.radioButton_FSTEK_print, self.lineEdit_path_old_print,
+        output = doc_print(self.radioButton_FSB_print, self.radioButton_FSTEK_print, self.checkBox_conclusion_print,
+                           self.checkBox_protocol_print, self.checkBox_preciption_print, self.lineEdit_path_old_print,
                            self.lineEdit_path_account_numbers, self.checkBox_add_account_numbers,
                            self.lineEdit_path_add_account_numbers, self.checkBox_form_27,
                            self.lineEdit_path_form_27_print,

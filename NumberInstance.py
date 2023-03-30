@@ -8,7 +8,7 @@ from PyQt5.QtCore import QDir
 import number_instance
 from docx.shared import Pt
 
-from PyQt5.QtWidgets import QDialog, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QDialog, QMessageBox, QFileDialog, QSplashScreen, QLabel
 
 
 class NumberInstance(QDialog, number_instance.Ui_Dialog):  # Для файла с номерами
@@ -80,19 +80,31 @@ class NumberInstance(QDialog, number_instance.Ui_Dialog):  # Для файла �
                 complect.append(element)
         complect.sort()
         for number_folder in complect:
+            # mess = QMessageBox.information(self, 'Процесс создания', 'Создаем ' + str(number_folder) + ' экземпляры')
+            # splash = QSplashScreen(QLabel('Создаем ' + str(number_folder) + ' экземпляры'))
             os.mkdir(path_new + '\\' + str(number_folder) + ' экземпляр')
             for doc in os.listdir(path_old):
-                shutil.copy2(path_old + '\\' + doc, path_new + '\\' + str(number_folder) + ' экземпляр' + '\\')
-                doc_2 = docx.Document(os.path.abspath(path_new + '\\' + str(number_folder) +
-                                                      ' экземпляр' + '\\' + doc))
-                for p_2 in doc_2.sections[0].first_page_header.paragraphs:
-                    if re.findall(r'№1', p_2.text):
-                        text = re.sub(r'№1', '№' + str(number_folder), p_2.text)
-                        p_2.text = text
-                        for run in p_2.runs:
-                            run.font.size = Pt(11)
-                            run.font.name = 'Times New Roman'
-                        break
-                doc_2.save(os.path.abspath(path_new + '\\' + str(number_folder) +
-                                           ' экземпляр' + '\\' + doc))  # Сохраняем
+                if doc.endswith('.docx'):
+                    shutil.copy2(path_old + '\\' + doc, path_new + '\\' + str(number_folder) + ' экземпляр' + '\\')
+                    doc_2 = docx.Document(os.path.abspath(path_new + '\\' + str(number_folder) +
+                                                          ' экземпляр' + '\\' + doc))
+                    for p_2 in doc_2.sections[0].first_page_header.paragraphs:
+                        if re.findall(r'№1', p_2.text):
+                            text = re.sub(r'№1', '№' + str(number_folder), p_2.text)
+                            p_2.text = text
+                            for run in p_2.runs:
+                                run.font.size = Pt(11)
+                                run.font.name = 'Times New Roman'
+                            break
+                    for p_2 in doc_2.sections[len(doc_2.sections) - 1].first_page_footer.paragraphs:
+                        if re.findall(r'Отп. 1 экз. в адрес', p_2.text):
+                            text = re.sub(r'Отп. 1 экз. в адрес', 'Отп. ' + str(number_folder) + ' экз. в адрес',
+                                          p_2.text)
+                            p_2.text = text
+                            for run in p_2.runs:
+                                run.font.size = Pt(11)
+                                run.font.name = 'Times New Roman'
+                            break
+                    doc_2.save(os.path.abspath(path_new + '\\' + str(number_folder) +
+                                               ' экземпляр' + '\\' + doc))  # Сохраняем
         self.close()  # Закрываем окно
