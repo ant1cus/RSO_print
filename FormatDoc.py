@@ -392,7 +392,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) \
                                                   + ' от ' + date
                         else:
-                            x = name_el.rpartition('.')[0].partition(' ')[2]
+                            x = name_el.rpartition('.')[0].rpartition(' ')[2]
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
                                                   + ' от ' + date
                         if conclusion_num_text:
@@ -529,7 +529,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     if self.report_rso:
                         ind = False
                         number_licensee = name_el[:-5].rpartition(' ')[2]
-                        name_document = name_el[:-5].partition(' ')[0]
+                        name_document = name_el[:-5].rpartition(' ')[0]
                         if name_document == 'Заключение':
                             ind = 4
                         elif name_document == 'Протокол':
