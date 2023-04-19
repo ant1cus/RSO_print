@@ -21,6 +21,14 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QFileDialog, QMessageBox
 from queue import Queue
 
 
+class MessageBox(QMessageBox):
+    def __init__(self, text):
+        QMessageBox.__init__(self)
+        self.setWindowTitle("Внимание!")
+        self.setText("Критическая ошибка: " + str(text) + "\nЗапуск отменён")
+        self.exec()
+
+
 class AboutWindow(QDialog, about.Ui_Dialog):  # Для отображения информации
     def __init__(self):
         super().__init__()
@@ -245,12 +253,18 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    translator = QTranslator(app)
-    locale = QLocale.system().name()
-    path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
-    translator.load('qtbase_%s' % locale.partition('_')[0], path)
-    app.installTranslator(translator)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
+    try:
+        app = QApplication(sys.argv)
+        translator = QTranslator(app)
+        locale = QLocale.system().name()
+        path = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+        translator.load('qtbase_%s' % locale.partition('_')[0], path)
+        app.installTranslator(translator)
+        window = MainWindow()
+        window.show()
+        sys.exit(app.exec_())
+    except BaseException as error:
+        if str(error) != '0':
+            MessageBox(error)
+            with open(pathlib.Path(pathlib.Path.cwd(), 'my_log.log'), mode='w') as f:
+                print(error, file=f)

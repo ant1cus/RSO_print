@@ -116,8 +116,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 # Конвертируем
                 while True:
                     try:
-                        print(count_file)
-                        print(file_path)
                         pythoncom.CoInitializeEx(0)
                         name_file_pdf = count_file + '.pdf'
                         self.logging.info('Конвертируем в пдф ' + count_file)
@@ -379,12 +377,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     else:
                         text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонитула
                     if re.findall(r'заключение', name_el.lower()):
-                        name_conclusion = name_el.rpartition('.')[0].rpartition(' ')[0]
                         conclusion_num[name_el] = text_for_foot
                         exec_people = conclusion
                         change_date(doc, True)
                     elif re.findall(r'протокол', name_el.lower()):
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
+                        name_conclusion = re.sub('Протокол', 'Заключение', name_protocol)
                         protocol[name_el] = text_for_foot
                         if len(conclusion_num) == 0:
                             conclusion_num_text = False
@@ -393,7 +391,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                   + ' от ' + date
                         else:
                             x = name_el.rpartition('.')[0].rpartition(' ')[2]
-                            conclusion_num_text = 'уч. № ' + str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
+                            conclusion_num_text = 'уч. № ' +\
+                                                  str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
                                                   + ' от ' + date
                         if conclusion_num_text:
                             for val_p, p in enumerate(doc.paragraphs):
@@ -408,11 +407,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         exec_people = executor
                         change_date(doc, False)
                     elif re.findall(r'предписание', name_el.lower()):
+                        name_preciption = name_el.rpartition('.')[0].rpartition(' ')[0]
                         x = name_el.rpartition('.')[0].rpartition(' ')[2]
-                        print(name_protocol)
+                        name_conclusion = re.sub('Предписание', 'Заключение', name_preciption) + ' ' + x + '.docx'
+                        name_protocol = re.sub('Предписание', 'Протокол', name_preciption) + ' ' + x + '.docx'
+                        if name_protocol not in protocol:
+                            name_protocol = False
+                        if name_conclusion not in conclusion_num:
+                            name_conclusion = True if len(conclusion_num) == 1 else False
                         if name_protocol:
-                            protocol_num_text = 'уч. № ' + str(protocol[name_protocol + ' ' + x + '.docx']) + \
-                                                ' от ' + date if protocol[name_protocol + ' ' + x + '.docx'] else False
+                            protocol_num_text = 'уч. № ' + str(protocol[name_protocol]) + \
+                                                ' от ' + date if protocol[name_protocol] else False
                         else:
                             protocol_num_text = False
                         if name_conclusion:
@@ -421,7 +426,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                       ' от ' + date
                             else:
                                 conclusion_num_text = 'уч. № ' + \
-                                                      str(conclusion_num[name_conclusion + ' ' + x + '.docx']) + \
+                                                      str(conclusion_num[name_conclusion]) + \
                                                       ' от ' + date
                         else:
                             conclusion_num_text = False
@@ -769,7 +774,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     for p in doc.paragraphs:  # Для каждого параграфа
                         if re.findall(r'registration_number', p.text):  # Ищем метку
                             p.text = re.sub(r'registration_number', text_for_foot + ' от ' + date, p.text)
-                            print(p.text)
                             for run in p.runs:
                                 run.font.size = Pt(14)
                         elif re.findall(r'Приложения:', p.text) and 'Запрос' not in acc_doc:

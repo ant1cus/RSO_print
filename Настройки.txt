@@ -10,7 +10,7 @@
     "data-prescription": "lkj",
     "data-print_people": "ufk",
     "data-protocol": "Bv",
-    "insert-path_new": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\конец",
-    "insert-path_old": "c:\\users\\nvfal\\onedrive\\рабочий стол\\новая папка\\test\\начало",
+    "insert-path_new": "d:\\python\\project_rso\\тесты\\конечные",
+    "insert-path_old": "d:\\python\\project_rso\\тесты\\два",
     "statement": "Шит"
 }
