@@ -1,4 +1,7 @@
 ﻿{
+    "account-account_path": "D:\\Python\\Project_RSO\\тесты\\конечные",
+    "account-account_post": "Зам",
+    "account-account_signature": "Зам Замыч",
     "data-HDD_number": "29c",
     "data-classified": "C",
     "data-conclusion": "derg",
@@ -10,6 +13,8 @@
     "data-prescription": "lkj",
     "data-print_people": "ufk",
     "data-protocol": "Bv",
+    "form27-firm": "Организация",
+    "form27-path_form_27_create": "D:\\Python\\Project_RSO\\тесты\\конечные",
     "insert-path_new": "d:\\python\\project_rso\\тесты\\конечные",
     "insert-path_old": "d:\\python\\project_rso\\тесты\\два",
     "statement": "Шит"

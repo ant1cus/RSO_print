@@ -382,7 +382,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         change_date(doc, True)
                     elif re.findall(r'протокол', name_el.lower()):
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
-                        name_conclusion = re.sub('Протокол', 'Заключение', name_protocol)
+                        name_conclusion = re.sub('Протокол', 'Заключение', name_protocol) + ' ' +\
+                                          name_el.rpartition('.')[0].rpartition(' ')[2] + '.docx'
+                        if name_conclusion not in conclusion_num:
+                            name_conclusion = re.sub('Заключение', 'Заключение СП', name_conclusion)
                         protocol[name_el] = text_for_foot
                         if len(conclusion_num) == 0:
                             conclusion_num_text = False
@@ -390,9 +393,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) \
                                                   + ' от ' + date
                         else:
-                            x = name_el.rpartition('.')[0].rpartition(' ')[2]
+                            # x = name_el.rpartition('.')[0].rpartition(' ')[2]
                             conclusion_num_text = 'уч. № ' +\
-                                                  str(conclusion_num[name_conclusion + ' ' + x + '.docx']) \
+                                                  str(conclusion_num[name_conclusion]) \
                                                   + ' от ' + date
                         if conclusion_num_text:
                             for val_p, p in enumerate(doc.paragraphs):
@@ -414,22 +417,21 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         if name_protocol not in protocol:
                             name_protocol = False
                         if name_conclusion not in conclusion_num:
-                            name_conclusion = True if len(conclusion_num) == 1 else False
+                            name_conclusion = re.sub('Заключение', 'Заключение СП', name_conclusion)
                         if name_protocol:
                             protocol_num_text = 'уч. № ' + str(protocol[name_protocol]) + \
                                                 ' от ' + date if protocol[name_protocol] else False
                         else:
                             protocol_num_text = False
-                        if name_conclusion:
-                            if len(conclusion_num) == 1:
+                        if len(conclusion_num) == 0:
+                            conclusion_num_text = False
+                        elif len(conclusion_num) == 1:
                                 conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
                                                       ' от ' + date
-                            else:
-                                conclusion_num_text = 'уч. № ' + \
-                                                      str(conclusion_num[name_conclusion]) + \
-                                                      ' от ' + date
                         else:
-                            conclusion_num_text = False
+                            conclusion_num_text = 'уч. № ' + \
+                                                  str(conclusion_num[name_conclusion]) + \
+                                                  ' от ' + date
                         break_flag = 0
                         if conclusion_num_text or protocol_num_text:
                             for val_p, p in enumerate(doc.paragraphs):
@@ -586,7 +588,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 ws_to_rso.cell(row, col).alignment = openpyxl.styles.Alignment(horizontal="left",
                                                                                                vertical="center")
                 wb_to_rso.save(self.path_new + '\\Отчёт для МО.xlsx')
-            if text_for_foot and num_1 and num_2:
+            if text_for_foot and num_1 and num_2:   # try/catch для отлова русской и английской "c"
                 if '/' in num_1:
                     num_1 = text_for_foot.rpartition('/')[0] + '/'
                 else:
@@ -599,6 +601,22 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
                 except ValueError:
                     if '/' in num_1:
+                        num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('с')[0]) + 1)
+                    else:
+                        num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
+            else:
+                if '/' in text_for_foot:
+                    num_1 = text_for_foot.rpartition('/')[0] + '/'
+                else:
+                    num_1 = text_for_foot.partition('-')[0] + '-'
+                try:
+                    # Добавляем номер для описи
+                    if '/' in text_for_foot:
+                        num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)
+                    else:
+                        num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
+                except ValueError:
+                    if '/' in text_for_foot:
                         num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('с')[0]) + 1)
                     else:
                         num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
@@ -669,7 +687,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     status.emit('Добавляем документ ' + str(value[0]) + ' в опись')
                     name_count = '\\Опись №' + str(inventory) + '.docx'
                     if flag_for_op == 0:  # Если элемент первый в данной описи
-                        text_for_foot = num_1 + num_2 + 'c'
+                        text_for_foot = str(num_1) + str(num_2) + 'c'
                         document = docx.Document()  # Открываем
                         style = document.styles['Normal']
                         font = style.font
@@ -704,7 +722,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                       text_for_foot, hdd_number, executor,
                                       print_people, date, account_path, name_count, fso)
                         flag_for_op = 1  # Чтобы не создавать, если это не необходимо
-                    # Открываем необхоимую опись
+                    # Открываем необходимую опись
                     document = docx.Document(os.path.abspath(account_path + name_count))
                     table = document.tables[0]  # Выбираем таблицу
                     table.add_row()  # Добавляем колонку и значения
