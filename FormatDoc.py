@@ -54,13 +54,14 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.second_copy = incoming_data['second_copy']
         self.service = incoming_data['service']
         self.hdd_number = incoming_data['hdd_number']
-        self.q = incoming_data['q']
+        self.q = incoming_data['queue']
         self.logging = incoming_data['logging']
         self.package = incoming_data['package']
         self.report_rso = incoming_data['action_MO']
         self.act = incoming_data['act']
         self.statement = incoming_data['statement']
         self.number_instance = incoming_data['number_instance']
+        self.path_sp = incoming_data['path_sp']
         self.num_1 = self.num_2 = 0
 
     def run(self):
@@ -70,7 +71,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         date, conclusion, executor, prescription, hdd_number,
                         print_people, progress, flag_inventory,
                         account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
-                        number_instance):
+                        number_instance, path_sp):
             def cell_write(style_for_doc, text_for_insert, number_rows=0):  # Заполнение ячеек в таблице в описи
                 cells = table.rows[number_rows].cells  # Номер строки
                 number_col = 0  # Номер столбца
@@ -254,6 +255,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                              ' технических средств» написано с ошибками')
                             return
                         file = os.listdir(path_old_ + '\\' + folder_)
+                        # Сортировка может не работать, если серийники не будут совпадать с порядком номеров комплектов
                         file.sort(key=sort)  # Сортировка
                         file = natsorted(file)
                         for name_element in ['акт', 'заключение']:
@@ -340,6 +342,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     os.mkdir(path_ + '\\' + str(element) + ' экземпляр')
             name_protocol = False
             name_conclusion = False
+            # Добавка сортировки, если документы не по порядку.
+            name_document = ''
+            for number, el_ in enumerate(docs):
+                if number + 1 == len(docs):
+                    break
+                if el_.partition(' ')[0] != name_document:
+                    name_document = el_.partition(' ')[0]
+                number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
+                if number_document > round(float(docs[number + 1].rpartition('.')[0].rpartition(' ')[2]), 4) and \
+                        name_document == docs[number + 1].partition(' ')[0]:
+                    docs[number], docs[number + 1] = docs[number + 1], docs[number]
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 if type(docs) is dict:
@@ -382,7 +395,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         change_date(doc, True)
                     elif re.findall(r'протокол', name_el.lower()):
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
-                        name_conclusion = re.sub('Протокол', 'Заключение', name_protocol) + ' ' +\
+                        name_conclusion = re.sub('Протокол', 'Заключение', name_protocol) + ' ' + \
                                           name_el.rpartition('.')[0].rpartition(' ')[2] + '.docx'
                         if name_conclusion not in conclusion_num:
                             name_conclusion = re.sub('Заключение', 'Заключение СП', name_conclusion)
@@ -394,7 +407,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                   + ' от ' + date
                         else:
                             # x = name_el.rpartition('.')[0].rpartition(' ')[2]
-                            conclusion_num_text = 'уч. № ' +\
+                            conclusion_num_text = 'уч. № ' + \
                                                   str(conclusion_num[name_conclusion]) \
                                                   + ' от ' + date
                         if conclusion_num_text:
@@ -426,8 +439,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         if len(conclusion_num) == 0:
                             conclusion_num_text = False
                         elif len(conclusion_num) == 1:
-                                conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
-                                                      ' от ' + date
+                            conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
+                                                  ' от ' + date
                         else:
                             conclusion_num_text = 'уч. № ' + \
                                                   str(conclusion_num[name_conclusion]) + \
@@ -473,6 +486,21 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         change_date(doc, False)
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
+                    # Если есть путь для распределения СП
+                    if path_sp:
+                        no_sn_in_sp = True
+                        sn_number = el_.partition(' ')[2].partition(' ')[0]
+                        if sn_number == 'СП':
+                            sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
+                        for folder_sp in os.listdir(path_sp):
+                            for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
+                                if folder_sn.partition(' ')[0] == sn_number:
+                                    no_sn_in_sp = False
+                                    shutil.copy(str(pathlib.Path(path_, name_el)),
+                                                str(pathlib.Path(path_sp, folder_sp, folder_sn)))
+                        if no_sn_in_sp:
+                            errors.append('Документ с с.н. ' + sn_number +
+                                          ' (' + el_ + ') не найден в материалах СП')
                     logging.info("Определяем количество страниц")
                     if fso:
                         path_to_file = path_ + '\\' + docs[el_].rpartition('\\')[2]
@@ -549,7 +577,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             df_report_rso.iloc[index_df, [ind, ind + 1]] = ['№ ' + text_for_foot + ' от ' +
                                                                             date + ' г.', num_pages - 1]
                     percent_val += percent  # Увеличиваем прогресс
-                    progress.emit(round(percent_val, 0))  # Посылаем значние в прогресс бар
+                    progress.emit(int(percent_val))  # Посылаем значние в прогресс бар
             if self.report_rso:
                 logging.info("Формируем отчет для МВД")
                 status.emit('Формируем отчет для МВД')
@@ -588,7 +616,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 ws_to_rso.cell(row, col).alignment = openpyxl.styles.Alignment(horizontal="left",
                                                                                                vertical="center")
                 wb_to_rso.save(self.path_new + '\\Отчёт для МО.xlsx')
-            if text_for_foot and num_1 and num_2:   # try/catch для отлова русской и английской "c"
+            if text_for_foot and num_1 and num_2:  # try/catch для отлова русской и английской "c"
                 if '/' in num_1:
                     num_1 = text_for_foot.rpartition('/')[0] + '/'
                 else:
@@ -744,7 +772,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     percent_val += percent  # Увеличиваем прогресс
                     flag += 1  # Для того, что бы не мелькал прогресс бар
                     if flag == 4:  # Только для каждого 4 документа при добавлении
-                        self.progress.emit(round(percent_val, 0))  # Обновляем прогресс бар
+                        self.progress.emit(int(percent_val))  # Обновляем прогресс бар
                         flag = 0
                 for el in os.listdir(account_path):
                     status.emit('Считаем кол-во листов')
@@ -961,7 +989,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                          index=table_name)
                             i_ += 1
                     percent_val += percent  # Увеличиваем прогресс
-                    progress.emit(round(percent_val, 0))  # Обновляем прогресс бар
+                    progress.emit(int(percent_val))  # Обновляем прогресс бар
                 table_df.index = pd.RangeIndex(1, 1 + len(table_df))
                 table_df.to_excel(path_ + '\\Форма 27.xlsx', sheet_name='27', index=False)
                 column_width = [13, 11, 10, 24, 27, 13.5, 7, 7, 7, 7, 15.1, 13, 13.1, 11.4, 16, 18.3, 23.85,
@@ -1017,7 +1045,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
 
                 path_f27 = path_form_27 + '\\Форма 27.xlsx' if path_form_27 else path_ + '\\Форма 27.xlsx'
                 form_27_name(path_f27)
-            return num_1, num_2
+            return [num_1, num_2]
 
         time_start = datetime.datetime.now()
         self.progress.emit(0)  # Обновляем статус бар
@@ -1044,6 +1072,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     self.num_1 = self.number.partition('-')[0] + '-'
                     self.num_2 = self.number.partition('-')[2].rpartition('c')[0]
             self.logging.info("Созданы секретные номера")
+            errors = []
             if self.package:
                 for folder in os.listdir(self.path_old):
                     if os.path.isdir(self.path_old + '\\' + folder):
@@ -1061,33 +1090,39 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         os.chdir(self.path_old)
                         path_old = self.path_old
                         path = self.path_new
-                    self.num_1, self.num_2 = format_doc_(path_old, self.classified, self.list_item,
-                                                         self.num_scroll,
-                                                         self.account, self.firm, self.logging, self.status, path,
-                                                         self.file_num, self.num_1, self.num_2, self.date,
-                                                         self.conclusion, self.protocol, self.prescription,
-                                                         self.hdd_number, self.print_people, self.progress,
-                                                         self.flag_inventory, self.account_post,
-                                                         self.account_signature, self.account_path,
-                                                         self.executor_acc_sheet, self.service, False,
-                                                         self.number_instance)
+                    return_val = format_doc_(path_old, self.classified, self.list_item, self.num_scroll, self.account,
+                                             self.firm, self.logging, self.status, path, self.file_num, self.num_1,
+                                             self.num_2, self.date, self.conclusion, self.protocol, self.prescription,
+                                             self.hdd_number, self.print_people, self.progress, self.flag_inventory,
+                                             self.account_post, self.account_signature, self.account_path,
+                                             self.executor_acc_sheet, self.service, False, self.number_instance,
+                                             self.path_sp)
+                    self.num_1, self.num_2 = return_val[0], return_val[1]
                     docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
                     for txt_file in docs_txt:
                         shutil.copy(txt_file, path)
             else:
-                format_doc_(self.path_old, self.classified, self.list_item, self.num_scroll, self.account,
-                            self.firm, self.logging, self.status, self.path_new, self.file_num, self.num_1, self.num_2,
-                            self.date, self.conclusion, self.protocol, self.prescription, self.hdd_number,
-                            self.print_people, self.progress, self.flag_inventory,
-                            self.account_post, self.account_signature, self.account_path, self.executor_acc_sheet,
-                            self.service, self.path_form_27, self.number_instance)
+                format_doc_(self.path_old, self.classified, self.list_item, self.num_scroll, self.account, self.firm,
+                            self.logging, self.status, self.path_new, self.file_num, self.num_1, self.num_2, self.date,
+                            self.conclusion, self.protocol, self.prescription, self.hdd_number, self.print_people,
+                            self.progress, self.flag_inventory, self.account_post, self.account_signature,
+                            self.account_path, self.executor_acc_sheet, self.service, self.path_form_27,
+                            self.number_instance, self.path_sp)
                 docs_txt = [file for file in os.listdir(self.path_old) if file[-4:] == '.txt']  # Список txt
                 for txt_file in docs_txt:
                     shutil.copy(txt_file, self.path_new)
-            self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
-            self.logging.info("\n***********************************************************************************\n")
-            self.status.emit('Готово!')  # Посылаем значние если готово
-            self.progress.emit(100)  # Завершаем прогресс бар
+            if errors:
+                self.logging.warning('\n'.join(errors))
+                self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
+                self.logging.info("\n*******************************************************************************\n")
+                self.status.emit('Завершено с ошибками!')  # Посылаем значние если готово
+                self.progress.emit(100)  # Завершаем прогресс бар
+                self.messageChanged.emit('ВНИМАНИЕ!', '\n'.join(errors))
+            else:
+                self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
+                self.logging.info("\n*******************************************************************************\n")
+                self.status.emit('Готово!')  # Посылаем значние если готово
+                self.progress.emit(100)  # Завершаем прогресс бар
         except BaseException as e:  # Если ошибка
             self.status.emit('Ошибка')  # Сообщение в статус бар
             self.logging.error("Ошибка:\n " + str(e) + '\n' + traceback.format_exc())

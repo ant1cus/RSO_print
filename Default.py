@@ -43,7 +43,7 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.path_for_default = path
         # Имена на английском и русском
         self.name_list = {'insert-path_old': 'Путь к исходным файлам', 'insert-path_new': 'Путь к конечным файлам',
-                          'insert-path_file_num': 'Путь к файлу номеров',
+                          'insert-path_file_num': 'Путь к файлу номеров', 'insert-path_sp': 'Путь к материалам СП',
                           'data-classified': 'Гриф секретности', 'data-num_scroll': 'Номер экземпляра',
                           'data-list_item': 'Пункт перечня', 'data-number': 'Номер', 'data-protocol': 'Протокол',
                           'data-conclusion': 'Заключение', 'data-prescription': 'Предписание',

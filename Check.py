@@ -3,15 +3,15 @@ import re
 import time
 
 
-def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df, radioButton_FSTEK_df,
-               comboBox_classified, lineEdit_num_scroll, lineEdit_list_item, lineEdit_number, lineEdit_protocol,
-               lineEdit_conclusion, lineEdit_prescription, lineEdit_print, lineEdit_executor_acc_sheet, label_protocol,
-               label_conclusion, label_prescription, label_print, label_executor_acc_sheet, lineEdit_date, lineEdit_act,
-               lineEdit_statement,
-               groupBox_inventory_insert, radioButton_40_num, radioButton_all_doc, lineEdit_account_post,
-               lineEdit_account_signature, lineEdit_account_path, hdd_number, groupBox_form27_insert, lineEdit_firm,
-               lineEdit_path_form_27_create, qroupBox_instance, lineEdit_number_instance, checkBox_conclusion,
-               checkBox_protocol, checkBox_preciption, package, action_MO):  # Ф-я для проверки введенных значений
+def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df, radiobutton_fstek_df,
+               combobox_classified, lineedit_num_scroll, lineedit_list_item, lineedit_number, lineedit_protocol,
+               lineedit_conclusion, lineedit_prescription, lineedit_print, lineedit_executor_acc_sheet, label_protocol,
+               label_conclusion, label_prescription, label_print, label_executor_acc_sheet, lineedit_date, lineedit_act,
+               lineedit_statement, groupbox_inventory_insert, radiobutton_40_num, radiobutton_all_doc,
+               lineedit_account_post, lineedit_account_signature, lineedit_account_path, hdd_number,
+               groupbox_form27_insert, lineedit_firm, lineedit_path_form_27_create, qroupbox_instance,
+               lineedit_number_instance, checkbox_conclusion, checkbox_protocol, checkbox_preciption, package,
+               action_mo, checkbox_path_sp, lineedit_path_folder_sp):  # Ф-я для проверки введенных значений
 
     def check(n, e):
         for symbol in e:
@@ -20,9 +20,9 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
         return True
 
     package_ = True if package.isChecked() else False
-    action_MO_ = True if action_MO.isChecked() else False
+    action_mo_ = True if action_mo.isChecked() else False
     # Путь к исходным документам и проверки
-    path_old = lineEdit_old.text().strip()
+    path_old = lineedit_old.text().strip()
     if not path_old:
         return ['УПС!', 'Путь к исходным документам пуст']
     if os.path.isdir(path_old):
@@ -46,21 +46,19 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             return ['УПС!', text]
     else:
         return ['УПС!', 'Указанный путь к исходным документам не является директорией']
-    if action_MO_:
+    if action_mo_:
         file_mo = [mo for mo in os.listdir(path_old) if mo[-3:] == 'txt' and 'F19' in mo]
         if not file_mo:
             return ['УПС!', 'Нет текстового файла с серийниками для создания отчёта для МО']
     # Путь к конечным документам и проверки
-    path_new = lineEdit_new.text().strip()
+    path_new = lineedit_new.text().strip()
     if not path_new:
         return ['УПС!', 'Путь к конечной папке пуст']
-    if os.path.isdir(path_new):
-        pass
-    else:
+    if os.path.isfile(path_new):
         return ['УПС!', 'Указанный путь к конечной папке не является директорией']
     if len(os.listdir(path_new)) != 0:
         return ['УПС!', 'Конечная папка не пуста, очистите директорию']
-    file_num = lineEdit_file_num.text().strip()
+    file_num = lineedit_file_num.text().strip()
     if file_num:
         if os.path.isdir(file_num):
             return ['УПС!', 'Указанный путь к файлу номеров является директорией']
@@ -72,30 +70,39 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
                     return ['УПС!', 'Файл номеров не формата .xlsx']
             else:
                 return ['УПС!', 'Файл номеров удалён или переименван']
+    path_sp = False
+    if checkbox_path_sp.isChecked():
+        path_sp = lineedit_path_folder_sp.text().strip()
+        if not path_sp:
+            return ['УПС!', 'Путь к папке с материалами СП пуст']
+        if os.path.isfile(path_sp):
+            return ['УПС!', 'Указанный путь к материалам СП не является директорией']
+        if len(os.listdir(path_sp)) == 0:
+            return ['УПС!', 'Папка с материалами СП пуста']
     # Ведомство
-    if radioButton_FSB_df.isChecked():
+    if radiobutton_fsb_df.isChecked():
         service = True
-    elif radioButton_FSTEK_df.isChecked():
+    elif radiobutton_fstek_df.isChecked():
         service = False
     else:
         return ['УПС!', 'Не выбрано ведомство для вставки колонтитулов']
     # Гриф секретности
     class_ = {'ДСП': 'Для служебного пользования', 'С': 'Секретно', 'СС': 'Совершенно секретно',
               'ОВ': 'Особой важности'}
-    classified = comboBox_classified.currentText().strip()
+    classified = combobox_classified.currentText().strip()
     if not classified:
         return ['УПС!', 'Не выбрана категория секретности']
     classified = class_[classified]
     # Номер экземпляра
-    num_scroll = lineEdit_num_scroll.text().strip()
+    num_scroll = lineedit_num_scroll.text().strip()
     if not num_scroll:
         return ['УПС!', 'Не выбран номер экземпляра']
     # Пункт перечня
-    list_item = lineEdit_list_item.text().strip()
+    list_item = lineedit_list_item.text().strip()
     if not list_item:
         return ['УПС!', 'Не указан пункт перечня']
     # Номер
-    number = lineEdit_number.text().strip()
+    number = lineedit_number.text().strip()
     if not file_num:
         if number[-1] in ['С', 'с']:
             number = number.replace(number[-1], 'c')
@@ -107,13 +114,13 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
         if (re.match(r'\w+/\w+/\w+c$', number) is None) and (re.match(r'НС-\w+c$', number) is None):
             return ['УПС!', 'Секретный номер указан неверно']
     # Исполнитель, заключение, предписание, протокол, печать
-    act = lineEdit_act.text().strip()
-    statement = lineEdit_statement.text().strip()
-    protocol = lineEdit_protocol.text().strip()
-    conclusion = lineEdit_conclusion.text().strip()
-    prescription = lineEdit_prescription.text().strip()
-    print_people = lineEdit_print.text().strip()
-    executor_acc_sheet = lineEdit_executor_acc_sheet.text().strip()
+    act = lineedit_act.text().strip()
+    statement = lineedit_statement.text().strip()
+    protocol = lineedit_protocol.text().strip()
+    conclusion = lineedit_conclusion.text().strip()
+    prescription = lineedit_prescription.text().strip()
+    print_people = lineedit_print.text().strip()
+    executor_acc_sheet = lineedit_executor_acc_sheet.text().strip()
     list_label = [label_protocol, label_conclusion, label_prescription, label_print, label_executor_acc_sheet]
     i = 0
     for element in [protocol, conclusion, prescription, print_people, executor_acc_sheet]:
@@ -121,7 +128,7 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             return ['УПС!', 'Не указан(а) ' + list_label[i].text()]
         i += 1
     # Дата
-    date = lineEdit_date.text().strip()
+    date = lineedit_date.text().strip()
     try:
         time.strptime(date, '%d.%m.%Y')
     except ValueError:
@@ -131,19 +138,19 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
     account_post = None
     account_signature = None
     account_path = None
-    if groupBox_inventory_insert.isChecked() and package_ is False:
+    if groupbox_inventory_insert.isChecked() and package_ is False:
         account = True
-        if radioButton_40_num.isChecked() or radioButton_all_doc.isChecked():
-            flag_inventory = 40 if radioButton_40_num.isChecked() else 1
+        if radiobutton_40_num.isChecked() or radiobutton_all_doc.isChecked():
+            flag_inventory = 40 if radiobutton_40_num.isChecked() else 1
         else:
             return ['УПС!', 'Не указано количество документов в описе']
-        account_post = lineEdit_account_post.text().strip()
+        account_post = lineedit_account_post.text().strip()
         if not account_post:
             return ['УПС!', 'Не указана должность для описи']
-        account_signature = lineEdit_account_signature.text().strip()
+        account_signature = lineedit_account_signature.text().strip()
         if not account_signature:
             return ['УПС!', 'Не указана подпись для описи']
-        account_path = lineEdit_account_path.text().strip()
+        account_path = lineedit_account_path.text().strip()
         if not account_path:
             return ['УПС!', 'Не указан путь для файла описи']
         else:
@@ -155,11 +162,11 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
         return ['УПС!', 'Отсутствует номер жесткого диска']
     firm = None
     form_27 = None
-    if groupBox_form27_insert.isChecked():
-        firm = lineEdit_firm.text().strip()
+    if groupbox_form27_insert.isChecked():
+        firm = lineedit_firm.text().strip()
         if not firm:
             return ['УПС!', 'Не заполнена организация для 27 формы']
-        form_27 = lineEdit_path_form_27_create.text().strip()
+        form_27 = lineedit_path_form_27_create.text().strip()
         if not form_27:
             return ['УПС!', 'Нет пути для 27 формы']
         else:
@@ -169,8 +176,8 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
                 return ['УПС!', 'Указанный путь для 27 формы не является директорией']
     second_copy = []
     complect = None
-    if qroupBox_instance.isChecked():
-        number_instance = lineEdit_number_instance.text().strip()
+    if qroupbox_instance.isChecked():
+        number_instance = lineedit_number_instance.text().strip()
         for i in number_instance:
             if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '-', ',', '.')):
                 return ['УПС!', 'Есть лишние символы в номерах экземпляров']
@@ -197,8 +204,8 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
         complect.sort()
         if len(complect) != len(set(complect)):
             return ['УПС!', 'Есть повторения в номерах экземпляров']
-        second_copy = [True if i.isChecked() else False for i in [checkBox_conclusion, checkBox_protocol,
-                                                                  checkBox_preciption]]
+        second_copy = [True if i.isChecked() else False for i in [checkbox_conclusion, checkbox_protocol,
+                                                                  checkbox_preciption]]
         if all(i is False for i in second_copy):
             return ['УПС!', 'Не выбран ни один документ для второго экземпляра']
     return {'path_old': path_old, 'path_new': path_new, 'file_num': file_num, 'classified': classified,
@@ -207,27 +214,27 @@ def doc_format(lineEdit_old, lineEdit_new, lineEdit_file_num, radioButton_FSB_df
             'executor_acc_sheet': executor_acc_sheet, 'account': account, 'flag_inventory': flag_inventory,
             'account_post': account_post, 'account_signature': account_signature, 'account_path': account_path,
             'firm': firm, 'form_27': form_27, 'second_copy': second_copy, 'service': service, 'hdd_number': hdd_number,
-            'package': package_, 'action_MO': action_MO_, 'act': act, 'statement': statement,
-            'number_instance': complect}
+            'package': package_, 'action_MO': action_mo_, 'act': act, 'statement': statement,
+            'number_instance': complect, 'path_sp': path_sp}
 
 
-def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, checkBox_conclusion_print, checkBox_protocol_print,
-              checkBox_preciption_print, lineEdit_old_print, lineEdit_account_numbers,
-              checkBox_add_account_numbers, lineEdit_add_account_numbers, checkBox_form_27, lineEdit_path_form_27_print,
-              button_gr, lineEdit_printer, checkBox_print_order, path_for_default, package):
+def doc_print(radiobutton_fsb_print, radiobutton_fstek_print, checkbox_conclusion_print, checkbox_protocol_print,
+              checkbox_preciption_print, lineedit_old_print, lineedit_account_numbers,
+              checkbox_add_account_numbers, lineedit_add_account_numbers, checkbox_form_27, lineedit_path_form_27_print,
+              button_gr, lineedit_printer, checkbox_print_order, path_for_default, package):
     # Ведомство
     package_ = True if package.isChecked() else False
-    if radioButton_FSB_print.isChecked():
+    if radiobutton_fsb_print.isChecked():
         service = True
-    elif radioButton_FSTEK_print.isChecked():
+    elif radiobutton_fstek_print.isChecked():
         service = False
     else:
         return ['УПС!', 'Не выбрано ведомство при печати документов']
     document_list = {i: True if j.isChecked() else False for i, j in zip(['заключение', 'протокол', 'предписание'],
-                                                                         [checkBox_conclusion_print,
-                                                                          checkBox_protocol_print,
-                                                                          checkBox_preciption_print])}
-    path_old_print = lineEdit_old_print.text().strip()
+                                                                         [checkbox_conclusion_print,
+                                                                          checkbox_protocol_print,
+                                                                          checkbox_preciption_print])}
+    path_old_print = lineedit_old_print.text().strip()
     if not path_old_print:
         return ['УПС!', 'Путь к исходным документам для печати пуст']
     if os.path.isdir(path_old_print):
@@ -253,10 +260,10 @@ def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, checkBox_conclusio
     else:
         return ['УПС!', 'Указанный путь к исходным документам для печати не является директорией']
     # Путь к номерам
-    path_account_num = lineEdit_account_numbers.text().strip()
+    path_account_num = lineedit_account_numbers.text().strip()
     add_path_account_num = None
-    if checkBox_add_account_numbers.isChecked():
-        add_path_account_num = lineEdit_add_account_numbers.text().strip()
+    if checkbox_add_account_numbers.isChecked():
+        add_path_account_num = lineedit_add_account_numbers.text().strip()
         if not add_path_account_num:
             return ['УПС!', 'Путь к доп. файлу номеров учетных листов пуст']
         if os.path.isdir(add_path_account_num):
@@ -283,9 +290,9 @@ def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, checkBox_conclusio
             return ['УПС!', 'Файл номеров удалён или переименван']
     # Форма 27
     path_form_27 = False
-    if checkBox_form_27.isChecked():
+    if checkbox_form_27.isChecked():
         if package_ is False:
-            path_form_27 = lineEdit_path_form_27_print.text().strip()
+            path_form_27 = lineedit_path_form_27_print.text().strip()
             if not path_form_27:
                 return ['УПС!', 'Путь к 27 форме пуст']
             if os.path.isdir(path_form_27):
@@ -308,10 +315,10 @@ def doc_print(radioButton_FSB_print, radioButton_FSTEK_print, checkBox_conclusio
             print_flag = button.text()
     if not print_flag:
         return ['УПС!', 'Не указан метод печати']
-    print_name = lineEdit_printer.text().strip()
+    print_name = lineedit_printer.text().strip()
     if not print_name:
         return ['УПС!', 'Не выбран принтер']
-    print_order = True if checkBox_print_order.isChecked() else False
+    print_order = True if checkbox_print_order.isChecked() else False
     return {'path_old_print': path_old_print, 'path_account_num': path_account_num,
             'add_path_account_num': add_path_account_num, 'print_flag': print_flag, 'name_printer': print_name,
             'path_form_27': path_form_27, 'print_order': print_order, 'service': service,

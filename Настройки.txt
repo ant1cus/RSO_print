@@ -3,6 +3,7 @@
     "account-account_post": "Зам",
     "account-account_signature": "Зам Замыч",
     "data-HDD_number": "29c",
+    "data-act": "Акт",
     "data-classified": "C",
     "data-conclusion": "derg",
     "data-date": "30.03.2023",
@@ -17,5 +18,6 @@
     "form27-path_form_27_create": "D:\\Python\\Project_RSO\\тесты\\конечные",
     "insert-path_new": "d:\\python\\project_rso\\тесты\\конечные",
     "insert-path_old": "d:\\python\\project_rso\\тесты\\два",
+    "insert-path_sp": "D:\\Python\\Project_RSO\\тесты\\материалы сп\\Номер ГК",
     "statement": "Шит"
 }
