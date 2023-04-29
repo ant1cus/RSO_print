@@ -88,10 +88,11 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         # Если изменяем начальный номер
         self.path_for_default = pathlib.Path.cwd()  # Путь для файла настроек
         # Имена в файле
-        self.list = {'insert-path_old': ['Путь к исходным файлам', self.lineEdit_path_folder_old_doc],
-                     'insert-path_new': ['Путь к конечным файлам', self.lineEdit_path_folder_new_doc],
-                     'insert-path_file_num': ['Путь к файлу номеров', self.lineEdit_path_file_file_num],
-                     'insert-path_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
+        self.list = {'insert-path_folder_old': ['Путь к исходным файлам', self.lineEdit_path_folder_old_doc],
+                     'insert-path_folder_new': ['Путь к конечным файлам', self.lineEdit_path_folder_new_doc],
+                     'insert-path_file_file_num': ['Путь к файлу номеров', self.lineEdit_path_file_file_num],
+                     'insert-checkBox_folder_path_sp': ['Включить путь к СП', self.checkBox_folder_path_sp],
+                     'insert-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
                      'data-classified': ['Гриф секретности', self.comboBox_classified],
                      'data-num_scroll': ['Номер экземпляра', self.lineEdit_num_scroll],
                      'data-list_item': ['Пункт перечня', self.lineEdit_list_item],
@@ -104,16 +105,31 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'data-executor_acc_sheet': ['Сопровод', self.lineEdit_executor_acc_sheet],
                      'data-act': ['Акт', self.lineEdit_act],
                      'data-statement': ['Утверждение', self.lineEdit_statement],
+                     'account-groupBox_inventory_insert': ['Включить опись', self.groupBox_inventory_insert],
                      'account-account_post': ['Должность', self.lineEdit_account_post],
                      'account-account_signature': ['ФИО подпись', self.lineEdit_account_signature],
-                     'account-account_path': ['Путь к описи', self.lineEdit_path_folder_account],
+                     'account-path_folder_account': ['Путь к описи', self.lineEdit_path_folder_account],
+                     'form27-groupBox_form27_insert': ['Включить 27 форму', self.groupBox_form27_insert],
                      'form27-firm': ['Организация', self.lineEdit_firm],
-                     'form27-path_form_27_create': ['Форма 27 (вставка)', self.lineEdit_path_folder_form_27_create],
-                     'print-path_old_print': ['Путь к файлам для печати', self.lineEdit_path_folder_old_print],
-                     'print-account_numbers': ['Путь к учетным номерам', self.lineEdit_path_file_account_numbers],
-                     'print-path_form_27': ['Форма 27 (печать)', self.lineEdit_path_file_form_27_print],
-                     'print-add_account_num': ['Путь к доп. файлу уч. ном.',
-                                               self.lineEdit_path_file_add_account_numbers],
+                     'form27-path_folder_form_27_create': ['Путь к форме 27', self.lineEdit_path_folder_form_27_create],
+                     'instance-groupBox_instance': ['Включить экземпляры', self.groupBox_instance],
+                     'instance-checkBox_conclusion_instance': ['Включить заключения',
+                                                               self.checkBox_conclusion_instance],
+                     'instance-checkBox_protocol_instance': ['Включить протоколы', self.checkBox_protocol_instance],
+                     'instance-checkBox_preciption_instance': ['Включить предписания',
+                                                               self.checkBox_preciption_instance],
+                     'print-checkBox_conclusion_print': ['Включить заключения', self.checkBox_conclusion_print],
+                     'print-checkBox_protocol_print': ['Включить протокол', self.checkBox_protocol_print],
+                     'print-checkBox_preciption_print': ['Включить предписание', self.checkBox_preciption_print],
+                     'print-path_folder_old_print': ['Путь к файлам для печати', self.lineEdit_path_folder_old_print],
+                     'print-path_file_account_numbers': ['Путь к учетным номерам',
+                                                         self.lineEdit_path_file_account_numbers],
+                     'print-checkBox_file_form_27': ['Включить 27 форму', self.checkBox_file_form_27],
+                     'print-path_file_form_27': ['Путь к форме 27', self.lineEdit_path_file_form_27_print],
+                     'print-checkBox_file_add_account_numbers': ['Включить доп. номера',
+                                                                 self.checkBox_file_add_account_numbers],
+                     'print-path_file_add_account_num': ['Путь к доп. файлу уч. ном.',
+                                                         self.lineEdit_path_file_add_account_numbers],
                      'data-HDD_number': 'Номер НЖМД'}
         # Грузим значения по умолчанию
         try:
@@ -131,19 +147,19 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.move(qt_rectangle.topLeft())
         self.thread = None
 
-    def default_date(self, d):
+    def default_date(self, incoming_data):
         for el in self.list:
-            if el in d:
+            if el in incoming_data:
                 if el == 'data-classified':  # Если элемент гриф секретности
                     index = 0
-                    if d[el] is None:
+                    if incoming_data[el] is None:
                         self.comboBox_classified.setCurrentIndex(0)
                         continue
-                    elif d[el] == 'ДСП':
+                    elif incoming_data[el] == 'ДСП':
                         index = 1
                     text_element = ['CC', 'СС', 'C', 'С', 'OB', 'ОВ']  # Названия, которые могут быть (англ. и рус.)
                     for element in text_element:  # Для элементов в списке
-                        if d[el] == element:  # Если элемент совпадает, то смотрим что бы он был нечетным
+                        if incoming_data[el] == element:  # Если элемент совпадает, то смотрим что бы он был нечетным
                             if (text_element.index(element) - 1) / 2 < 0 or (text_element.index(element) - 1) % 2 != 0:
                                 text = text_element.index(element) + 1  # Выбираем следующий
                                 index = self.comboBox_classified.findText(text_element[text])  # Запоминаем индекс
@@ -153,9 +169,12 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                             break  # Прерываем цикл
                     self.comboBox_classified.setCurrentIndex(index)  # Помещаем соответствующий элемент
                 elif el == 'data-HDD_number':
-                    self.hdd_number = d[el]
+                    self.hdd_number = incoming_data[el]
+                elif 'checkBox' in el or 'groupBox' in el:
+                    self.list[el][1].setChecked(True) if incoming_data[el] \
+                        else self.list[el][1].setChecked(False)
                 else:  # Если любой другой элемент
-                    self.list[el][1].setText(d[el])  # Помещаем значение
+                    self.list[el][1].setText(incoming_data[el])  # Помещаем значение
 
     def default_settings(self):  # Запускаем окно с настройками по умолчанию.
         self.close()
