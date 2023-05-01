@@ -169,18 +169,31 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
             # grid.addWidget(self.button[i], i, 2)  # Добавляем в фрейм по месту
 
     def open_button_clicked(self, num):  # Для кнопки открыть
-        file = False
-        if 'дир.' in self.line[num].text():
-            directory = QFileDialog.getExistingDirectory(self, "Открыть папку", QDir.currentPath())
-        else:
-            directory = QFileDialog.getOpenFileName(self, "Открыть файл", QDir.currentPath())
-            file = True
-        if directory:  # Если нажать кнопку отркыть в диалоге выбора
-            if file:  # Если файлы
-                if directory[0]:  # Если есть файл, чтобы не очищалось поле
-                    self.name[num].setText(directory[0])
-            else:  # Если директории
-                self.name[num].setText(directory)
+        value = self.line[num].text()
+        for key in self.name_list:
+            if value == self.name_list[key]:
+                if 'folder' in key:
+                    directory = QFileDialog.getExistingDirectory(self, "Открыть папку", QDir.currentPath())
+                else:
+                    directory = QFileDialog.getOpenFileName(self, "Открыть файл", QDir.currentPath())
+                if directory and isinstance(directory, tuple):
+                    if directory[0]:
+                        self.name[num].setText(directory[0])
+                elif directory and isinstance(directory, str):
+                    self.name[num].setText(directory)
+                break
+        # file = False
+        # if 'дир.' in self.line[num].text():
+        #     directory = QFileDialog.getExistingDirectory(self, "Открыть папку", QDir.currentPath())
+        # else:
+        #     directory = QFileDialog.getOpenFileName(self, "Открыть файл", QDir.currentPath())
+        #     file = True
+        # if directory:  # Если нажать кнопку отркыть в диалоге выбора
+        #     if file:  # Если файлы
+        #         if directory[0]:  # Если есть файл, чтобы не очищалось поле
+        #             self.name[num].setText(directory[0])
+        #     else:  # Если директории
+        #         self.name[num].setText(directory)
 
     def add_button_clicked(self, number):  # Если кликнули по кнопке
         self.name[number].setEnabled(True)  # Делаем активным для изменения

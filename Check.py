@@ -2,6 +2,9 @@ import os
 import re
 import time
 
+import openpyxl
+import pandas as pd
+
 
 def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df, radiobutton_fstek_df,
                combobox_classified, lineedit_num_scroll, lineedit_list_item, lineedit_number, lineedit_protocol,
@@ -283,7 +286,12 @@ def doc_print(radiobutton_fsb_print, radiobutton_fstek_print, checkbox_conclusio
     else:
         if os.path.exists(path_account_num):
             if path_account_num.endswith('.xlsx'):
-                pass
+                try:
+                    df_acc_num = pd.read_excel(path_account_num, header=None)
+                    if df_acc_num.empty:
+                        return ['УПС!', 'Файл номеров пустой']
+                except BaseException:
+                    return ['УПС!', 'Что-то не так с файлом номеров']
             else:
                 return ['УПС!', 'Файл номеров не формата .xlsx']
         else:

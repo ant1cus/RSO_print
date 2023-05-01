@@ -28,8 +28,10 @@
     "instance-groupBox_instance": false,
     "print-checkBox_conclusion_print": false,
     "print-checkBox_file_add_account_numbers": false,
-    "print-checkBox_file_form_27": true,
+    "print-checkBox_file_form_27": false,
     "print-checkBox_preciption_print": false,
     "print-checkBox_protocol_print": false,
+    "print-path_file_account_numbers": "D:/Python/Project_RSO/тесты/Файл учетных номеров № MO 123.xlsx",
+    "print-path_folder_old_print": "D:/Python/Project_RSO/тесты/конечные",
     "statement": "Шит"
 }
