@@ -344,15 +344,20 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             name_conclusion = False
             # Добавка сортировки, если документы не по порядку.
             name_document = ''
+            logging.info('Ещё одна сортировка')
             for number, el_ in enumerate(docs):
-                if number + 1 == len(docs):
-                    break
-                if el_.partition(' ')[0] != name_document:
-                    name_document = el_.partition(' ')[0]
-                number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
-                if number_document > round(float(docs[number + 1].rpartition('.')[0].rpartition(' ')[2]), 4) and \
-                        name_document == docs[number + 1].partition(' ')[0]:
-                    docs[number], docs[number + 1] = docs[number + 1], docs[number]
+                if 'сопроводит' not in el_.lower() and 'акт' not in el_.lower() and 'запрос' not in el_.lower():
+                    if number + 1 == len(docs):
+                        break
+                    if el_.partition(' ')[0] != name_document:
+                        name_document = el_.partition(' ')[0]
+                    number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
+                    if 'сопроводит' not in docs[number + 1].lower() and \
+                            'акт' not in docs[number + 1].lower() and \
+                            'запрос' not in docs[number + 1].lower():
+                        if number_document > round(float(docs[number + 1].rpartition('.')[0].rpartition(' ')[2]), 4) \
+                                and name_document == docs[number + 1].partition(' ')[0]:
+                            docs[number], docs[number + 1] = docs[number + 1], docs[number]
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 if type(docs) is dict:
