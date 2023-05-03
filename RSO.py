@@ -84,7 +84,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.action_about.triggered.connect(about)
         self.action_account_number.triggered.connect(account_number)
         # Группа для кнопок принтера
-        self.button_gr = [self.radioButton_last_duplex, self.radioButton_duplex, self.radioButton_one_side]
+        self.button_gr = [self.radioButton_group4_last_duplex, self.radioButton_group4_duplex,
+                          self.radioButton_group4_one_side]
         # Если изменяем начальный номер
         self.path_for_default = pathlib.Path.cwd()  # Путь для файла настроек
         # Имена в файле
@@ -93,6 +94,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'insert-path_file_file_num': ['Путь к файлу номеров', self.lineEdit_path_file_file_num],
                      'insert-checkBox_folder_path_sp': ['Включить путь к СП', self.checkBox_folder_path_sp],
                      'insert-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
+                     'data-radioButton_group1': ['Ведомство при рег.', [self.radioButton_group1_FSB_df,
+                                                                        self.radioButton_group1_FSTEK_df]],
                      'data-classified': ['Гриф секретности', self.comboBox_classified],
                      'data-num_scroll': ['Номер экземпляра', self.lineEdit_num_scroll],
                      'data-list_item': ['Пункт перечня', self.lineEdit_list_item],
@@ -106,6 +109,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'data-act': ['Акт', self.lineEdit_act],
                      'data-statement': ['Утверждение', self.lineEdit_statement],
                      'account-groupBox_inventory_insert': ['Включить опись', self.groupBox_inventory_insert],
+                     'account-radioButton_group2': ['Выбрать кол-во описей', [self.radioButton_group2_40_num,
+                                                                              self.radioButton_group2_all_doc]],
                      'account-account_post': ['Должность', self.lineEdit_account_post],
                      'account-account_signature': ['ФИО подпись', self.lineEdit_account_signature],
                      'account-path_folder_account': ['Путь к описи', self.lineEdit_path_folder_account],
@@ -118,6 +123,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'instance-checkBox_protocol_instance': ['Включить протоколы', self.checkBox_protocol_instance],
                      'instance-checkBox_preciption_instance': ['Включить предписания',
                                                                self.checkBox_preciption_instance],
+                     'print-radioButton_group3': ['Ведомство при печати', [self.radioButton_group3_FSB_print,
+                                                  self.radioButton_group3_FSTEK_print]],
                      'print-checkBox_conclusion_print': ['Включить заключения', self.checkBox_conclusion_print],
                      'print-checkBox_protocol_print': ['Включить протокол', self.checkBox_protocol_print],
                      'print-checkBox_preciption_print': ['Включить предписание', self.checkBox_preciption_print],
@@ -130,7 +137,11 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                                  self.checkBox_file_add_account_numbers],
                      'print-path_file_add_account_num': ['Путь к доп. файлу уч. ном.',
                                                          self.lineEdit_path_file_add_account_numbers],
-                     'data-HDD_number': 'Номер НЖМД'}
+                     'print-radioButton_group4': ['Метод печати', [self.radioButton_group4_duplex,
+                                                                   self.radioButton_group4_last_duplex,
+                                                                   self.radioButton_group4_one_side]],
+                     'print-checkBox_print_order': ['Включить печать по порядку', self.checkBox_print_order],
+                     'data-HDD_number': ['Номер НЖМД']}
         # Грузим значения по умолчанию
         try:
             with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), "r", encoding='utf-8-sig') as f:
@@ -173,12 +184,20 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                 elif 'checkBox' in el or 'groupBox' in el:
                     self.list[el][1].setChecked(True) if incoming_data[el] \
                         else self.list[el][1].setChecked(False)
+                elif 'radioButton' in el:
+                    for radio, button in zip(incoming_data[el], self.list[el][1]):
+                        if radio:
+                            button.setChecked(True)
+                        else:
+                            button.setAutoExclusive(False)
+                            button.setChecked(False)
+                        button.setAutoExclusive(True)
                 else:  # Если любой другой элемент
                     self.list[el][1].setText(incoming_data[el])  # Помещаем значение
 
     def default_settings(self):  # Запускаем окно с настройками по умолчанию.
         self.close()
-        window_add = DefaultWindow(self, self.path_for_default)
+        window_add = DefaultWindow(self, self.path_for_default, self.list)
         window_add.show()
 
     def on_message_changed(self, title, description):  # Для вывода сообщений
@@ -214,15 +233,15 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         # Проверка введенных данных перед запуском потока
         output = doc_format(self.lineEdit_path_folder_old_doc, self.lineEdit_path_folder_new_doc,
                             self.lineEdit_path_file_file_num,
-                            self.radioButton_FSB_df, self.radioButton_FSTEK_df,
+                            self.radioButton_group1_FSB_df, self.radioButton_group1_FSTEK_df,
                             self.comboBox_classified, self.lineEdit_num_scroll,
                             self.lineEdit_list_item, self.lineEdit_number, self.lineEdit_protocol,
                             self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
                             self.lineEdit_executor_acc_sheet, self.label_protocol, self.label_conclusion,
                             self.label_prescription, self.label_print, self.label_executor_acc_sheet,
                             self.lineEdit_date, self.lineEdit_act, self.lineEdit_statement,
-                            self.groupBox_inventory_insert, self.radioButton_40_num,
-                            self.radioButton_all_doc, self.lineEdit_account_post,
+                            self.groupBox_inventory_insert, self.radioButton_group2_40_num,
+                            self.radioButton_group2_all_doc, self.lineEdit_account_post,
                             self.lineEdit_account_signature, self.lineEdit_path_folder_account, self.hdd_number,
                             self.groupBox_form27_insert, self.lineEdit_firm, self.lineEdit_path_folder_form_27_create,
                             self.groupBox_instance, self.lineEdit_number_instance, self.checkBox_conclusion_instance,
@@ -242,7 +261,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def printing(self):
         # Проверка введенных данных перед запуском потока
-        output = doc_print(self.radioButton_FSB_print, self.radioButton_FSTEK_print, self.checkBox_conclusion_print,
+        output = doc_print(self.radioButton_group3_FSB_print, self.radioButton_group3_FSTEK_print, self.checkBox_conclusion_print,
                            self.checkBox_protocol_print, self.checkBox_preciption_print,
                            self.lineEdit_path_folder_old_print,
                            self.lineEdit_path_file_account_numbers, self.checkBox_file_add_account_numbers,

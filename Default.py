@@ -39,55 +39,62 @@ class Button(QLineEdit):
 
 
 class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки по умолчанию
-    def __init__(self, parent, path):
+    def __init__(self, parent, path, name_list):
         super().__init__()
         self.setupUi(self)
         self.parent = parent
         self.path_for_default = path
         # Имена на английском и русском
-        self.name_list = {'insert-path_folder_old': 'Путь к исходным файлам',
-                          'insert-path_folder_new': 'Путь к конечным файлам',
-                          'insert-path_file_file_num': 'Путь к файлу номеров',
-                          'insert-checkBox_folder_path_sp': 'Включить путь к СП',
-                          'insert-path_folder_sp': 'Путь к материалам СП',
-                          'data-classified': 'Гриф секретности',
-                          'data-num_scroll': 'Номер экземпляра',
-                          'data-list_item': 'Пункт перечня',
-                          'data-number': 'Номер',
-                          'data-protocol': 'Протокол',
-                          'data-conclusion': 'Заключение',
-                          'data-prescription': 'Предписание',
-                          'data-print_people': 'Печать',
-                          'data-date': 'Дата',
-                          'data-executor_acc_sheet': 'Сопровод',
-                          'data-act': 'Акт',
-                          'data-statement': 'Утверждение',
-                          'account-groupBox_inventory_insert': 'Включить опись',
-                          'account-account_post': 'Должность',
-                          'account-account_signature': 'ФИО подпись',
-                          'account-path_folder_account': 'Путь к описи',
-                          'form27-groupBox_form27_insert': 'Включить 27 форму',
-                          'form27-firm': 'Организация',
-                          'form27-path_folder_form_27_create': 'Путь к форме',
-                          'instance-groupBox_instance': 'Включить экземпляры',
-                          'instance-checkBox_conclusion_instance': 'Включить заключения',
-                          'instance-checkBox_protocol_instance': 'Включить протоколы',
-                          'instance-checkBox_preciption_instance': 'Включить предписания',
-                          'print-checkBox_conclusion_print': 'Включить заключения',
-                          'print-checkBox_protocol_print': 'Включить протокол',
-                          'print-checkBox_preciption_print': 'Включить предписание',
-                          'print-path_folder_old_print': 'Путь к файлам для печати',
-                          'print-path_file_account_numbers': 'Путь к учетным номерам',
-                          'print-checkBox_file_form_27': 'Включить 27 форму',
-                          'print-path_file_form_27': 'Путь к форме',
-                          'print-checkBox_file_add_account_numbers': 'Включить доп. номера',
-                          'print-path_file_add_account_num': 'Путь к доп. файлу уч. ном.',
-                          'data-HDD_number': 'Номер НЖМД'}
+        self.name_list = name_list
+        # self.name_list = {'insert-path_folder_old': 'Путь к исходным файлам',
+        #                   'insert-path_folder_new': 'Путь к конечным файлам',
+        #                   'insert-path_file_file_num': 'Путь к файлу номеров',
+        #                   'insert-checkBox_folder_path_sp': 'Включить путь к СП',
+        #                   'insert-path_folder_sp': 'Путь к материалам СП',
+        #                   'data-radioButton_group1': 'Ведомство при рег.',
+        #                   'data-classified': 'Гриф секретности',
+        #                   'data-num_scroll': 'Номер экземпляра',
+        #                   'data-list_item': 'Пункт перечня',
+        #                   'data-number': 'Номер',
+        #                   'data-protocol': 'Протокол',
+        #                   'data-conclusion': 'Заключение',
+        #                   'data-prescription': 'Предписание',
+        #                   'data-print_people': 'Печать',
+        #                   'data-date': 'Дата',
+        #                   'data-executor_acc_sheet': 'Сопровод',
+        #                   'data-act': 'Акт',
+        #                   'data-statement': 'Утверждение',
+        #                   'account-radioButton_group2': 'Выбрать кол-во описей',
+        #                   'account-groupBox_inventory_insert': 'Включить опись',
+        #                   'account-account_post': 'Должность',
+        #                   'account-account_signature': 'ФИО подпись',
+        #                   'account-path_folder_account': 'Путь к описи',
+        #                   'form27-groupBox_form27_insert': 'Включить 27 форму',
+        #                   'form27-firm': 'Организация',
+        #                   'form27-path_folder_form_27_create': 'Путь к форме',
+        #                   'instance-groupBox_instance': 'Включить экземпляры',
+        #                   'instance-checkBox_conclusion_instance': 'Включить заключения',
+        #                   'instance-checkBox_protocol_instance': 'Включить протоколы',
+        #                   'instance-checkBox_preciption_instance': 'Включить предписания',
+        #                   'print-radioButton_group3': 'Ведомство при печати',
+        #                   'print-checkBox_conclusion_print': 'Включить заключения',
+        #                   'print-checkBox_protocol_print': 'Включить протокол',
+        #                   'print-checkBox_preciption_print': 'Включить предписание',
+        #                   'print-path_folder_old_print': 'Путь к файлам для печати',
+        #                   'print-path_file_account_numbers': 'Путь к учетным номерам',
+        #                   'print-checkBox_file_form_27': 'Включить 27 форму',
+        #                   'print-path_file_form_27': 'Путь к форме',
+        #                   'print-checkBox_file_add_account_numbers': 'Включить доп. номера',
+        #                   'print-path_file_add_account_num': 'Путь к доп. файлу уч. ном.',
+        #                   'print-radioButton_group4': 'Метод печати',
+        #                   'print-checkBox_print_order': 'Включить печать по порядку',
+        #                   'data-HDD_number': 'Номер НЖМД'}
         self.name_box = [self.groupBox_catalog_insert_default, self.groupBox_data_default,
                          self.groupBox_form_27_default, self.groupBox_inventory_default, self.groupBox_instance,
                          self.groupBox_catalog_print_default]
         self.name_grid = [self.gridLayout_catalog, self.gridLayout_data, self.gridLayout_form_27,
                           self.gridLayout_inventory, self.gridLayout_instance, self.gridLayout_print]
+        self.radio_group = {'group1': []}
         with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), "r", encoding='utf-8-sig') as f:  # Открываем
             self.data = json.load(f)  # Загружаем данные
         self.buttongroup_add = QButtonGroup()
@@ -111,13 +118,35 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                     frame, grid = self.name_box[j], self.name_grid[j]
                     break
             self.line[i] = QLabel(frame)  # Помещаем в фрейм
-            self.line[i].setText(self.name_list[el])  # Название элемента
+            self.line[i].setText(self.name_list[el][0])  # Название элемента
             self.line[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
             self.line[i].setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)  # Размеры виджета
-            self.line[i].setFixedWidth(200)
+            self.line[i].setFixedWidth(325)
             self.line[i].setDisabled(True)  # Делаем неактивным, чтобы нельзя было просто так редактировать
             grid.addWidget(self.line[i], i, 0)  # Добавляем виджет
-            if 'checkBox' not in el and 'groupBox' not in el:
+            if 'checkBox' in el or 'groupBox' in el:
+                self.combo[i] = QComboBox(frame)  # Помещаем в фрейм
+                self.combo[i].addItems(['Включён', 'Выключен'])
+                self.combo[i].setCurrentIndex(0) if el in self.data and self.data[el] \
+                    else self.combo[i].setCurrentIndex(1)
+                self.combo[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
+                self.combo[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
+                grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
+            elif 'radioButton' in el:
+                self.combo[i] = QComboBox(frame)  # Помещаем в фрейм
+                name_radio = [radio.text() for radio in self.name_list[el][1]]
+                name_radio.insert(0, '')
+                radio_index = 0
+                if el in self.data:
+                    for button, radio_check in enumerate(self.data[el]):
+                        if radio_check:
+                            radio_index = button + 1
+                self.combo[i].addItems(name_radio)
+                self.combo[i].setCurrentIndex(radio_index)
+                self.combo[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
+                self.combo[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
+                grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
+            else:
                 self.button[i] = QPushButton("Изменить", frame)  # Создаем кнопку
                 self.button[i].setFont(QFont("Times", 12, QFont.Light))  # Размер шрифта
                 self.button[i].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Размеры виджета
@@ -146,15 +175,6 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                     self.button_open[i].setDisabled(True)  # Неактивный
                     self.buttongroup_open.addButton(self.button_open[i], i)  # Добавляем в группу
                     grid.addWidget(self.button_open[i], i, 4)  # Добавляем в фрейм по месту
-            else:
-                self.combo[i] = QComboBox(frame)  # Помещаем в фрейм
-                self.combo[i].addItems(['Включён', 'Выключен'])
-                self.combo[i].setCurrentIndex(0) if el in self.data and self.data[el] \
-                    else self.combo[i].setCurrentIndex(1)
-                self.combo[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
-                self.combo[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
-                grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
-
             # self.name[i] = Button(frame)  # Помещаем в фрейм
             # if el in self.data:
             #     self.name[i].setText(self.data[el])
@@ -171,7 +191,7 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
     def open_button_clicked(self, num):  # Для кнопки открыть
         value = self.line[num].text()
         for key in self.name_list:
-            if value == self.name_list[key]:
+            if value == self.name_list[key][0]:
                 if 'folder' in key:
                     directory = QFileDialog.getExistingDirectory(self, "Открыть папку", QDir.currentPath())
                 else:
@@ -182,18 +202,6 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                 elif directory and isinstance(directory, str):
                     self.name[num].setText(directory)
                 break
-        # file = False
-        # if 'дир.' in self.line[num].text():
-        #     directory = QFileDialog.getExistingDirectory(self, "Открыть папку", QDir.currentPath())
-        # else:
-        #     directory = QFileDialog.getOpenFileName(self, "Открыть файл", QDir.currentPath())
-        #     file = True
-        # if directory:  # Если нажать кнопку отркыть в диалоге выбора
-        #     if file:  # Если файлы
-        #         if directory[0]:  # Если есть файл, чтобы не очищалось поле
-        #             self.name[num].setText(directory[0])
-        #     else:  # Если директории
-        #         self.name[num].setText(directory)
 
     def add_button_clicked(self, number):  # Если кликнули по кнопке
         self.name[number].setEnabled(True)  # Делаем активным для изменения
@@ -212,6 +220,9 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         for i, el in enumerate(self.name_list):  # Пробегаем значения
             if 'checkBox' in el or 'groupBox' in el:
                 self.data[el] = True if self.combo[i].currentIndex() == 0 else False
+            elif 'radioButton' in el:
+                self.data[el] = [True if self.name_list[el][1].index(radio) + 1 == self.combo[i].currentIndex()
+                                 else False for radio in self.name_list[el][1]]
             else:
                 if self.name[i].isEnabled():  # Если виджет активный (означает потенциальное изменение)
                     if self.name[i].text():  # Если внутри виджета есть текст, то помещаем внутрь базы
@@ -233,4 +244,3 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         else:
             event.accept()
             self.parent.show()
-

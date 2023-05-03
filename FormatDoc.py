@@ -351,7 +351,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         break
                     if el_.partition(' ')[0] != name_document:
                         name_document = el_.partition(' ')[0]
-                    number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
+                    try:
+                        number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
+                    except ValueError:
+                        continue
                     if 'сопроводит' not in docs[number + 1].lower() and \
                             'акт' not in docs[number + 1].lower() and \
                             'запрос' not in docs[number + 1].lower():
