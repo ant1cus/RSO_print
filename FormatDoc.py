@@ -238,12 +238,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     fso = True
                     break
 
-            def sort(input_str):  # Ф-я для сортировка
-
-                try:
-                    return float(input_str.partition('.')[2][:-5])
-                except ValueError:
-                    return 1
+            # def sort(input_str):  # Ф-я для сортировка
+            #
+            #     try:
+            #         return float(input_str.partition('.')[2][:-5])
+            #     except ValueError:
+            #         return 1
 
             if fso:
                 docs = {}
@@ -256,8 +256,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             return
                         file = os.listdir(path_old_ + '\\' + folder_)
                         # Сортировка может не работать, если серийники не будут совпадать с порядком номеров комплектов
-                        file.sort(key=sort)  # Сортировка
-                        file = natsorted(file)
+                        # file.sort(key=sort)  # Сортировка
+                        file = natsorted(file, key=lambda y: y.rpartition(' ')[2][:-5])
                         for name_element in ['акт', 'заключение']:
                             for element in file:
                                 if name_element in element.lower():
@@ -269,8 +269,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                              ' технических средств» написано с ошибками')
                             return
                         file = os.listdir(path_old_ + '\\' + folder_)
-                        file.sort(key=sort)  # Сортировка
-                        file = natsorted(file)
+                        # file.sort(key=sort)  # Сортировка
+                        file = natsorted(file, key=lambda y: y.rpartition(' ')[2][:-5])
                         for name_element in ['протокол', 'предписание']:
                             for element in file:
                                 if name_element in element.lower():
@@ -287,15 +287,15 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 docx_for_progress = len(docs)
             else:
                 docs = [file for file in os.listdir() if file[-4:] == 'docx']  # Список документов
-                docs.sort(key=sort)  # Сортировка
-                docs = natsorted(docs)
+                # docs.sort(key=sort)  # Сортировка
+                docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
                 docs_ = [j_ for i_ in
                          ['Заключение', 'Протокол', 'Приложение', 'Предписание', 'Форма 3', 'Опись',
                           'Сопроводит'] for j_ in docs if
                          re.findall(i_.lower(), j_.lower())]
                 docs_not = [i_ for i_ in docs if i_ not in docs_ and '~' not in i_]
                 docs = docs_not + docs_
-                logging.info("Отсортированы документы:\n" + '\n'.join([i_ for i_ in docs]))
+                logging.info("Отсортированы документы:\n" + '-|-'.join([i_ for i_ in docs]))
                 for el in docs:
                     if el.endswith('.doc'):
                         status.emit('Документ ' + os.path.basename(el) + ' формата .doc'
@@ -343,24 +343,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             name_protocol = False
             name_conclusion = False
             # Добавка сортировки, если документы не по порядку.
-            name_document = ''
-            logging.info('Ещё одна сортировка')
-            for number, el_ in enumerate(docs):
-                if 'сопроводит' not in el_.lower() and 'акт' not in el_.lower() and 'запрос' not in el_.lower():
-                    if number + 1 == len(docs):
-                        break
-                    if el_.partition(' ')[0] != name_document:
-                        name_document = el_.partition(' ')[0]
-                    try:
-                        number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
-                    except ValueError:
-                        continue
-                    if 'сопроводит' not in docs[number + 1].lower() and \
-                            'акт' not in docs[number + 1].lower() and \
-                            'запрос' not in docs[number + 1].lower():
-                        if number_document > round(float(docs[number + 1].rpartition('.')[0].rpartition(' ')[2]), 4) \
-                                and name_document == docs[number + 1].partition(' ')[0]:
-                            docs[number], docs[number + 1] = docs[number + 1], docs[number]
+            # name_document = ''
+            # logging.info('Ещё одна сортировка')
+            # for number, el_ in enumerate(docs):
+            #     if 'сопроводит' not in el_.lower() and 'акт' not in el_.lower() and 'запрос' not in el_.lower():
+            #         if number + 1 == len(docs):
+            #             break
+            #         if el_.partition(' ')[0] != name_document:
+            #             name_document = el_.partition(' ')[0]
+            #         try:
+            #             number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
+            #         except ValueError:
+            #             continue
+            #         if 'сопроводит' not in docs[number + 1].lower() and \
+            #                 'акт' not in docs[number + 1].lower() and \
+            #                 'запрос' not in docs[number + 1].lower():
+            #             if number_document > round(float(docs[number + 1].rpartition('.')[0].rpartition(' ')[2]), 4) \
+            #                     and name_document == docs[number + 1].partition(' ')[0]:
+            #                 docs[number], docs[number + 1] = docs[number + 1], docs[number]
+            # logging.info("Отсортированные документы:\n" + '-|-'.join([i_ for i_ in docs]))
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 if type(docs) is dict:

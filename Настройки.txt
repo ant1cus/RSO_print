@@ -20,15 +20,15 @@
     "data-print_people": "ufk",
     "data-protocol": "Bv",
     "data-radioButton_group1": [
-        false,
-        true
+        true,
+        false
     ],
     "form27-firm": "Организация",
     "form27-groupBox_form27_insert": false,
     "form27-path_folder_form_27_create": "D:\\Python\\Project_RSO\\тесты\\конечные",
-    "insert-checkBox_folder_path_sp": true,
+    "insert-checkBox_folder_path_sp": false,
     "insert-path_folder_new": "d:\\python\\project_rso\\тесты\\конечные",
-    "insert-path_folder_old": "D:/Python/Project_RSO/тесты/общий тест",
+    "insert-path_folder_old": "D:/Python/Project_RSO/тесты/общий тест (номера не по порядку)",
     "insert-path_folder_sp": "D:\\Python\\Project_RSO\\тесты\\материалы сп\\Номер ГК",
     "instance-checkBox_conclusion_instance": false,
     "instance-checkBox_preciption_instance": false,
