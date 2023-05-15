@@ -264,7 +264,7 @@ def doc_print(radiobutton_fsb_print, radiobutton_fstek_print, checkbox_conclusio
         return ['УПС!', 'Указанный путь к исходным документам для печати не является директорией']
     # Путь к номерам
     path_account_num = lineedit_account_numbers.text().strip()
-    add_path_account_num = None
+    add_path_account_num = False
     if checkbox_add_account_numbers.isChecked():
         add_path_account_num = lineedit_add_account_numbers.text().strip()
         if not add_path_account_num:
@@ -317,7 +317,7 @@ def doc_print(radiobutton_fsb_print, radiobutton_fstek_print, checkbox_conclusio
         else:
             path_form_27 = True
     # Способ печати
-    print_flag = None
+    print_flag = False
     for button in button_gr:
         if button.isChecked():
             print_flag = button.text()

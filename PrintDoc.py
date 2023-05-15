@@ -25,7 +25,7 @@ from natsort import natsorted
 
 
 class PrintDoc(QThread):  # Поток для печати
-    progress = pyqtSignal(int)  # Сигнал для прогресс бара
+    progress = pyqtSignal(int)  # Сигнал для progressbar
     status = pyqtSignal(str)  # Сигнал для статус бара
     messageChanged = pyqtSignal(str, str)  # Сигнал, если ошибка
 
@@ -44,6 +44,7 @@ class PrintDoc(QThread):  # Поток для печати
         self.logging = incoming_data['logging']
         self.package = incoming_data['package_']
         self.document_list = incoming_data['document_list']
+        self.incoming = {info: incoming_data[info] if incoming_data[info] else '' for info in incoming_data}
 
     def run(self):
 
@@ -88,7 +89,7 @@ class PrintDoc(QThread):  # Поток для печати
             #     doc_file_pdf.close()  # Закрываем
             #     self.logging.info('Удаляем пдф ' + name_doc_start)
             #     os.remove(name_doc_file_pdf)  # Удаляем пдф документ
-            #     self.logging.info('Вставляем страницы в ворд ' + name_doc_start)
+            #     self.logging.info('Вставляем страницы в word ' + name_doc_start)
             #     temp_docx_ = name_doc_start
             #     temp_zip_ = name_doc_start + ".zip"
             #     temp_folder_ = os.path.join(os.getcwd() + '\\', "template")
@@ -102,7 +103,7 @@ class PrintDoc(QThread):  # Поток для печати
             #                      "<Pages>" + str(doc_page) + "</Pages>", string_)
             #     with open(pages_xml_, "wb") as file_wb_:
             #         file_wb_.write(string_.encode("UTF-8"))
-            #     self.logging.info('Получаем ворд из зип ' + name_doc_start)
+            #     self.logging.info('Получаем word из зип ' + name_doc_start)
             #     os.remove(temp_zip_)
             #     shutil.make_archive(temp_zip_.replace(".zip", ""), 'zip', temp_folder_)
             #     os.rename(temp_zip_, temp_docx_)  # rename zip file to docx
@@ -116,8 +117,8 @@ class PrintDoc(QThread):  # Поток для печати
                 os.chdir(path_old)  # Меняем рабочую директорию
                 percent_val = 0  # Отсылаемое значение в прогресс бар
                 docs = [i for i in os.listdir() if i[-4:] == 'docx' and '~' not in i]  # Список файлов
-                logging.info('Второй сопровод')
-                for el in docs:  # Для второго сопровода
+                logging.info('Второй сопроводительный')
+                for el in docs:  # Для второго сопроводительного
                     if re.findall('сопроводит', el.lower()) or re.findall('запрос', el.lower()):
                         shutil.copy(el, el.rpartition('.')[0] + ' (2 экз.).docx', follow_symlinks=True)
                         doc = docx.Document(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
@@ -166,16 +167,8 @@ class PrintDoc(QThread):  # Поток для печати
                             rm(os.getcwd() + '\\zip')
                             break
                 docs = [i for i in os.listdir() if i[-4:] == 'docx' and '~' not in i]  # Список файлов
-
-                def sort(input_str):  # Ф-я для сортировка
-                    try:
-                        return float(input_str.partition('.')[2][:-5])
-                    except ValueError:
-                        return 1
-
                 logging.info('Сортируем')
-                docs.sort(key=sort)  # Сортировка
-                docs = natsorted(docs)
+                docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
                 if print_order:
                     logging.info('Есть порядок печати')
                     quantity_docs = {'Заключение': 0, 'Протокол': 0, 'Приложение': 0, 'Предписание': 0}
@@ -213,18 +206,20 @@ class PrintDoc(QThread):  # Поток для печати
                                          'Сопроводит', 'Приложение'] for j in docs if re.findall(i.lower(), j.lower())]
                 docs_not = [i for i in docs if i not in docs_]
                 docs = docs_not + docs_
+                logging.info('Отсортированные документы:\n' + '-|-'.join(docs))
                 per = 0
                 for file in docs:
-                    if file.partition(' ')[0].lower() in ['протокол', 'приложение'] and service:
-                        pass
-                    else:
+                    if file.partition(' ')[0].lower() not in ['протокол', 'приложение'] and service:
                         per += 1
-                percent = 100 / per  # Процент от общего
+                try:
+                    percent = 100 / per  # Процент от общего
+                except ZeroDivisionError:
+                    logging.warning('Деление на 0, ни одного документа для печати')
                 status.emit('Считаем количество листов в документах...')
                 logging.info('Считаем количество листов в документах')
 
                 def list_doc(dp):
-                    # Открываем вордовский документ как зип архив для доступа к xml свойствам
+                    # Открываем word документ как зип архив для доступа к xml свойствам
                     with zipfile.ZipFile(os.getcwd() + '\\' + dp) as my_doc:
                         xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
                         pages_ = re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())  # Ищем кол-во страниц
@@ -234,7 +229,7 @@ class PrintDoc(QThread):  # Поток для печати
                             ns = int(pages_[0])
                             # ns = list_count(dp)  # Для проверки, вдруг изменилось количество страниц
                     return ns
-
+                num_of_sheets_logs = {}
                 for doc_path in docs:
                     if doc_path.endswith('.docx'):
                         if service:
@@ -246,7 +241,8 @@ class PrintDoc(QThread):  # Поток для печати
                                     and self.document_list['предписание'] is False:
                                 continue
                             else:
-                                num_of_sheets += list_doc(doc_path)
+                                num_of_sheets_logs[doc_path] = list_doc(doc_path)
+                                num_of_sheets += num_of_sheets_logs[doc_path]
                         else:
                             if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
                                 continue
@@ -258,8 +254,11 @@ class PrintDoc(QThread):  # Поток для печати
                             elif re.findall('приложение', doc_path.lower()):
                                 continue
                             else:
-                                num_of_sheets += list_doc(doc_path)
+                                num_of_sheets_logs[doc_path] = list_doc(doc_path)
+                                num_of_sheets += num_of_sheets_logs[doc_path]
                 print(num_of_sheets)
+                logging.info('Листы в документах:')
+                logging.info(num_of_sheets_logs)
 
                 def numbers_list(path_s, acc_num, num_in, num_del=-1):  # Для подсчета кол-ва номеров в файле с номерами
                     w_b = openpyxl.load_workbook(path_s)  # Открываем книгу
@@ -321,7 +320,7 @@ class PrintDoc(QThread):  # Поток для печати
                         for i_ in range(1, w_s.max_row + 1):  # Строки
                             # with open('file_del_number.txt', mode_) as file_:
                             #     print(w_s.cell(i_, j_).value, file=file_)
-                            if w_s.cell(i_, j_).value:  # Если есть значние
+                            if w_s.cell(i_, j_).value:  # Если есть значение
                                 # with open('file_del_number.txt', mode_) as file_:
                                 #     print('exit flag', file=file_)
                                 flag_ = 1  # Для дальнейшего выхода
@@ -375,7 +374,7 @@ class PrintDoc(QThread):  # Поток для печати
                                                  str(datetime.date.today()), printer]
                                 win32api.ShellExecute(0, "print", path_old + '\\' + name_pdf,
                                                       name_printer, ".", 0)
-                                jobs = 0  # Проверка для того, что бы не перескакивать на следющий документ
+                                jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                 printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
                                 handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
                                 logging.info('Ждем очередь ' + str(el))
@@ -468,7 +467,7 @@ class PrintDoc(QThread):  # Поток для печати
                                                      str(datetime.date.today()), printer]
                                     win32api.ShellExecute(0, "print", path_old + '\\' + name_pdf,
                                                           name_printer, ".", 0)
-                                    jobs = 0  # Проверка для того, что бы не перескакивать на следющий документ
+                                    jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                     # Дефолтный принтер
                                     printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}
                                     handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
@@ -508,7 +507,7 @@ class PrintDoc(QThread):  # Поток для печати
                                             win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
                                                                   name_printer, '.', 0)
                                             status.emit('Печатаем документ ' + name_pdf)
-                                            jobs = 0  # Проверка для того, что бы не перескакивать на следющий документ
+                                            jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                             logging.info('Ждем очередь ' + name_pdf)
                                             while jobs < 3:
                                                 print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
@@ -535,7 +534,7 @@ class PrintDoc(QThread):  # Поток для печати
                                             input_file.select(selected_page)  # Выбираем страницы
                                             input_file.save(output_2_side)  # Сохраняем
                                             input_file.close()
-                                            jobs = 0  # Проверка для того, что бы не перескакивать на следющий документ
+                                            jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                             status.emit('Печатаем документ ' + str(el))
                                             logging.info('Ждем очередь')
                                             while jobs < 3:
@@ -545,7 +544,7 @@ class PrintDoc(QThread):  # Поток для печати
                                                 elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
                                                     jobs = 3
                                                     logging.info('Очередь очистилась')
-                                                    os.remove(output_1_side)  # Улаляем файл
+                                                    os.remove(output_1_side)  # Удаляем файл
                                                 elif print_jobs:  # Если в очереди что-то есть
                                                     jobs = 2
                                             level = 2
@@ -561,7 +560,7 @@ class PrintDoc(QThread):  # Поток для печати
                                             # Печатаем
                                             logging.info('Печатаем')
                                             win32api.ShellExecute(0, 'print', output_2_side, name_printer, '.', 0)
-                                            jobs = 0  # Проверка для того, что бы не перескакивать на следющий документ
+                                            jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                             status.emit('Печатаем последнюю страницу документа ' + str(el))
                                             logging.info('Ждем очередь')
                                             while jobs < 3:
@@ -571,7 +570,7 @@ class PrintDoc(QThread):  # Поток для печати
                                                 elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
                                                     jobs = 3
                                                     logging.info('Очередь очистилась')
-                                                    os.remove(output_2_side)  # Улаляем файл
+                                                    os.remove(output_2_side)  # Удаляем файл
                                                 elif print_jobs:  # Если в очереди что-то есть
                                                     jobs = 2
                                     else:
@@ -594,7 +593,7 @@ class PrintDoc(QThread):  # Поток для печати
                                         logging.info('Печатаем ' + str(el))
                                         win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
                                                               name_printer, '.', 0)
-                                        jobs = 0  # Проверка для того, что бы не перескакивать на следющий документ
+                                        jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                         logging.info('Ждем очередь ' + str(el))
                                         while jobs < 3:
                                             print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
@@ -639,6 +638,8 @@ class PrintDoc(QThread):  # Поток для печати
                 self.status.emit('Ошибка')  # Сообщение в статус бар
                 self.logging.error("Ошибка:\n " + str(e) + '\n' + traceback.format_exc())
 
+        self.logging.info("\n***********************************************************************************\n")
+        self.logging.info("Новый запуск")
         time_start = datetime.datetime.now()
         self.progress.emit(0)  # Обнуление прогресс бара
 
@@ -655,6 +656,21 @@ class PrintDoc(QThread):  # Поток для печати
             for folder in os.listdir(self.path_old):
                 path_ = self.path_old + '\\' + folder
                 path_form27_ = path_ + '\\' + 'Форма 27.xlsx' if self.path_form27 else False
+                self.incoming['path_old_print'], self.incoming['path_form_27'] = path_, path_form27_
+                self.logging.info('Входные параметы:')
+                self.logging.info(self.incoming)
+                # self.logging.info('path - ' + self.path_old + '\n' +
+                #                   'account_num_path - ' + self.account_num_path + '\n' +
+                #                   'add_path_account_num - ' + self.add_path_account_num + '\n' +
+                #                   'print_flag - ' + self.print_flag + '\n' +
+                #                   'name_printer - ' + self.name_printer + '\n' +
+                #                   'path_form27_ - ' + self.path_form27 + '\n' +
+                #                   'print_order - ' + self.print_order + '\n' +
+                #                   'service - ' + self.service + '\n' +
+                #                   'path_for_def - ' + self.path_for_def + '\n' +
+                #                   'logging - ' + self.logging + '\n' +
+                #                   'status - ' + self.status + '\n' +
+                #                   'progress - ' + self.progress + '\n')
                 ex = print_doc(path_, self.account_num_path, self.add_path_account_num, self.print_flag,
                                self.name_printer, path_form27_, self.print_order, self.service, self.path_for_def,
                                self.logging, self.status, self.progress)
@@ -663,6 +679,20 @@ class PrintDoc(QThread):  # Поток для печати
                     self.messageChanged.emit("ВНИМАНИЕ!", ex)
                     return
         else:
+            self.logging.info('Входные параметы:')
+            self.logging.info(self.incoming)
+            # self.logging.info('path - ' + self.path_old + '\n' +
+            #                   'account_num_path - ' + self.account_num_path + '\n' +
+            #                   'add_path_account_num - ' + self.add_path_account_num + '\n' +
+            #                   'print_flag - ' + self.print_flag + '\n' +
+            #                   'name_printer - ' + self.name_printer + '\n' +
+            #                   'path_form27_ - ' + self.path_form27 + '\n' +
+            #                   'print_order - ' + self.print_order + '\n' +
+            #                   'service - ' + self.service + '\n' +
+            #                   'path_for_def - ' + self.path_for_def + '\n' +
+            #                   'logging - ' + self.logging + '\n' +
+            #                   'status - ' + self.status + '\n' +
+            #                   'progress - ' + self.progress + '\n')
             ex = print_doc(self.path_old, self.account_num_path, self.add_path_account_num, self.print_flag,
                            self.name_printer, self.path_form27, self.print_order, self.service, self.path_for_def,
                            self.logging, self.status, self.progress)
