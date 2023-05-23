@@ -4,6 +4,7 @@ import sys
 import json
 import pathlib
 import logging
+import traceback
 
 import Main
 import about
@@ -231,55 +232,81 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def insert_head_foot(self):
         # Проверка введенных данных перед запуском потока
-        output = doc_format(self.lineEdit_path_folder_old_doc, self.lineEdit_path_folder_new_doc,
-                            self.lineEdit_path_file_file_num,
-                            self.radioButton_group1_FSB_df, self.radioButton_group1_FSTEK_df,
-                            self.comboBox_classified, self.lineEdit_num_scroll,
-                            self.lineEdit_list_item, self.lineEdit_number, self.lineEdit_protocol,
-                            self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
-                            self.lineEdit_executor_acc_sheet, self.label_protocol, self.label_conclusion,
-                            self.label_prescription, self.label_print, self.label_executor_acc_sheet,
-                            self.lineEdit_date, self.lineEdit_act, self.lineEdit_statement,
-                            self.groupBox_inventory_insert, self.radioButton_group2_40_num,
-                            self.radioButton_group2_all_doc, self.lineEdit_account_post,
-                            self.lineEdit_account_signature, self.lineEdit_path_folder_account, self.hdd_number,
-                            self.groupBox_form27_insert, self.lineEdit_firm, self.lineEdit_path_folder_form_27_create,
-                            self.groupBox_instance, self.lineEdit_number_instance, self.checkBox_conclusion_instance,
-                            self.checkBox_protocol_instance, self.checkBox_preciption_instance, self.action_package,
-                            self.action_report_MO, self.checkBox_folder_path_sp, self.lineEdit_path_folder_sp)
-        if type(output) == list:
-            self.on_message_changed(output[0], output[1])
-            return
-        # Если всё прошло запускаем поток
-        output['queue'], output['logging'] = self.queue, logging
-        self.thread = FormatDoc(output)
-        self.thread.progress.connect(self.progressBar.setValue)
-        self.thread.status.connect(self.show_mess)
-        self.thread.messageChanged.connect(self.on_message_changed)
-        self.thread.finished.connect(self.stop_thread)
-        self.thread.start()
+        try:
+            logging.info('----------------Запускаем insert_head_foot----------------')
+            logging.info('Проверка данных')
+            output = doc_format(self.lineEdit_path_folder_old_doc, self.lineEdit_path_folder_new_doc,
+                                self.lineEdit_path_file_file_num,
+                                self.radioButton_group1_FSB_df, self.radioButton_group1_FSTEK_df,
+                                self.comboBox_classified, self.lineEdit_num_scroll,
+                                self.lineEdit_list_item, self.lineEdit_number, self.lineEdit_protocol,
+                                self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
+                                self.lineEdit_executor_acc_sheet, self.label_protocol, self.label_conclusion,
+                                self.label_prescription, self.label_print, self.label_executor_acc_sheet,
+                                self.lineEdit_date, self.lineEdit_act, self.lineEdit_statement,
+                                self.groupBox_inventory_insert, self.radioButton_group2_40_num,
+                                self.radioButton_group2_all_doc, self.lineEdit_account_post,
+                                self.lineEdit_account_signature, self.lineEdit_path_folder_account, self.hdd_number,
+                                self.groupBox_form27_insert, self.lineEdit_firm,
+                                self.lineEdit_path_folder_form_27_create,
+                                self.groupBox_instance, self.lineEdit_number_instance,
+                                self.checkBox_conclusion_instance,
+                                self.checkBox_protocol_instance, self.checkBox_preciption_instance,
+                                self.action_package,
+                                self.action_report_MO, self.checkBox_folder_path_sp, self.lineEdit_path_folder_sp)
+            if isinstance(output, list):
+                logging.info('Обнаружены ошибки данных')
+                self.on_message_changed(output[0], output[1])
+                return
+            # Если всё прошло запускаем поток
+            logging.info('Запуск на выполнение')
+            output['queue'], output['logging'] = self.queue, logging
+            logging.info('Входные данные:')
+            logging.info(output)
+            self.thread = FormatDoc(output)
+            self.thread.progress.connect(self.progressBar.setValue)
+            self.thread.status.connect(self.show_mess)
+            self.thread.messageChanged.connect(self.on_message_changed)
+            self.thread.finished.connect(self.stop_thread)
+            self.thread.start()
+        except BaseException as exception:
+            logging.error('Ошибка insert_head_foot')
+            logging.error(exception)
+            logging.error(traceback.format_exc())
 
     def printing(self):
         # Проверка введенных данных перед запуском потока
-        output = doc_print(self.radioButton_group3_FSB_print, self.radioButton_group3_FSTEK_print, self.checkBox_conclusion_print,
-                           self.checkBox_protocol_print, self.checkBox_preciption_print,
-                           self.lineEdit_path_folder_old_print,
-                           self.lineEdit_path_file_account_numbers, self.checkBox_file_add_account_numbers,
-                           self.lineEdit_path_file_add_account_numbers, self.checkBox_file_form_27,
-                           self.lineEdit_path_file_form_27_print,
-                           self.button_gr, self.lineEdit_printer, self.checkBox_print_order, self.path_for_default,
-                           self.action_package)
-        if type(output) == list:
-            self.on_message_changed(output[0], output[1])
-            return
-        # Если всё прошло запускаем поток
-        output['logging'] = logging
-        self.thread = PrintDoc(output)
-        self.thread.progress.connect(self.progressBar.setValue)
-        self.thread.status.connect(self.show_mess)
-        self.thread.messageChanged.connect(self.on_message_changed)
-        self.thread.start()
-        self.thread.finished.connect(self.stop_thread)
+        try:
+            logging.info('----------------Запускаем printing----------------')
+            logging.info('Проверка данных')
+            output = doc_print(self.radioButton_group3_FSB_print, self.radioButton_group3_FSTEK_print,
+                               self.checkBox_conclusion_print,
+                               self.checkBox_protocol_print, self.checkBox_preciption_print,
+                               self.lineEdit_path_folder_old_print,
+                               self.lineEdit_path_file_account_numbers, self.checkBox_file_add_account_numbers,
+                               self.lineEdit_path_file_add_account_numbers, self.checkBox_file_form_27,
+                               self.lineEdit_path_file_form_27_print,
+                               self.button_gr, self.lineEdit_printer, self.checkBox_print_order, self.path_for_default,
+                               self.action_package)
+            if isinstance(output, list):
+                logging.info('Обнаружены ошибки данных')
+                self.on_message_changed(output[0], output[1])
+                return
+            # Если всё прошло запускаем поток
+            logging.info('Запуск на выполнение')
+            output['logging'] = logging
+            logging.info('Входные данные:')
+            logging.info(output)
+            self.thread = PrintDoc(output)
+            self.thread.progress.connect(self.progressBar.setValue)
+            self.thread.status.connect(self.show_mess)
+            self.thread.messageChanged.connect(self.on_message_changed)
+            self.thread.start()
+            self.thread.finished.connect(self.stop_thread)
+        except BaseException as exception:
+            logging.error('Ошибка printing')
+            logging.error(exception)
+            logging.error(traceback.format_exc())
 
     def stop_thread(self):  # Завершение потока
         os.chdir(self.path_for_default)
