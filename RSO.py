@@ -262,7 +262,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             logging.info('Запуск на выполнение')
             output['queue'], output['logging'] = self.queue, logging
             logging.info('Входные данные:')
-            logging.info(output)
+            log_data = {file: output[file] if file not in ['firm', 'number'] else 'замена' for file in output}
+            logging.info(log_data)
             self.thread = FormatDoc(output)
             self.thread.progress.connect(self.progressBar.setValue)
             self.thread.status.connect(self.show_mess)
