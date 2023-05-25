@@ -28,7 +28,7 @@
     "form27-path_folder_form_27_create": "D:\\Python\\Project_RSO\\тесты\\конечные",
     "insert-checkBox_folder_path_sp": false,
     "insert-path_folder_new": "d:\\python\\project_rso\\тесты\\конечные",
-    "insert-path_folder_old": "d:\\python\\project_rso\\тесты\\тест (пакетный)",
+    "insert-path_folder_old": "D:/Python/Project_RSO/тесты/раз",
     "insert-path_folder_sp": "D:\\Python\\Project_RSO\\тесты\\материалы сп\\Номер ГК",
     "instance-checkBox_conclusion_instance": false,
     "instance-checkBox_preciption_instance": false,

@@ -10,7 +10,7 @@ import traceback
 import zipfile
 
 import docx
-import docx2pdf
+import aspose.words as aw
 import fitz
 import openpyxl
 import pythoncom
@@ -139,7 +139,8 @@ class PrintDoc(QThread):  # Поток для печати
                             count_file = os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
                             name_file_pdf = count_file + '.pdf'
                             self.logging.info('Конвертируем в пдф ' + count_file)
-                            docx2pdf.convert(count_file, name_file_pdf)
+                            doc_for_conv = aw.Document(str(pathlib.Path(count_file)))
+                            doc_for_conv.save(str(pathlib.Path(count_file, name_file_pdf)))
                             input_file_pdf = fitz.open(name_file_pdf)  # Открываем пдф
                             count_page = input_file_pdf.page_count  # Получаем кол-во страниц
                             input_file_pdf.close()  # Закрываем
@@ -360,7 +361,8 @@ class PrintDoc(QThread):  # Поток для печати
                             status.emit('Форматируем документ ' + str(el))
                             logging.info('Преобразуем в pdf ' + str(el))
                             try:
-                                docx2pdf.convert(path_old + '\\' + el, path_old + '\\' + name_pdf)  # Конвертируем
+                                doc_for_conv = aw.Document(str(pathlib.Path(path_old, el)))
+                                doc_for_conv.save(str(pathlib.Path(path_old, name_pdf)))
                             except BaseException:
                                 word = win32com.client.Dispatch("Word.Application")
                                 word.Quit()

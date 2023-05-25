@@ -8,7 +8,7 @@ import traceback
 import zipfile
 
 import docx
-import docx2pdf
+import aspose.words as aw
 import fitz
 import numpy
 import numpy as np
@@ -120,12 +120,13 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         pythoncom.CoInitializeEx(0)
                         name_file_pdf = count_file + '.pdf'
                         self.logging.info('Конвертируем в пдф ' + count_file)
-                        docx2pdf.convert(file_path + '\\' + count_file, file_path + '\\' + name_file_pdf)
-                        input_file_pdf = fitz.open(file_path + '\\' + name_file_pdf)  # Открываем пдф
+                        doc_for_conv = aw.Document(str(pathlib.Path(file_path, count_file)))
+                        doc_for_conv.save(str(pathlib.Path(file_path, name_file_pdf)))
+                        input_file_pdf = fitz.open(str(pathlib.Path(file_path, name_file_pdf)))  # Открываем пдф
                         count_page = input_file_pdf.page_count  # Получаем кол-во страниц
                         input_file_pdf.close()  # Закрываем
                         self.logging.info('Удаляем пдф ' + count_file)
-                        os.remove(file_path + '\\' + name_file_pdf)  # Удаляем пдф документ
+                        os.remove(str(pathlib.Path(file_path, name_file_pdf)))  # Удаляем пдф документ
                         self.logging.info('Вставляем страницы в ворд ' + count_file)
                         temp_docx = os.path.join(file_path, count_file)
                         temp_zip = os.path.join(file_path, count_file + ".zip")
@@ -233,6 +234,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             # Параграф для колонтитула первой страницы
             text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
             fso = False
+            logging.info('Файлы в директории:')
+            logging.info(os.listdir())
             for folder_ in os.listdir():
                 if os.path.isdir(folder_):
                     fso = True
@@ -837,12 +840,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 numbering = 1
                                 for file in file_account:
                                     number = re.findall(r'№(\d*)', file)[0]  # Номер описи
-                                    docx2pdf.convert(account_path + '\\' + file,
-                                                     account_path + '\\' + file + '.pdf')  # Конвертируем
-                                    input_file = fitz.open(account_path + '\\' + file + '.pdf')  # Открываем пдф
+                                    doc_for_convert = aw.Document(str(pathlib.Path(account_path, file)))
+                                    doc_for_convert.save(str(pathlib.Path(account_path, file + '.pdf')))
+                                    input_file = fitz.open(str(pathlib.Path(account_path, file + '.pdf')))  # Открываем
                                     pages = input_file.page_count - 1  # Получаем кол-во страниц
                                     input_file.close()  # Закрываем
-                                    os.remove(account_path + '\\' + file + '.pdf')  # Удаляем pdf документ
+                                    os.remove(str(pathlib.Path(account_path, file + '.pdf')))  # Удаляем pdf документ
                                     page = 'листе' if pages == 1 else 'листах'  # Для правильной формулировки
                                     doc_old = docx.Document(account_path + '\\' + file)  # Открываем
                                     footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
@@ -857,12 +860,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.size = Pt(14)
                                         run.font.name = 'Times New Roman'
                             else:
-                                # file_account = [i_ for i_ in os.listdir(path_) if i_.endswith('.docx') and
-                                #                 ('приложение' not in i_.lower())]
-                                # docs_ = [j_ for i_ in ['Заключение', 'Протокол', 'Предписание'] for j_ in file_account if
-                                #          re.findall(i_.lower(), j_.lower())]
-                                # if service:
-                                #     docs_ = [i_ for i_ in docs_ if 'протокол' not in i_.lower()]
                                 file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
                                 len_appendix = 0
                                 for file in file_appendix:
