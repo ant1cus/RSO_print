@@ -8,7 +8,7 @@ import traceback
 import zipfile
 
 import docx
-import aspose.words as aw
+import win32com.client
 import fitz
 import numpy
 import numpy as np
@@ -22,10 +22,11 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt
 from openpyxl.utils import get_column_letter
 from natsort import natsorted
+from word2pdf import word2pdf
 
 
 class FormatDoc(QThread):  # Если требуется вставить колонтитулы
-    progress = pyqtSignal(int)  # Сигнал для прогресс бара
+    progress = pyqtSignal(int)  # Сигнал для progressbar
     status = pyqtSignal(str)  # Сигнал для статус бара
     messageChanged = pyqtSignal(str, str)
 
@@ -120,8 +121,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         pythoncom.CoInitializeEx(0)
                         name_file_pdf = count_file + '.pdf'
                         self.logging.info('Конвертируем в пдф ' + count_file)
-                        doc_for_conv = aw.Document(str(pathlib.Path(file_path, count_file)))
-                        doc_for_conv.save(str(pathlib.Path(file_path, name_file_pdf)))
+                        word2pdf(str(pathlib.Path(file_path, count_file)), str(pathlib.Path(file_path, name_file_pdf)))
+                        # word_ = win32com.client.Dispatch('Word.Application')
+                        # # word_ = comtypes.client.CreateObject('Word.Application')
+                        # word_.Visible = False
+                        # wd_format_pdf_ = 17
+                        # doc_for_conv_ = word_.Documents.Open(str(pathlib.Path(file_path, count_file)))
+                        # doc_for_conv_.SaveAs(str(pathlib.Path(file_path, name_file_pdf)), FileFormat=wd_format_pdf_)
+                        # doc_for_conv_.Close()
+                        # word_.Quit()
+                        # doc_for_conv = aw.Document(str(pathlib.Path(file_path, count_file)))
+                        # doc_for_conv.save(str(pathlib.Path(file_path, name_file_pdf)))
                         input_file_pdf = fitz.open(str(pathlib.Path(file_path, name_file_pdf)))  # Открываем пдф
                         count_page = input_file_pdf.page_count  # Получаем кол-во страниц
                         input_file_pdf.close()  # Закрываем
@@ -840,8 +850,18 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 numbering = 1
                                 for file in file_account:
                                     number = re.findall(r'№(\d*)', file)[0]  # Номер описи
-                                    doc_for_convert = aw.Document(str(pathlib.Path(account_path, file)))
-                                    doc_for_convert.save(str(pathlib.Path(account_path, file + '.pdf')))
+                                    word2pdf(str(pathlib.Path(account_path, file)),
+                                             str(pathlib.Path(account_path, file + '.pdf')))
+                                    # word = win32com.client.Dispatch('Word.Application')
+                                    # word.Visible = False
+                                    # wd_format_pdf = 17
+                                    # doc_for_conv = word.Documents.Open(str(pathlib.Path(account_path, file)))
+                                    # doc_for_conv.SaveAs(str(pathlib.Path(account_path, file + '.pdf')),
+                                    #                     FileFormat=wd_format_pdf)
+                                    # doc_for_conv.Close()
+                                    # word.Quit()
+                                    # doc_for_convert = aw.Document(str(pathlib.Path(account_path, file)))
+                                    # doc_for_convert.save(str(pathlib.Path(account_path, file + '.pdf')))
                                     input_file = fitz.open(str(pathlib.Path(account_path, file + '.pdf')))  # Открываем
                                     pages = input_file.page_count - 1  # Получаем кол-во страниц
                                     input_file.close()  # Закрываем

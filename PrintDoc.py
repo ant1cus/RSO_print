@@ -10,18 +10,19 @@ import traceback
 import zipfile
 
 import docx
-import aspose.words as aw
 import fitz
 import openpyxl
 import pythoncom
 import win32api
 import win32com
-from win32com.client import Dispatch
+
+import win32com.client
 import win32print
 from PyQt5 import QtPrintSupport
 from PyQt5.QtCore import QThread, pyqtSignal
 from docx.shared import Pt
 from natsort import natsorted
+from word2pdf import word2pdf
 
 
 class PrintDoc(QThread):  # Поток для печати
@@ -139,8 +140,15 @@ class PrintDoc(QThread):  # Поток для печати
                             count_file = os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
                             name_file_pdf = count_file + '.pdf'
                             self.logging.info('Конвертируем в пдф ' + count_file)
-                            doc_for_conv = aw.Document(str(pathlib.Path(count_file)))
-                            doc_for_conv.save(str(pathlib.Path(count_file, name_file_pdf)))
+                            word2pdf(str(pathlib.Path(count_file)), str(pathlib.Path(count_file, name_file_pdf)))
+                            # word = win32com.client.Dispatch('Word.Application')
+                            # word.Visible = False
+                            # wd_format_pdf_ = 17
+                            # doc_for_conv = word.Documents.Open(str(pathlib.Path(count_file)))
+                            # doc_for_conv.SaveAs(str(pathlib.Path(count_file, name_file_pdf)),
+                            # FileFormat=wd_format_pdf_)
+                            # doc_for_conv.Close()
+                            # word.Quit()
                             input_file_pdf = fitz.open(name_file_pdf)  # Открываем пдф
                             count_page = input_file_pdf.page_count  # Получаем кол-во страниц
                             input_file_pdf.close()  # Закрываем
@@ -361,8 +369,17 @@ class PrintDoc(QThread):  # Поток для печати
                             status.emit('Форматируем документ ' + str(el))
                             logging.info('Преобразуем в pdf ' + str(el))
                             try:
-                                doc_for_conv = aw.Document(str(pathlib.Path(path_old, el)))
-                                doc_for_conv.save(str(pathlib.Path(path_old, name_pdf)))
+                                word2pdf(str(pathlib.Path(path_old, el)), str(pathlib.Path(path_old, name_pdf)))
+                                # word = win32com.client.Dispatch('Word.Application')
+                                # word.Visible = False
+                                # wd_format_pdf_ = 17
+                                # doc_for_conv = word.Documents.Open(str(pathlib.Path(path_old, el)))
+                                # doc_for_conv.SaveAs(str(pathlib.Path(path_old, name_pdf)),
+                                #                     FileFormat=wd_format_pdf_)
+                                # doc_for_conv.Close()
+                                # word.Quit()
+                                # doc_for_conv = aw.Document(str(pathlib.Path(path_old, el)))
+                                # doc_for_conv.save(str(pathlib.Path(path_old, name_pdf)))
                             except BaseException:
                                 word = win32com.client.Dispatch("Word.Application")
                                 word.Quit()
