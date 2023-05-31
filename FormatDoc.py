@@ -121,22 +121,14 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         pythoncom.CoInitializeEx(0)
                         name_file_pdf = count_file + '.pdf'
                         self.logging.info('Конвертируем в пдф ' + count_file)
-                        word2pdf(str(pathlib.Path(file_path, count_file)), str(pathlib.Path(file_path, name_file_pdf)))
-                        # word_ = win32com.client.Dispatch('Word.Application')
-                        # # word_ = comtypes.client.CreateObject('Word.Application')
-                        # word_.Visible = False
-                        # wd_format_pdf_ = 17
-                        # doc_for_conv_ = word_.Documents.Open(str(pathlib.Path(file_path, count_file)))
-                        # doc_for_conv_.SaveAs(str(pathlib.Path(file_path, name_file_pdf)), FileFormat=wd_format_pdf_)
-                        # doc_for_conv_.Close()
-                        # word_.Quit()
-                        # doc_for_conv = aw.Document(str(pathlib.Path(file_path, count_file)))
-                        # doc_for_conv.save(str(pathlib.Path(file_path, name_file_pdf)))
-                        input_file_pdf = fitz.open(str(pathlib.Path(file_path, name_file_pdf)))  # Открываем пдф
+                        # word2pdf(str(pathlib.Path(file_path, count_file)),
+                        # str(pathlib.Path(file_path, name_file_pdf)))
+                        pdf_file_ = word2pdf(str(pathlib.Path(file_path, count_file)), str(pathlib.Path(file_path)))
+                        input_file_pdf = fitz.open(pdf_file_)  # Открываем пдф
                         count_page = input_file_pdf.page_count  # Получаем кол-во страниц
                         input_file_pdf.close()  # Закрываем
                         self.logging.info('Удаляем пдф ' + count_file)
-                        os.remove(str(pathlib.Path(file_path, name_file_pdf)))  # Удаляем пдф документ
+                        os.remove(pdf_file_)  # Удаляем пдф документ
                         self.logging.info('Вставляем страницы в ворд ' + count_file)
                         temp_docx = os.path.join(file_path, count_file)
                         temp_zip = os.path.join(file_path, count_file + ".zip")
@@ -850,22 +842,14 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 numbering = 1
                                 for file in file_account:
                                     number = re.findall(r'№(\d*)', file)[0]  # Номер описи
-                                    word2pdf(str(pathlib.Path(account_path, file)),
-                                             str(pathlib.Path(account_path, file + '.pdf')))
-                                    # word = win32com.client.Dispatch('Word.Application')
-                                    # word.Visible = False
-                                    # wd_format_pdf = 17
-                                    # doc_for_conv = word.Documents.Open(str(pathlib.Path(account_path, file)))
-                                    # doc_for_conv.SaveAs(str(pathlib.Path(account_path, file + '.pdf')),
-                                    #                     FileFormat=wd_format_pdf)
-                                    # doc_for_conv.Close()
-                                    # word.Quit()
-                                    # doc_for_convert = aw.Document(str(pathlib.Path(account_path, file)))
-                                    # doc_for_convert.save(str(pathlib.Path(account_path, file + '.pdf')))
-                                    input_file = fitz.open(str(pathlib.Path(account_path, file + '.pdf')))  # Открываем
+                                    # word2pdf(str(pathlib.Path(account_path, file)),
+                                    #          str(pathlib.Path(account_path, file + '.pdf')))
+                                    pdf_file = word2pdf(str(pathlib.Path(account_path, file)),
+                                                        str(pathlib.Path(account_path)))
+                                    input_file = fitz.open(pdf_file)  # Открываем
                                     pages = input_file.page_count - 1  # Получаем кол-во страниц
                                     input_file.close()  # Закрываем
-                                    os.remove(str(pathlib.Path(account_path, file + '.pdf')))  # Удаляем pdf документ
+                                    os.remove(pdf_file)  # Удаляем pdf документ
                                     page = 'листе' if pages == 1 else 'листах'  # Для правильной формулировки
                                     doc_old = docx.Document(account_path + '\\' + file)  # Открываем
                                     footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы

@@ -140,20 +140,13 @@ class PrintDoc(QThread):  # Поток для печати
                             count_file = os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
                             name_file_pdf = count_file + '.pdf'
                             self.logging.info('Конвертируем в пдф ' + count_file)
-                            word2pdf(str(pathlib.Path(count_file)), str(pathlib.Path(count_file, name_file_pdf)))
-                            # word = win32com.client.Dispatch('Word.Application')
-                            # word.Visible = False
-                            # wd_format_pdf_ = 17
-                            # doc_for_conv = word.Documents.Open(str(pathlib.Path(count_file)))
-                            # doc_for_conv.SaveAs(str(pathlib.Path(count_file, name_file_pdf)),
-                            # FileFormat=wd_format_pdf_)
-                            # doc_for_conv.Close()
-                            # word.Quit()
-                            input_file_pdf = fitz.open(name_file_pdf)  # Открываем пдф
+                            # word2pdf(str(pathlib.Path(count_file)), str(pathlib.Path(count_file, name_file_pdf)))
+                            file_pdf = word2pdf(str(pathlib.Path(count_file)), str(pathlib.Path(count_file)))
+                            input_file_pdf = fitz.open(file_pdf)  # Открываем пдф
                             count_page = input_file_pdf.page_count  # Получаем кол-во страниц
                             input_file_pdf.close()  # Закрываем
                             self.logging.info('Удаляем пдф ' + count_file)
-                            os.remove(name_file_pdf)  # Удаляем пдф документ
+                            os.remove(file_pdf)  # Удаляем пдф документ
                             self.logging.info('Вставляем страницы в ворд ' + count_file)
                             temp_docx = count_file
                             temp_zip = count_file + ".zip"
@@ -368,21 +361,7 @@ class PrintDoc(QThread):  # Поток для печати
                             logging.info('Форматируем документ ' + str(el))
                             status.emit('Форматируем документ ' + str(el))
                             logging.info('Преобразуем в pdf ' + str(el))
-                            try:
-                                word2pdf(str(pathlib.Path(path_old, el)), str(pathlib.Path(path_old, name_pdf)))
-                                # word = win32com.client.Dispatch('Word.Application')
-                                # word.Visible = False
-                                # wd_format_pdf_ = 17
-                                # doc_for_conv = word.Documents.Open(str(pathlib.Path(path_old, el)))
-                                # doc_for_conv.SaveAs(str(pathlib.Path(path_old, name_pdf)),
-                                #                     FileFormat=wd_format_pdf_)
-                                # doc_for_conv.Close()
-                                # word.Quit()
-                                # doc_for_conv = aw.Document(str(pathlib.Path(path_old, el)))
-                                # doc_for_conv.save(str(pathlib.Path(path_old, name_pdf)))
-                            except BaseException:
-                                word = win32com.client.Dispatch("Word.Application")
-                                word.Quit()
+                            file_pdf = word2pdf(str(pathlib.Path(path_old, el)), str(pathlib.Path(path_old)))
                             if re.findall(r'приложение', el.lower()):
                                 if service is True:
                                     flag_for_exit = False
@@ -391,7 +370,9 @@ class PrintDoc(QThread):  # Поток для печати
                                 logging.info('Запускаем в печать ' + str(el))
                                 printing_date = [computer_name, user_name, path_old + '\\' + str(el),
                                                  str(datetime.date.today()), printer]
-                                win32api.ShellExecute(0, "print", path_old + '\\' + name_pdf,
+                                # win32api.ShellExecute(0, "print", path_old + '\\' + name_pdf,
+                                #                       name_printer, ".", 0)
+                                win32api.ShellExecute(0, "print", file_pdf,
                                                       name_printer, ".", 0)
                                 jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                 printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
@@ -421,7 +402,8 @@ class PrintDoc(QThread):  # Поток для печати
                                 #     if re.findall('протокол', el.lower()):
                                 #         flag_for_exit = False
                                 #         continue
-                                input_file = fitz.open(path_old + '\\' + name_pdf)  # Открываем пдф
+                                # input_file = fitz.open(path_old + '\\' + name_pdf)  # Открываем пдф
+                                input_file = fitz.open(file_pdf)  # Открываем пдф
                                 num_start = acc_num_for_print[num_for_print]
                                 logging.info('Вставляем номера листов ' + str(el))
                                 for i in range(0, input_file.pageCount - 1):
@@ -438,7 +420,9 @@ class PrintDoc(QThread):  # Поток для печати
                                 num_stop = acc_num_for_print[num_for_print - 1]
                                 print('doc', el)
                                 print('start', num_start, 'stop', num_stop)
-                                input_file.save(path_old + '\\' + name_pdf, incremental=True,
+                                # input_file.save(path_old + '\\' + name_pdf, incremental=True,
+                                #                 encryption=fitz.PDF_ENCRYPT_KEEP)
+                                input_file.save(file_pdf, incremental=True,
                                                 encryption=fitz.PDF_ENCRYPT_KEEP)
                                 input_file.close()  # Закрываем
                                 doc_old = docx.Document(path_old + '\\' + el)  # Открываем
@@ -484,7 +468,9 @@ class PrintDoc(QThread):  # Поток для печати
                                     logging.info('Печатаем документ ' + str(el))
                                     printing_date = [computer_name, user_name, path_old + '\\' + str(el),
                                                      str(datetime.date.today()), printer]
-                                    win32api.ShellExecute(0, "print", path_old + '\\' + name_pdf,
+                                    # win32api.ShellExecute(0, "print", path_old + '\\' + name_pdf,
+                                    #                       name_printer, ".", 0)
+                                    win32api.ShellExecute(0, "print", file_pdf,
                                                           name_printer, ".", 0)
                                     jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                     # Дефолтный принтер
@@ -509,7 +495,8 @@ class PrintDoc(QThread):  # Поток для печати
                                         printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}
                                         logging.info('Преобразуем документ ' + str(el))
                                         handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
-                                        input_file = fitz.open(path_old + '/' + name_pdf)  # Открываем пдф
+                                        # input_file = fitz.open(path_old + '/' + name_pdf)  # Открываем пдф
+                                        input_file = fitz.open(file_pdf)  # Открываем пдф
                                         pages = input_file.page_count  # Получаем кол-во страниц
                                         if pages == 2:
                                             level = 2
@@ -523,7 +510,9 @@ class PrintDoc(QThread):  # Поток для печати
                                                 pass
                                             # Печатаем
                                             logging.info('Печатаем ' + name_pdf)
-                                            win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
+                                            # win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
+                                            #                       name_printer, '.', 0)
+                                            win32api.ShellExecute(0, 'print', file_pdf,
                                                                   name_printer, '.', 0)
                                             status.emit('Печатаем документ ' + name_pdf)
                                             jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
@@ -547,7 +536,8 @@ class PrintDoc(QThread):  # Поток для печати
                                             input_file.save(output_1_side)  # Сохраняем файл
                                             # Печатаем
                                             win32api.ShellExecute(0, 'print', output_1_side, name_printer, '.', 0)
-                                            input_file = fitz.open(path_old + '\\' + name_pdf)  # Открываем еще раз
+                                            # input_file = fitz.open(path_old + '\\' + name_pdf)  # Открываем еще раз
+                                            input_file = fitz.open(file_pdf)  # Открываем еще раз
                                             output_2_side = path_old + '\\' + '2_' + name_pdf  # Путь для сохранения
                                             selected_page = [pages - 2, pages - 1]  # Страницы для двухсторонней печати
                                             input_file.select(selected_page)  # Выбираем страницы
@@ -610,7 +600,9 @@ class PrintDoc(QThread):  # Поток для печати
                                         printing_date = [computer_name, user_name, path_old + '\\' + str(el),
                                                          str(datetime.date.today()), printer]
                                         logging.info('Печатаем ' + str(el))
-                                        win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
+                                        # win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
+                                        #                       name_printer, '.', 0)
+                                        win32api.ShellExecute(0, 'print', file_pdf,
                                                               name_printer, '.', 0)
                                         jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                         logging.info('Ждем очередь ' + str(el))
@@ -643,7 +635,8 @@ class PrintDoc(QThread):  # Поток для печати
                         except BaseException:
                             logging.info(traceback.format_exc())
                     logging.info('Удаляем пдф ' + name_pdf)
-                    os.remove(path_old + '\\' + name_pdf)
+                    # os.remove(path_old + '\\' + name_pdf)
+                    os.remove(file_pdf)
                     if re.findall(r'сопроводит', el.lower()) or re.findall(r'запрос', el.lower()):
                         if re.findall(r'экз', el.lower()):
                             os.remove(path_old + '\\' + el)
