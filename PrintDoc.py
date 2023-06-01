@@ -141,14 +141,6 @@ class PrintDoc(QThread):  # Поток для печати
                             name_file_pdf = count_file + '.pdf'
                             self.logging.info('Конвертируем в пдф ' + count_file)
                             word2pdf(str(pathlib.Path(count_file)), str(pathlib.Path(count_file, name_file_pdf)))
-                            # word = win32com.client.Dispatch('Word.Application')
-                            # word.Visible = False
-                            # wd_format_pdf_ = 17
-                            # doc_for_conv = word.Documents.Open(str(pathlib.Path(count_file)))
-                            # doc_for_conv.SaveAs(str(pathlib.Path(count_file, name_file_pdf)),
-                            # FileFormat=wd_format_pdf_)
-                            # doc_for_conv.Close()
-                            # word.Quit()
                             input_file_pdf = fitz.open(name_file_pdf)  # Открываем пдф
                             count_page = input_file_pdf.page_count  # Получаем кол-во страниц
                             input_file_pdf.close()  # Закрываем
@@ -370,16 +362,6 @@ class PrintDoc(QThread):  # Поток для печати
                             logging.info('Преобразуем в pdf ' + str(el))
                             try:
                                 word2pdf(str(pathlib.Path(path_old, el)), str(pathlib.Path(path_old, name_pdf)))
-                                # word = win32com.client.Dispatch('Word.Application')
-                                # word.Visible = False
-                                # wd_format_pdf_ = 17
-                                # doc_for_conv = word.Documents.Open(str(pathlib.Path(path_old, el)))
-                                # doc_for_conv.SaveAs(str(pathlib.Path(path_old, name_pdf)),
-                                #                     FileFormat=wd_format_pdf_)
-                                # doc_for_conv.Close()
-                                # word.Quit()
-                                # doc_for_conv = aw.Document(str(pathlib.Path(path_old, el)))
-                                # doc_for_conv.save(str(pathlib.Path(path_old, name_pdf)))
                             except BaseException:
                                 word = win32com.client.Dispatch("Word.Application")
                                 word.Quit()
