@@ -313,10 +313,6 @@ class PrintDoc(QThread):  # Поток для печати
                     w_b = openpyxl.load_workbook(path_save)  # Открываем
                     w_s = w_b.active  # Активный лист
                     flag_ = 0  # Для выхода
-                    # mode_ = 'a' if os.path.exists('file_del_number.txt') else 'w'
-                    # with open('file_del_number.txt', mode_) as file_:
-                    #     print(acc_num, file=file_)
-                    # mode_ = 'a' if os.path.exists('file_del_number.txt') else 'w'
                     for j_ in range(1, w_s.max_column + 1):  # Колонки
                         for i_ in range(1, w_s.max_row + 1):  # Строки
                             # with open('file_del_number.txt', mode_) as file_:

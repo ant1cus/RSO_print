@@ -8,7 +8,6 @@ import traceback
 import zipfile
 
 import docx
-import win32com.client
 import fitz
 import numpy
 import numpy as np
