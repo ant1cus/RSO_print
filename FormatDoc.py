@@ -293,7 +293,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
                 docs_ = [j_ for i_ in
                          ['Заключение', 'Протокол', 'Приложение', 'Предписание', 'Форма 3', 'Опись',
-                          'Сопроводит'] for j_ in docs if
+                          'Сопроводит', 'Инфокарта'] for j_ in docs if
                          re.findall(i_.lower(), j_.lower())]
                 docs_not = [i_ for i_ in docs if i_ not in docs_ and '~' not in i_]
                 docs = docs_not + docs_
@@ -344,26 +344,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     os.mkdir(path_ + '\\' + str(element) + ' экземпляр')
             name_protocol = False
             name_conclusion = False
-            # Добавка сортировки, если документы не по порядку.
-            # name_document = ''
-            # logging.info('Ещё одна сортировка')
-            # for number, el_ in enumerate(docs):
-            #     if 'сопроводит' not in el_.lower() and 'акт' not in el_.lower() and 'запрос' not in el_.lower():
-            #         if number + 1 == len(docs):
-            #             break
-            #         if el_.partition(' ')[0] != name_document:
-            #             name_document = el_.partition(' ')[0]
-            #         try:
-            #             number_document = round(float(el_.rpartition('.')[0].rpartition(' ')[2]), 4)
-            #         except ValueError:
-            #             continue
-            #         if 'сопроводит' not in docs[number + 1].lower() and \
-            #                 'акт' not in docs[number + 1].lower() and \
-            #                 'запрос' not in docs[number + 1].lower():
-            #             if number_document > round(float(docs[number + 1].rpartition('.')[0].rpartition(' ')[2]), 4) \
-            #                     and name_document == docs[number + 1].partition(' ')[0]:
-            #                 docs[number], docs[number + 1] = docs[number + 1], docs[number]
-            # logging.info("Отсортированные документы:\n" + '-|-'.join([i_ for i_ in docs]))
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 if type(docs) is dict:
@@ -394,6 +374,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             break
                     change_date(doc, False)
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
+                elif re.findall(r'инфокарта', name_el.lower()) and path_sp:
+                    no_sn_in_sp = True
+                    sn_number = el_.partition(' ')[2].partition(' ')[0]
+                    name_infocard = re.sub('Инфокарта', 'info', name_el)
+                    if sn_number == 'СП':
+                        sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
+                    for folder_sp in os.listdir(path_sp):
+                        for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
+                            if folder_sn.partition(' ')[0] == sn_number:
+                                no_sn_in_sp = False
+                                shutil.copy(str(pathlib.Path(path_old_, name_el)),
+                                            str(pathlib.Path(path_sp, folder_sp, folder_sn)))
+                                pathlib.Path(path_sp, folder_sp,
+                                             folder_sn, name_el).rename(pathlib.Path(path_sp, folder_sp,
+                                                                                     folder_sn, name_infocard))
+                    shutil.copy(str(pathlib.Path(path_old_, name_el)), str(pathlib.Path(path_, name_el)))
+                    if no_sn_in_sp:
+                        errors.append('Документ с с.н. ' + sn_number +
+                                      ' (' + el_ + ') не найден в материалах СП')
                 else:
                     if file_num:  # Если есть файл номеров
                         text_for_foot = dict_file[name_el.rpartition('.')[0]][0]  # Текст для нижнего колонтитула
@@ -499,19 +498,24 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                   exec_people, print_people, date, path_, name_el, fso)
                     # Если есть путь для распределения СП
                     if path_sp:
-                        no_sn_in_sp = True
-                        sn_number = el_.partition(' ')[2].partition(' ')[0]
-                        if sn_number == 'СП':
-                            sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
-                        for folder_sp in os.listdir(path_sp):
-                            for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
-                                if folder_sn.partition(' ')[0] == sn_number:
-                                    no_sn_in_sp = False
-                                    shutil.copy(str(pathlib.Path(path_, name_el)),
-                                                str(pathlib.Path(path_sp, folder_sp, folder_sn)))
-                        if no_sn_in_sp:
-                            errors.append('Документ с с.н. ' + sn_number +
-                                          ' (' + el_ + ') не найден в материалах СП')
+                        if re.findall(r'акт', name_el.lower()) or re.findall(r'result', name_el.lower()):
+                            for folder_sp in os.listdir(path_sp):
+                                shutil.copy(str(pathlib.Path(path_old_, name_el)),
+                                            str(pathlib.Path(path_sp, folder_sp)))
+                        else:
+                            no_sn_in_sp = True
+                            sn_number = el_.partition(' ')[2].partition(' ')[0]
+                            if sn_number == 'СП':
+                                sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
+                            for folder_sp in os.listdir(path_sp):
+                                for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
+                                    if folder_sn.partition(' ')[0] == sn_number:
+                                        no_sn_in_sp = False
+                                        shutil.copy(str(pathlib.Path(path_, name_el)),
+                                                    str(pathlib.Path(path_sp, folder_sp, folder_sn)))
+                            if no_sn_in_sp:
+                                errors.append('Документ с с.н. ' + sn_number +
+                                              ' (' + el_ + ') не найден в материалах СП')
                     logging.info("Определяем количество страниц")
                     if fso:
                         path_to_file = path_ + '\\' + docs[el_].rpartition('\\')[2]
