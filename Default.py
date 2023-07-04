@@ -46,53 +46,10 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.path_for_default = path
         # Имена на английском и русском
         self.name_list = name_list
-        # self.name_list = {'insert-path_folder_old': 'Путь к исходным файлам',
-        #                   'insert-path_folder_new': 'Путь к конечным файлам',
-        #                   'insert-path_file_file_num': 'Путь к файлу номеров',
-        #                   'insert-checkBox_folder_path_sp': 'Включить путь к СП',
-        #                   'insert-path_folder_sp': 'Путь к материалам СП',
-        #                   'data-radioButton_group1': 'Ведомство при рег.',
-        #                   'data-classified': 'Гриф секретности',
-        #                   'data-num_scroll': 'Номер экземпляра',
-        #                   'data-list_item': 'Пункт перечня',
-        #                   'data-number': 'Номер',
-        #                   'data-protocol': 'Протокол',
-        #                   'data-conclusion': 'Заключение',
-        #                   'data-prescription': 'Предписание',
-        #                   'data-print_people': 'Печать',
-        #                   'data-date': 'Дата',
-        #                   'data-executor_acc_sheet': 'Сопровод',
-        #                   'data-act': 'Акт',
-        #                   'data-statement': 'Утверждение',
-        #                   'account-radioButton_group2': 'Выбрать кол-во описей',
-        #                   'account-groupBox_inventory_insert': 'Включить опись',
-        #                   'account-account_post': 'Должность',
-        #                   'account-account_signature': 'ФИО подпись',
-        #                   'account-path_folder_account': 'Путь к описи',
-        #                   'form27-groupBox_form27_insert': 'Включить 27 форму',
-        #                   'form27-firm': 'Организация',
-        #                   'form27-path_folder_form_27_create': 'Путь к форме',
-        #                   'instance-groupBox_instance': 'Включить экземпляры',
-        #                   'instance-checkBox_conclusion_instance': 'Включить заключения',
-        #                   'instance-checkBox_protocol_instance': 'Включить протоколы',
-        #                   'instance-checkBox_preciption_instance': 'Включить предписания',
-        #                   'print-radioButton_group3': 'Ведомство при печати',
-        #                   'print-checkBox_conclusion_print': 'Включить заключения',
-        #                   'print-checkBox_protocol_print': 'Включить протокол',
-        #                   'print-checkBox_preciption_print': 'Включить предписание',
-        #                   'print-path_folder_old_print': 'Путь к файлам для печати',
-        #                   'print-path_file_account_numbers': 'Путь к учетным номерам',
-        #                   'print-checkBox_file_form_27': 'Включить 27 форму',
-        #                   'print-path_file_form_27': 'Путь к форме',
-        #                   'print-checkBox_file_add_account_numbers': 'Включить доп. номера',
-        #                   'print-path_file_add_account_num': 'Путь к доп. файлу уч. ном.',
-        #                   'print-radioButton_group4': 'Метод печати',
-        #                   'print-checkBox_print_order': 'Включить печать по порядку',
-        #                   'data-HDD_number': 'Номер НЖМД'}
-        self.name_box = [self.groupBox_catalog_insert_default, self.groupBox_data_default,
+        self.name_box = [self.groupBox_catalog_insert_default, self.groupBox_data_default, self.groupBox_sp,
                          self.groupBox_form_27_default, self.groupBox_inventory_default, self.groupBox_instance,
                          self.groupBox_catalog_print_default]
-        self.name_grid = [self.gridLayout_catalog, self.gridLayout_data, self.gridLayout_form_27,
+        self.name_grid = [self.gridLayout_catalog, self.gridLayout_data, self.gridLayout_sp, self.gridLayout_form_27,
                           self.gridLayout_inventory, self.gridLayout_instance, self.gridLayout_print]
         self.radio_group = {'group1': []}
         with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), "r", encoding='utf-8-sig') as f:  # Открываем
@@ -113,7 +70,7 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.button_open = {}  # Для кнопки «открыть»
         for i, el in enumerate(self.name_list):  # Заполняем
             frame = grid = False
-            for j, n in enumerate(['insert', 'data', 'form27', 'account', 'instance', 'print']):
+            for j, n in enumerate(['insert', 'data', 'sp', 'form27', 'account', 'instance', 'print']):
                 if n in el.partition('-')[0]:
                     frame, grid = self.name_box[j], self.name_grid[j]
                     break

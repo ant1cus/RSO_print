@@ -14,8 +14,9 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                lineedit_account_post, lineedit_account_signature, lineedit_account_path, hdd_number,
                groupbox_form27_insert, lineedit_firm, lineedit_path_form_27_create, qroupbox_instance,
                lineedit_number_instance, checkbox_conclusion, checkbox_protocol, checkbox_preciption, package,
-               action_mo, checkbox_path_sp, lineedit_path_folder_sp):  # Ф-я для проверки введенных значений
-
+               action_mo, groupbox_sp, lineedit_path_folder_sp, checkbox_name_gk, lineedit_name_gk,
+               checkbox_conclusion_sp, checkbox_protocol_sp, checkbox_preciption_sp, checkbox_infocard_sp,
+               lineedit_path_file_sp):
     def check(n, e):
         for symbol in e:
             if n == symbol:
@@ -73,15 +74,28 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                     return ['УПС!', 'Файл номеров не формата .xlsx']
             else:
                 return ['УПС!', 'Файл номеров удалён или переименван']
-    path_sp = False
-    if checkbox_path_sp.isChecked():
+    path_sp, path_file_sp, name_gk, check_sp = False, False, False, False
+    if groupbox_sp.isChecked():
         path_sp = lineedit_path_folder_sp.text().strip()
         if not path_sp:
             return ['УПС!', 'Путь к папке с материалами СП пуст']
         if os.path.isfile(path_sp):
             return ['УПС!', 'Указанный путь к материалам СП не является директорией']
-        if len(os.listdir(path_sp)) == 0:
-            return ['УПС!', 'Папка с материалами СП пуста']
+        path_file_sp = lineedit_path_file_sp.text().strip()
+        if not path_file_sp:
+            return ['УПС!', 'Путь к файлу с номерами СП пуст']
+        if os.path.isdir(path_file_sp):
+            return ['УПС!', 'Указанный путь к файлу с номерами СП не является файлом']
+        if checkbox_name_gk.isChecked():
+            name_gk = lineedit_name_gk.text().strip()
+            if name_gk is False:
+                return ['УПС!', 'Введите имя ГК']
+        if len(os.listdir(path_sp)) == 0 and name_gk is False:
+            return ['УПС!', 'Папка с материалами СП пуста (введите имя ГК или добавьте материалы)']
+        check_sp = [True if i.isChecked() else False for i in [checkbox_conclusion_sp, checkbox_protocol_sp,
+                                                               checkbox_preciption_sp, checkbox_infocard_sp]]
+        if all(i is False for i in check_sp):
+            return ['УПС!', 'Не выбран ни один документ для проверки СП']
     # Ведомство
     if radiobutton_fsb_df.isChecked():
         service = True
@@ -218,7 +232,8 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
             'account_post': account_post, 'account_signature': account_signature, 'account_path': account_path,
             'firm': firm, 'form_27': form_27, 'second_copy': second_copy, 'service': service, 'hdd_number': hdd_number,
             'package': package_, 'action_MO': action_mo_, 'act': act, 'statement': statement,
-            'number_instance': complect, 'path_sp': path_sp}
+            'number_instance': complect, 'path_sp': path_sp, 'path_file_sp': path_file_sp, 'name_gk': name_gk,
+            'check_sp': check_sp}
 
 
 def doc_print(radiobutton_fsb_print, radiobutton_fstek_print, checkbox_conclusion_print, checkbox_protocol_print,

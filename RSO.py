@@ -75,6 +75,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                                  self.browse(
                                                                      self.lineEdit_path_file_add_account_numbers))
         self.pushButton_folder_sp.clicked.connect(lambda: self.browse(self.lineEdit_path_folder_sp))
+        self.pushButton_file_sp.clicked.connect(lambda: self.browse(self.lineEdit_path_file_sp))
         # Для выбора принтера по умолчанию
         self.comboBox_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_printer.currentTextChanged.connect(self.text_changed)
@@ -93,8 +94,6 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.list = {'insert-path_folder_old': ['Путь к исходным файлам', self.lineEdit_path_folder_old_doc],
                      'insert-path_folder_new': ['Путь к конечным файлам', self.lineEdit_path_folder_new_doc],
                      'insert-path_file_file_num': ['Путь к файлу номеров', self.lineEdit_path_file_file_num],
-                     'insert-checkBox_folder_path_sp': ['Включить путь к СП', self.checkBox_folder_path_sp],
-                     'insert-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
                      'data-radioButton_group1': ['Ведомство при рег.', [self.radioButton_group1_FSB_df,
                                                                         self.radioButton_group1_FSTEK_df]],
                      'data-classified': ['Гриф секретности', self.comboBox_classified],
@@ -109,6 +108,15 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'data-executor_acc_sheet': ['Сопровод', self.lineEdit_executor_acc_sheet],
                      'data-act': ['Акт', self.lineEdit_act],
                      'data-statement': ['Утверждение', self.lineEdit_statement],
+                     'sp-groupBox_sp': ['Включить СП', self.groupBox_sp],
+                     'sp-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
+                     'sp-path_file_sp': ['Путь к файлу с номерами', self.lineEdit_path_file_sp],
+                     'sp-checkBox_name_gk': ['Включить имя ГК', self.checkBox_name_gk],
+                     'sp-lineEdit_name_gk': ['Имя ГК', self.lineEdit_name_gk],
+                     'sp-checkBox_conclusion_sp': ['Проверить заключение', self.checkBox_conclusion_sp],
+                     'sp-checkBox_protocol_sp': ['Проверить протокол', self.checkBox_protocol_sp],
+                     'sp-checkBox_preciption_sp': ['Проверить предписание', self.checkBox_preciption_sp],
+                     'sp-checkBox_infocard_sp': ['Проверить инфокарты', self.checkBox_infocard_sp],
                      'account-groupBox_inventory_insert': ['Включить опись', self.groupBox_inventory_insert],
                      'account-radioButton_group2': ['Выбрать кол-во описей', [self.radioButton_group2_40_num,
                                                                               self.radioButton_group2_all_doc]],
@@ -253,7 +261,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                 self.checkBox_conclusion_instance,
                                 self.checkBox_protocol_instance, self.checkBox_preciption_instance,
                                 self.action_package,
-                                self.action_report_MO, self.checkBox_folder_path_sp, self.lineEdit_path_folder_sp)
+                                self.action_report_MO, self.groupBox_sp, self.lineEdit_path_folder_sp,
+                                self.checkBox_name_gk, self.lineEdit_name_gk, self.checkBox_conclusion_sp,
+                                self.checkBox_protocol_sp, self.checkBox_preciption_sp, self.checkBox_infocard_sp,
+                                self.lineEdit_path_file_sp)
             if isinstance(output, list):
                 logging.info('Обнаружены ошибки данных')
                 self.on_message_changed(output[0], output[1])
@@ -275,6 +286,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             logging.error('Ошибка insert_head_foot')
             logging.error(exception)
             logging.error(traceback.format_exc())
+            self.on_message_changed('УПС!', 'Неизвестная ошибка при проверке данных для вставки колонтитулов')
 
     def printing(self):
         # Проверка введенных данных перед запуском потока
@@ -309,6 +321,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             logging.error('Ошибка printing')
             logging.error(exception)
             logging.error(traceback.format_exc())
+            self.on_message_changed('УПС!', 'Неизвестная ошибка при проверке данных для печати')
 
     def stop_thread(self):  # Завершение потока
         os.chdir(self.path_for_default)

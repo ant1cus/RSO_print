@@ -6,6 +6,7 @@ import shutil
 import time
 import traceback
 import zipfile
+import itertools
 
 import docx
 import fitz
@@ -62,6 +63,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.statement = incoming_data['statement']
         self.number_instance = incoming_data['number_instance']
         self.path_sp = incoming_data['path_sp']
+        self.path_file_sp = incoming_data['path_file_sp']
+        self.name_gk = incoming_data['name_gk']
+        self.check_sp = incoming_data['check_sp']
         self.num_1 = self.num_2 = 0
 
     def run(self):
@@ -71,7 +75,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         date, conclusion, executor, prescription, hdd_number,
                         print_people, progress, flag_inventory,
                         account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
-                        number_instance, path_sp):
+                        number_instance, path_sp, name_gk, check_sp):
             def cell_write(style_for_doc, text_for_insert, number_rows=0):  # Заполнение ячеек в таблице в описи
                 cells = table.rows[number_rows].cells  # Номер строки
                 number_col = 0  # Номер столбца
@@ -293,7 +297,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
                 docs_ = [j_ for i_ in
                          ['Заключение', 'Протокол', 'Приложение', 'Предписание', 'Форма 3', 'Опись',
-                          'Сопроводит', 'Инфокарта'] for j_ in docs if
+                          'Сопроводит'] for j_ in docs if
                          re.findall(i_.lower(), j_.lower())]
                 docs_not = [i_ for i_ in docs if i_ not in docs_ and '~' not in i_]
                 docs = docs_not + docs_
@@ -311,6 +315,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     else:
                         docx_for_progress += 1
             per = 90 if account else 100
+            per = per - 10 if path_sp else per
             percent = (per - 10) / docx_for_progress if firm else per / docx_for_progress
             percent_val = 0
             conclusion_num = {}
@@ -342,10 +347,28 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             if self.second_copy:
                 for element in number_instance:
                     os.mkdir(path_ + '\\' + str(element) + ' экземпляр')
-            name_protocol = False
-            name_conclusion = False
+            # if name_gk:
+            #     logging.info("Создаём папку для СП, если её нет")
+            #     path_dir_sp = pathlib.Path(path_sp, name_gk)
+            #     try:
+            #         os.makedirs(path_dir_sp)
+            #     except FileExistsError:
+            #         logging.info('Такая папка уже есть ' + str(path_dir_sp))
+            # else:
+            #     path_dir_sp = pathlib.Path(path_sp)
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
+                # if path_sp and (re.findall('заключение', name_el.lower()) or re.findall('предписание', name_el.lower())
+                #                 or re.findall('протокол', name_el.lower()) or re.findall('инфокарта', name_el.lower())):
+                #     name_folder = name_el.rpartition(' ')[0].rpartition(' ')[2]
+                #     path_dir = pathlib.Path(str(path_dir_sp), name_folder)
+                #     try:
+                #         os.makedirs(path_dir)
+                #     except FileExistsError:
+                #         self.logging.info('Такая папка уже есть ' + str(path_dir))
+                #     shutil.copy(el_, path_dir)
+                # elif path_sp and (re.findall('акт', name_el.lower()) or re.findall('result', name_el.lower())):
+                #     pass
                 if type(docs) is dict:
                     os.chdir(docs[el_])
                 logging.info("Преобразуем " + name_el)
@@ -353,6 +376,11 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     continue
                 elif re.findall('сопроводит', name_el.lower()) or re.findall('запрос', name_el.lower()):
                     accompanying_doc.append(el_)
+                    continue
+                elif re.findall('инфокарта', name_el.lower()):
+                    shutil.copy(str(pathlib.Path(path_old_, el_)), str(pathlib.Path(path_, el_)))
+                    percent_val += percent  # Увеличиваем прогресс
+                    progress.emit(int(percent_val))  # Посылаем значние в прогресс бар
                     continue
                 pythoncom.CoInitializeEx(0)
                 status.emit('Форматируем документ ' + name_el)
@@ -374,25 +402,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             break
                     change_date(doc, False)
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
-                elif re.findall(r'инфокарта', name_el.lower()) and path_sp:
-                    no_sn_in_sp = True
-                    sn_number = el_.partition(' ')[2].partition(' ')[0]
-                    name_infocard = re.sub('Инфокарта', 'info', name_el)
-                    if sn_number == 'СП':
-                        sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
-                    for folder_sp in os.listdir(path_sp):
-                        for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
-                            if folder_sn.partition(' ')[0] == sn_number:
-                                no_sn_in_sp = False
-                                shutil.copy(str(pathlib.Path(path_old_, name_el)),
-                                            str(pathlib.Path(path_sp, folder_sp, folder_sn)))
-                                pathlib.Path(path_sp, folder_sp,
-                                             folder_sn, name_el).rename(pathlib.Path(path_sp, folder_sp,
-                                                                                     folder_sn, name_infocard))
-                    shutil.copy(str(pathlib.Path(path_old_, name_el)), str(pathlib.Path(path_, name_el)))
-                    if no_sn_in_sp:
-                        errors.append('Документ с с.н. ' + sn_number +
-                                      ' (' + el_ + ') не найден в материалах СП')
+                # elif re.findall(r'инфокарта', name_el.lower()) and path_sp:
+                #     no_sn_in_sp = True
+                #     sn_number = el_.partition(' ')[2].partition(' ')[0]
+                #     name_infocard = re.sub('Инфокарта', 'info', name_el)
+                #     if sn_number == 'СП':
+                #         sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
+                #     for folder_sp in os.listdir(path_sp):
+                #         for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
+                #             if folder_sn.partition(' ')[0] == sn_number:
+                #                 no_sn_in_sp = False
+                #                 shutil.copy(str(pathlib.Path(path_old_, name_el)),
+                #                             str(pathlib.Path(path_sp, folder_sp, folder_sn)))
+                #                 pathlib.Path(path_sp, folder_sp,
+                #                              folder_sn, name_el).rename(pathlib.Path(path_sp, folder_sp,
+                #                                                                      folder_sn, name_infocard))
+                #     shutil.copy(str(pathlib.Path(path_old_, name_el)), str(pathlib.Path(path_, name_el)))
+                #     if no_sn_in_sp:
+                #         errors.append('Документ с с.н. ' + sn_number +
+                #                       ' (' + el_ + ') не найден в материалах СП')
                 else:
                     if file_num:  # Если есть файл номеров
                         text_for_foot = dict_file[name_el.rpartition('.')[0]][0]  # Текст для нижнего колонтитула
@@ -497,25 +525,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
                     # Если есть путь для распределения СП
-                    if path_sp:
-                        if re.findall(r'акт', name_el.lower()) or re.findall(r'result', name_el.lower()):
-                            for folder_sp in os.listdir(path_sp):
-                                shutil.copy(str(pathlib.Path(path_old_, name_el)),
-                                            str(pathlib.Path(path_sp, folder_sp)))
-                        else:
-                            no_sn_in_sp = True
-                            sn_number = el_.partition(' ')[2].partition(' ')[0]
-                            if sn_number == 'СП':
-                                sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
-                            for folder_sp in os.listdir(path_sp):
-                                for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
-                                    if folder_sn.partition(' ')[0] == sn_number:
-                                        no_sn_in_sp = False
-                                        shutil.copy(str(pathlib.Path(path_, name_el)),
-                                                    str(pathlib.Path(path_sp, folder_sp, folder_sn)))
-                            if no_sn_in_sp:
-                                errors.append('Документ с с.н. ' + sn_number +
-                                              ' (' + el_ + ') не найден в материалах СП')
+                    # if path_sp:
+                    #     if re.findall(r'акт', name_el.lower()) or re.findall(r'result', name_el.lower()):
+                    #         for folder_sp in os.listdir(path_sp):
+                    #             shutil.copy(str(pathlib.Path(path_old_, name_el)),
+                    #                         str(pathlib.Path(path_sp, folder_sp)))
+                    #     else:
+                    #         no_sn_in_sp = True
+                    #         sn_number = el_.partition(' ')[2].partition(' ')[0]
+                    #         if sn_number == 'СП':
+                    #             sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
+                    #         for folder_sp in os.listdir(path_sp):
+                    #             for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
+                    #                 if folder_sn.partition(' ')[0] == sn_number:
+                    #                     no_sn_in_sp = False
+                    #                     shutil.copy(str(pathlib.Path(path_, name_el)),
+                    #                                 str(pathlib.Path(path_sp, folder_sp, folder_sn)))
+                    #         if no_sn_in_sp:
+                    #             errors.append('Документ с с.н. ' + sn_number +
+                    #                           ' (' + el_ + ') не найден в материалах СП')
                     logging.info("Определяем количество страниц")
                     if fso:
                         path_to_file = path_ + '\\' + docs[el_].rpartition('\\')[2]
@@ -764,7 +792,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         insert_header(document, 11, value[1][0] + '\n(без приложения не секретно)\nЭкз.№ 1',
                                       text_for_foot, hdd_number, executor,
                                       print_people, date, account_path, name_count, fso)
-                        flag_for_op = 1  # Чтобы не создавать, если это не необходимо
+                        flag_for_op = 1  # Чтобы не создавать, если это не нужно
                     # Открываем необходимую опись
                     document = docx.Document(os.path.abspath(account_path + name_count))
                     table = document.tables[0]  # Выбираем таблицу
@@ -1054,6 +1082,54 @@ class FormatDoc(QThread):  # Если требуется вставить кол
 
                 path_f27 = path_form_27 + '\\Форма 27.xlsx' if path_form_27 else path_ + '\\Форма 27.xlsx'
                 form_27_name(path_f27)
+            # Для сортировки СП
+            if path_sp:
+                status.emit('Сортировка по материалам СП')  # Сообщение в статус бар
+                if name_gk:
+                    logging.info("Создаём папку для СП, если её нет")
+                    path_dir_sp = pathlib.Path(path_sp, name_gk)
+                    os.makedirs(path_dir_sp, exist_ok=True)
+                else:
+                    path_dir_sp = pathlib.Path(path_sp)
+                df_number_sp = pd.read_excel(str(pathlib.Path(self.path_file_sp)), sheet_name=0, header=None)
+                df_number_sp.fillna(False, inplace=True)
+                df_number_sp.drop(0, inplace=True)
+                for name1, name2 in itertools.zip_longest(df_number_sp[0], df_number_sp[1]):
+                    if name1:
+                        os.makedirs(str(pathlib.Path(path_dir_sp, str(name1) + ' В')), exist_ok=True)
+                    if name2:
+                        os.makedirs(str(pathlib.Path(path_dir_sp, str(name2))), exist_ok=True)
+                files = [j_ for i_ in ['акт', 'заключение', 'протокол', 'предписание', 'инфокарта']
+                         for j_ in os.listdir(path_) if re.findall(i_.lower(), j_.lower())]
+                result = [file for file in os.listdir(path_old_) if 'result' in file.lower()]
+                if result:
+                    shutil.copy(str(pathlib.Path(path_old_, result[0])), str(pathlib.Path(path_dir_sp)))
+                percent = 5 / len(files)
+                for file in files:
+                    status.emit('Сортировка ' + str(file))  # Сообщение в статус бар
+                    if 'акт' in file.lower():
+                        shutil.copy(str(pathlib.Path(path_, file)), str(pathlib.Path(path_dir_sp)))
+                    else:
+                        no_sn_in_sp = True
+                        sn_number = file.rpartition(' ')[0].rpartition(' ')[2]
+                        for folder_sp in os.listdir(str(path_dir_sp)):
+                            if re.findall(sn_number, folder_sp):
+                                no_sn_in_sp = False
+                                shutil.copy(str(pathlib.Path(path_, file)), str(pathlib.Path(path_dir_sp, folder_sp)))
+                        if no_sn_in_sp:
+                            errors.append('Документ с с.н. ' + sn_number + ' (' + file + ') не найден в материалах СП')
+                    percent_val += percent  # Увеличиваем прогресс
+                    self.progress.emit(int(percent_val))  # Обновляем прогресс бар
+                status.emit('Проверка наличия файлов')  # Сообщение в статус бар
+                for folder_sp in os.listdir(str(pathlib.Path(path_dir_sp))):
+                    if os.path.isdir(str(pathlib.Path(path_dir_sp, folder_sp))):
+                        file_sp = [file.partition(' ')[0].lower() for file in
+                                   os.listdir(str(pathlib.Path(path_dir_sp, folder_sp)))]
+                        for ind, check_file in enumerate(['заключение', 'протокол', 'предписание', 'инфокарта']):
+                            if check_sp[ind] and (check_file in file_sp) is False:
+                                errors.append('В папке ' + str(folder_sp) + ' отсутствует ' + check_file)
+                        percent_val += percent  # Увеличиваем прогресс
+                        self.progress.emit(int(percent_val))  # Обновляем прогресс бар
             return [num_1, num_2]
 
         time_start = datetime.datetime.now()
@@ -1105,7 +1181,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                              self.hdd_number, self.print_people, self.progress, self.flag_inventory,
                                              self.account_post, self.account_signature, self.account_path,
                                              self.executor_acc_sheet, self.service, False, self.number_instance,
-                                             self.path_sp)
+                                             self.path_sp, self.name_gk, self.check_sp)
                     self.num_1, self.num_2 = return_val[0], return_val[1]
                     docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
                     for txt_file in docs_txt:
@@ -1116,7 +1192,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             self.conclusion, self.protocol, self.prescription, self.hdd_number, self.print_people,
                             self.progress, self.flag_inventory, self.account_post, self.account_signature,
                             self.account_path, self.executor_acc_sheet, self.service, self.path_form_27,
-                            self.number_instance, self.path_sp)
+                            self.number_instance, self.path_sp, self.name_gk, self.check_sp)
                 docs_txt = [file for file in os.listdir(self.path_old) if file[-4:] == '.txt']  # Список txt
                 for txt_file in docs_txt:
                     shutil.copy(txt_file, self.path_new)

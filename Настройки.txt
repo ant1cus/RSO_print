@@ -51,5 +51,14 @@
         false,
         false
     ],
+    "sp-checkBox_conclusion_sp": true,
+    "sp-checkBox_infocard_sp": true,
+    "sp-checkBox_name_gk": true,
+    "sp-checkBox_preciption_sp": true,
+    "sp-checkBox_protocol_sp": true,
+    "sp-groupBox_sp": true,
+    "sp-lineEdit_name_gk": "ГК",
+    "sp-path_file_sp": "D:/Python/Project_RSO/тесты/Номера СП.xlsx",
+    "sp-path_folder_sp": "D:/Python/Project_RSO/тесты/конечные",
     "statement": "Шит"
 }
