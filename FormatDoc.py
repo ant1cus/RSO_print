@@ -1171,6 +1171,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             self.messageChanged.emit('УПС!', 'В конечной папке уже присутствует папка «'
                                                      + path.rpartition('\\')[2] + '». Удалите или переместите её.')
                             return
+                    elif os.path.isfile(self.path_old + '\\' + folder):
+                        self.logging.info(folder + ' является файлом, пропускаем')
+                        continue
                     else:
                         os.chdir(self.path_old)
                         path_old = self.path_old
