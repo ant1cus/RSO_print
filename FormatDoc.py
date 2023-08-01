@@ -483,7 +483,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             conclusion_num_text = 'уч. № ' + \
                                                   str(conclusion_num[name_conclusion]) + \
                                                   ' от ' + date
-                        break_flag = 0
+                        break_flag = [False, False]
                         if conclusion_num_text or protocol_num_text:
                             for val_p, p in enumerate(doc.paragraphs):
                                 if conclusion_num_text:
@@ -496,9 +496,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                             run.font.bold = False
                                             run.font.size = Pt(pt_num)
                                             run.font.name = 'Times New Roman'
-                                        break_flag += 1
+                                        break_flag[0] = True
                                 else:
-                                    break_flag += 1
+                                    break_flag[0] = True
                                 if protocol_num_text:
                                     if re.findall(r'\[ПРОТНОМ]', p.text):
                                         text = re.sub(r'\[ПРОТНОМ]', protocol_num_text, p.text)
@@ -508,10 +508,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         for run in p.runs:
                                             run.font.size = Pt(pt_num)
                                             run.font.name = 'Times New Roman'
-                                        break_flag += 1
+                                        break_flag[1] = True
                                 else:
-                                    break_flag += 1
-                                if break_flag == 2:
+                                    break_flag[1] = True
+                                if all(break_flag):
                                     break
                         exec_people = prescription
                         change_date(doc, False)
