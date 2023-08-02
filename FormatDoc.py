@@ -187,7 +187,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 foot_.is_linked_to_previous = False  # Отвязываем
                 # Текст для фонарика
                 foot_.paragraphs[0].text = "Уч. № " + text_for_foot_ + \
-                                           "\nОтп. 1 экз. в адрес\nс НЖМД, уч. № ЖД - " + hdd_number_ + \
+                                           "\nОтп. 1 экз. в адрес\n" + hdd_number_ + \
                                            "\nИсп. " + exec_ + "\nПеч. " + print_people_ + "\n" + \
                                            date_ + "\nб/ч"
                 for footer_style in foot_.paragraphs[0].runs:
@@ -937,7 +937,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         foot.is_linked_to_previous = False  # Отвязываем
                     # Текст для фонарика
                     foot.paragraphs[0].text = "Уч. № " + text_for_foot + \
-                                              "\nОтп. 2 экз.\n№ 1 - в адрес\n№ 2 - в дело \nс НЖМД, уч. № ЖД - " \
+                                              "\nОтп. 2 экз.\n№ 1 - в адрес\n№ 2 - в дело \n" \
                                               + hdd_number + "\nИсп. " \
                                               + executor_acc_sheet + "\nПеч. " + print_people + \
                                               "\n" + date + "\nБ/ч"
