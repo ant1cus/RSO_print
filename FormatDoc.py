@@ -865,7 +865,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             p.text = re.sub(r'registration_number', text_for_foot + ' от ' + date, p.text)
                             for run in p.runs:
                                 run.font.size = Pt(14)
-                        elif re.findall(r'Приложения:', p.text) and 'Запрос' not in acc_doc:
+                        elif re.findall(r'Приложение:', p.text) and 'Запрос' not in acc_doc:
                             if account:
                                 file_account = [i_ for i_ in os.listdir(account_path) if re.findall(r'Опись', i_)]
                                 numbering = 1
