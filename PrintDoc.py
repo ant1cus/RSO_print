@@ -15,6 +15,8 @@ import openpyxl
 import pythoncom
 import win32api
 import win32com
+import win32event
+from win32comext.shell import shell
 
 import win32com.client
 import win32print
@@ -309,10 +311,10 @@ class PrintDoc(QThread):  # Поток для печати
                 print('Number', len(acc_num_for_print))
                 print(acc_num_for_print)
 
-                def del_col(path_save, acc_num):  # Ф-я для удаления пустых колонок в файле с учетными номерами листов
+                def del_col(path_save):  # Ф-я для удаления пустых колонок в файле с учетными номерами листов
                     w_b = openpyxl.load_workbook(path_save)  # Открываем
                     w_s = w_b.active  # Активный лист
-                    flag_ = 0  # Для выхода
+                    flag_ = False  # Для выхода
                     for j_ in range(1, w_s.max_column + 1):  # Колонки
                         for i_ in range(1, w_s.max_row + 1):  # Строки
                             # with open('file_del_number.txt', mode_) as file_:
@@ -320,7 +322,7 @@ class PrintDoc(QThread):  # Поток для печати
                             if w_s.cell(i_, j_).value:  # Если есть значение
                                 # with open('file_del_number.txt', mode_) as file_:
                                 #     print('exit flag', file=file_)
-                                flag_ = 1  # Для дальнейшего выхода
+                                flag_ = True  # Для дальнейшего выхода
                                 break  # Выход
                         if flag_:  # Если есть метка
                             # with open('file_del_number.txt', mode_) as file_:
@@ -333,7 +335,7 @@ class PrintDoc(QThread):  # Поток для печати
                     w_b.close()  # Закрываем
 
                 logging.info('Удаляем используемые номера')
-                del_col(account_num_path, acc_num_for_print)  # Удаляем колонку в файле
+                del_col(account_num_path)  # Удаляем колонку в файле
                 if add_path_account_num:  # Если есть доп. файл номеров
                     del_col(add_path_account_num)  # Удаляем колонку
 
@@ -402,7 +404,7 @@ class PrintDoc(QThread):  # Поток для печати
                                 input_file = fitz.open(path_old + '\\' + name_pdf)  # Открываем пдф
                                 num_start = acc_num_for_print[num_for_print]
                                 logging.info('Вставляем номера листов ' + str(el))
-                                for i in range(0, input_file.pageCount - 1):
+                                for i in range(0, input_file.page_count - 1):
                                     page = input_file[i]
                                     p = fitz.Point(page.rect.width - 115, page.rect.height - 40)
                                     page.insert_text(p,  # bottom-left of 1st char
@@ -501,6 +503,15 @@ class PrintDoc(QThread):  # Поток для печати
                                                 pass
                                             # Печатаем
                                             logging.info('Печатаем ' + name_pdf)
+                                            # Пробуем
+                                            # wait_dict = shell.ShellExecuteEx(fMask=256 + 64,
+                                            #                                  lpFile=path_old + '\\' + name_pdf,
+                                            #                                  lpVerb='print')
+                                            # hh = wait_dict['hProcess']
+                                            # print(hh)
+                                            # ret = win32event.WaitForSingleObject(hh, -1)
+                                            # print(ret)
+                                            # конец
                                             win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
                                                                   name_printer, '.', 0)
                                             status.emit('Печатаем документ ' + name_pdf)
@@ -656,18 +667,6 @@ class PrintDoc(QThread):  # Поток для печати
                 self.incoming['path_old_print'], self.incoming['path_form_27'] = path_, path_form27_
                 self.logging.info('Входные параметы:')
                 self.logging.info(self.incoming)
-                # self.logging.info('path - ' + self.path_old + '\n' +
-                #                   'account_num_path - ' + self.account_num_path + '\n' +
-                #                   'add_path_account_num - ' + self.add_path_account_num + '\n' +
-                #                   'print_flag - ' + self.print_flag + '\n' +
-                #                   'name_printer - ' + self.name_printer + '\n' +
-                #                   'path_form27_ - ' + self.path_form27 + '\n' +
-                #                   'print_order - ' + self.print_order + '\n' +
-                #                   'service - ' + self.service + '\n' +
-                #                   'path_for_def - ' + self.path_for_def + '\n' +
-                #                   'logging - ' + self.logging + '\n' +
-                #                   'status - ' + self.status + '\n' +
-                #                   'progress - ' + self.progress + '\n')
                 ex = print_doc(path_, self.account_num_path, self.add_path_account_num, self.print_flag,
                                self.name_printer, path_form27_, self.print_order, self.service, self.path_for_def,
                                self.logging, self.status, self.progress)
@@ -678,18 +677,6 @@ class PrintDoc(QThread):  # Поток для печати
         else:
             self.logging.info('Входные параметы:')
             self.logging.info(self.incoming)
-            # self.logging.info('path - ' + self.path_old + '\n' +
-            #                   'account_num_path - ' + self.account_num_path + '\n' +
-            #                   'add_path_account_num - ' + self.add_path_account_num + '\n' +
-            #                   'print_flag - ' + self.print_flag + '\n' +
-            #                   'name_printer - ' + self.name_printer + '\n' +
-            #                   'path_form27_ - ' + self.path_form27 + '\n' +
-            #                   'print_order - ' + self.print_order + '\n' +
-            #                   'service - ' + self.service + '\n' +
-            #                   'path_for_def - ' + self.path_for_def + '\n' +
-            #                   'logging - ' + self.logging + '\n' +
-            #                   'status - ' + self.status + '\n' +
-            #                   'progress - ' + self.progress + '\n')
             ex = print_doc(self.path_old, self.account_num_path, self.add_path_account_num, self.print_flag,
                            self.name_printer, self.path_form27, self.print_order, self.service, self.path_for_def,
                            self.logging, self.status, self.progress)
