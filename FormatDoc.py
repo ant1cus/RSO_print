@@ -77,11 +77,38 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         print_people, progress, flag_inventory,
                         account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
                         number_instance, path_sp, name_gk, check_sp):
+
+            def create_element(attrib_name):
+                return OxmlElement(attrib_name)
+
+            def create_attribute(attrib, attrib_name, attrib_value):
+                attrib.set(ns.qn(attrib_name), attrib_value)
+
+            def add_page_number(paragraph):
+                # выравниваем параграф по центру
+                paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                # запускаем динамическое обновление параграфа
+                page_num_run = paragraph.add_run()
+                # обозначаем начало позиции вывода
+                fld_char1 = create_element('w:fldChar')
+                create_attribute(fld_char1, 'w:fldCharType', 'begin')
+                # задаем вывод текущего значения страницы PAGE (всего страниц NUMPAGES)
+                instr_text = create_element('w:instrText')
+                create_attribute(instr_text, 'xml:space', 'preserve')
+                instr_text.text = "PAGE"
+                # обозначаем конец позиции вывода
+                fld_char2 = create_element('w:fldChar')
+                create_attribute(fld_char2, 'w:fldCharType', 'end')
+                # добавляем все в наш параграф (который формируется динамически)
+                page_num_run._r.append(fld_char1)
+                page_num_run._r.append(instr_text)
+                page_num_run._r.append(fld_char2)
+
             def cell_write(style_for_doc, text_for_insert, number_rows=0):  # Заполнение ячеек в таблице в описи
                 cells = table.rows[number_rows].cells  # Номер строки
                 number_col = 0  # Номер столбца
                 for elem in text_for_insert:
-                    cells[number_col].text = elem  # Заполняем елемент
+                    cells[number_col].text = elem  # Заполняем элемент
                     cells[number_col].paragraphs[
                         0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Выравнивание по центру
                     cells[number_col].paragraphs[0].style = style_for_doc
@@ -164,10 +191,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
 
             def insert_header(doc_, pt_count, text_first_header_, text_for_foot_, hdd_number_, exec_,
                               print_people_, date_, path_new, name_file_, fso_):
-                header_ = doc_.sections[0].first_page_header  # Верхний колонтитул первой страницы
-                head_1 = header_.paragraphs[0]  # Параграф
+                header_1 = doc_.sections[0].first_page_header  # Верхний колонтитул первой страницы
+                head_1 = header_1.paragraphs[0]  # Параграф
                 head_1.insert_paragraph_before(text_first_header_)  # Вставялем перед колонитулом
-                head_1 = header_.paragraphs[0]  # Выбираем новый первый параграф
+                head_1 = header_1.paragraphs[0]  # Выбираем новый первый параграф
                 for header_styles in head_1.runs:
                     header_styles.font.size = Pt(pt_count)
                     header_styles.font.name = 'Times New Roman'
@@ -203,6 +230,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         os.mkdir(path_new)
                     except FileExistsError:
                         pass
+                logging.info("Вставляем номера страниц")
+                header_2 = doc_.sections[1].header.paragraphs[0]  # Колонтитул страницы для номера
+                add_page_number(header_2)
                 doc_.save(os.path.abspath(path_new + '\\' + name_file_))  # Сохраняем
 
             def change_date(docum, param):  # Параметр используется для шрифта
@@ -1131,80 +1161,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 errors.append('В папке ' + str(folder_sp) + ' отсутствует ' + check_file)
                         percent_val += percent  # Увеличиваем прогресс
                         self.progress.emit(int(percent_val))  # Обновляем прогресс бар
-            # status.emit('Номера ворд')  # Сообщение в статус бар
-            #
-            # def create_element(attrib_name):
-            #     return OxmlElement(attrib_name)
-            #
-            # def create_attribute(attrib, attrib_name, attrib_value):
-            #     attrib.set(ns.qn(attrib_name), attrib_value)
-            #
-            # def add_page_number(paragraph, value_num, orientation, number_page=''):
-            #     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER if orientation else WD_PARAGRAPH_ALIGNMENT.LEFT
-            #     if orientation is False:
-            #         page_run = paragraph.add_run()
-            #         t1 = create_element('w:t')
-            #         create_attribute(t1, 'xml:space', 'preserve')
-            #         t1.text = '\t\t' + value_num
-            #         page_run._r.append(t1)
-            #
-            #     page_num_run = paragraph.add_run()
-            #
-            #     fldChar1 = create_element('w:fldChar')
-            #     create_attribute(fldChar1, 'w:fldCharType', 'begin')
-            #
-            #     instrText = create_element('w:instrText')
-            #     create_attribute(instrText, 'xml:space', 'preserve')
-            #     instrText.text = "PAGE" if orientation else "={PAGE}+" + number_page
-            #
-            #     fldChar2 = create_element('w:fldChar')
-            #     create_attribute(fldChar2, 'w:fldCharType', 'end')
-            #
-            #     page_num_run._r.append(fldChar1)
-            #     page_num_run._r.append(instrText)
-            #     page_num_run._r.append(fldChar2)
-            # # def add_page_number(paragraph, value_num, orientation):
-            # #     # выравниваем параграф по центру
-            # #     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER if orientation else WD_PARAGRAPH_ALIGNMENT.LEFT
-            # #     # запускаем динамическое обновление параграфа
-            # #     page_num_run = paragraph.add_run()
-            # #     # обозначаем начало позиции вывода
-            # #     fld_char1 = create_element('w:fldChar')
-            # #     create_attribute(fld_char1, 'w:fldCharType', 'begin')
-            # #     # задаем вывод текущего значения страницы PAGE (всего страниц NUMPAGES)
-            # #     instr_text = create_element('w:instrText')
-            # #     create_attribute(instr_text, 'xml:space', 'preserve')
-            # #     instr_text.text = "PAGE" if orientation else value_num
-            # #     # обозначаем конец позиции вывода
-            # #     fld_char2 = create_element('w:fldChar')
-            # #     create_attribute(fld_char2, 'w:fldCharType', 'end')
-            # #     # добавляем все в наш параграф (который формируется динамически)
-            # #     page_num_run._r.append(fld_char1)
-            # #     page_num_run._r.append(instr_text)
-            # #     page_num_run._r.append(fld_char2)
-            #
-            # number_list = ['VC-31', 'VC-32']
-            # for element in os.listdir(path_):
-            #     doc = docx.Document(os.path.abspath(path_ + '\\' + element))  # Открываем
-            #     footer_ = doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-            #     foot_ = footer_.paragraphs[0]  # Параграф
-            #     foot_.text = footer_.paragraphs[0].text + '\t\t' + number_list[0]  # Текст
-            #     foot_format_ = foot_.paragraph_format  # Настройки параграфа
-            #     foot_format_.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
-            #     header_ = doc.sections[1].header.paragraphs[0]
-            #     add_page_number(header_, '', True)
-            #     footer_ = doc.sections[1].footer.paragraphs[0]  # Нижний колонтитул страницы
-            #     add_page_number(footer_, 'VC-', False, '30')
-            #     # sectPr = doc.sections[1].footer._sectPr
-            #     # pgNumType = OxmlElement('w:pgNumType')
-            #     # pgNumType.set(ns.qn('w:start'), "31")
-            #     # sectPr.append(pgNumType)
-            #
-            #     # header_ = doc.sections[1].header.paragraphs[0]
-            #     # add_page_number(header_, '', True)
-            #     # footer_ = doc.sections[1].footer.paragraphs[0]  # Нижний колонтитул страницы
-            #     # add_page_number(footer_, footer_.text + '\t\t' + number_list[1], False)
-            #     doc.save(os.path.abspath(path_ + '\\' + element))  # Сохраняем
             return [num_1, num_2]
 
         time_start = datetime.datetime.now()

@@ -17,6 +17,9 @@ import win32api
 import win32com
 import win32event
 from win32comext.shell import shell
+from docx.enum.section import WD_ORIENTATION
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.oxml import OxmlElement, ns
 
 import win32com.client
 import win32print
@@ -120,6 +123,7 @@ class PrintDoc(QThread):  # Поток для печати
                 os.chdir(path_old)  # Меняем рабочую директорию
                 percent_val = 0  # Отсылаемое значение в прогресс бар
                 docs = [i for i in os.listdir() if i[-4:] == 'docx' and '~' not in i]  # Список файлов
+                status.emit('Создаем второй сопроводительный документ')
                 logging.info('Второй сопроводительный')
                 for el in docs:  # Для второго сопроводительного
                     if re.findall('сопроводит', el.lower()) or re.findall('запрос', el.lower()):
@@ -148,7 +152,8 @@ class PrintDoc(QThread):  # Поток для печати
                             input_file_pdf.close()  # Закрываем
                             self.logging.info('Удаляем пдф ' + count_file)
                             os.remove(name_file_pdf)  # Удаляем пдф документ
-                            self.logging.info('Вставляем страницы в ворд ' + count_file)
+                            status.emit('Считаем количество страниц во втором сопроводительном документе')
+                            self.logging.info('Вставляем страницы в word ' + count_file)
                             temp_docx = count_file
                             temp_zip = count_file + ".zip"
                             temp_folder = os.path.join(os.getcwd() + '\\', "template")
@@ -162,7 +167,7 @@ class PrintDoc(QThread):  # Поток для печати
                                             "<Pages>" + str(count_page) + "</Pages>", string)
                             with open(pages_xml, "wb") as file_wb:
                                 file_wb.write(string.encode("UTF-8"))
-                            self.logging.info('Получаем ворд из зип ' + count_file)
+                            self.logging.info('Получаем word из зип ' + count_file)
                             os.remove(temp_zip)
                             shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
                             os.rename(temp_zip, temp_docx)  # rename zip file to docx
@@ -235,30 +240,41 @@ class PrintDoc(QThread):  # Поток для печати
                 num_of_sheets_logs = {}
                 for doc_path in docs:
                     if doc_path.endswith('.docx'):
-                        if service:
-                            if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
-                                continue
-                            elif re.findall('протокол', doc_path.lower()) and self.document_list['протокол'] is False:
-                                continue
-                            elif re.findall('предписание', doc_path.lower())\
-                                    and self.document_list['предписание'] is False:
-                                continue
-                            else:
-                                num_of_sheets_logs[doc_path] = list_doc(doc_path)
-                                num_of_sheets += num_of_sheets_logs[doc_path]
+                        if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
+                            continue
+                        elif re.findall('протокол', doc_path.lower()) and self.document_list['протокол'] is False:
+                            continue
+                        elif re.findall('предписание', doc_path.lower()) and self.document_list['предписание'] is False:
+                            continue
+                        elif re.findall('приложение', doc_path.lower()):
+                            continue
                         else:
-                            if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
-                                continue
-                            elif re.findall('протокол', doc_path.lower()) and self.document_list['протокол'] is False:
-                                continue
-                            elif re.findall('предписание', doc_path.lower())\
-                                    and self.document_list['предписание'] is False:
-                                continue
-                            elif re.findall('приложение', doc_path.lower()):
-                                continue
-                            else:
-                                num_of_sheets_logs[doc_path] = list_doc(doc_path)
-                                num_of_sheets += num_of_sheets_logs[doc_path]
+                            num_of_sheets_logs[doc_path] = list_doc(doc_path)
+                            num_of_sheets += num_of_sheets_logs[doc_path]
+                        # if service:
+                        #     if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
+                        #         continue
+                        #     elif re.findall('протокол', doc_path.lower()) and self.document_list['протокол'] is False:
+                        #         continue
+                        #     elif re.findall('предписание', doc_path.lower())\
+                        #             and self.document_list['предписание'] is False:
+                        #         continue
+                        #     else:
+                        #         num_of_sheets_logs[doc_path] = list_doc(doc_path)
+                        #         num_of_sheets += num_of_sheets_logs[doc_path]
+                        # else:
+                        #     if re.findall('заключение', doc_path.lower()) and self.document_list['заключение'] is False:
+                        #         continue
+                        #     elif re.findall('протокол', doc_path.lower()) and self.document_list['протокол'] is False:
+                        #         continue
+                        #     elif re.findall('предписание', doc_path.lower())\
+                        #             and self.document_list['предписание'] is False:
+                        #         continue
+                        #     elif re.findall('приложение', doc_path.lower()):
+                        #         continue
+                        #     else:
+                        #         num_of_sheets_logs[doc_path] = list_doc(doc_path)
+                        #         num_of_sheets += num_of_sheets_logs[doc_path]
                 print(num_of_sheets)
                 logging.info('Листы в документах:')
                 logging.info(num_of_sheets_logs)
@@ -302,7 +318,7 @@ class PrintDoc(QThread):  # Поток для печати
                     num_for_del = numbers_list(account_num_path, acc_num_for_print, num_in_file, num_for_del)  # В ф-ию
                     if add_path_account_num:  # Если есть доп. файл, то в ф-ию
                         numbers_list(add_path_account_num, acc_num_for_print, num_in_file, num_for_del)
-                    status.emit('Начинаем печать документов')
+                    status.emit('Листы посчитаны')
                 else:  # Если номеров не хватает
                     status.emit('Не хватает номеров учетных листов, загрузите дополнительный файл!')
                     # message_changed.emit("ВНИМАНИЕ!",
@@ -357,12 +373,6 @@ class PrintDoc(QThread):  # Поток для печати
                             pythoncom.CoInitializeEx(0)
                             logging.info('Форматируем документ ' + str(el))
                             status.emit('Форматируем документ ' + str(el))
-                            logging.info('Преобразуем в pdf ' + str(el))
-                            try:
-                                word2pdf(str(pathlib.Path(path_old, el)), str(pathlib.Path(path_old, name_pdf)))
-                            except BaseException:
-                                word = win32com.client.Dispatch("Word.Application")
-                                word.Quit()
                             if re.findall(r'приложение', el.lower()):
                                 if service is True:
                                     flag_for_exit = False
@@ -397,30 +407,82 @@ class PrintDoc(QThread):  # Поток для печати
                                         self.document_list['предписание'] is False:
                                     flag_for_exit = False
                                     continue
-                                # if service:
-                                #     if re.findall('протокол', el.lower()):
-                                #         flag_for_exit = False
-                                #         continue
-                                input_file = fitz.open(path_old + '\\' + name_pdf)  # Открываем пдф
                                 num_start = acc_num_for_print[num_for_print]
-                                logging.info('Вставляем номера листов ' + str(el))
-                                for i in range(0, input_file.page_count - 1):
-                                    page = input_file[i]
-                                    p = fitz.Point(page.rect.width - 115, page.rect.height - 40)
-                                    page.insert_text(p,  # bottom-left of 1st char
-                                                     acc_num_for_print[num_for_print],  # the text (honors '\n')
-                                                     fontname="Times-Roman",  # the default font
-                                                     fontsize=11,  # the default font size
-                                                     encoding=0,
-                                                     rotate=0,  # also available: 90, 180, 270
-                                                     )
-                                    num_for_print += 1  # Для следующего учетного номера листа
+                                num_second_page = '' if num_of_sheets_logs[el] == 1 \
+                                    else acc_num_for_print[num_for_print + 1]
+                                num_for_print += num_of_sheets_logs[el]
                                 num_stop = acc_num_for_print[num_for_print - 1]
+                                logging.info('Вставляем номера листов ' + str(el))
+
+                                def create_element(attrib_name):
+                                    return OxmlElement(attrib_name)
+
+                                def create_attribute(attrib, attrib_name, attrib_value):
+                                    attrib.set(ns.qn(attrib_name), attrib_value)
+
+                                def add_page_number(paragraph, value_num, number_page=''):
+                                    # paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+                                    # if orientation is False:
+                                    page_run = paragraph.add_run()
+                                    t1 = create_element('w:t')
+                                    create_attribute(t1, 'xml:space', 'preserve')
+                                    t1.text = '\t\t' + value_num
+                                    page_run._r.append(t1)
+
+                                    page_num_run = paragraph.add_run()
+
+                                    fld_char1 = create_element('w:fldChar')
+                                    create_attribute(fld_char1, 'w:fldCharType', 'begin')
+
+                                    instr_text_or1 = create_element('w:instrText')
+                                    create_attribute(instr_text_or1, 'xml:space', 'preserve')
+                                    instr_text_or1.text = "="
+
+                                    fld_char2 = create_element('w:fldChar')
+                                    create_attribute(fld_char2, 'w:fldCharType', 'begin')
+
+                                    instrText = create_element('w:instrText')
+                                    create_attribute(instrText, 'xml:space', 'preserve')
+                                    instrText.text = "PAGE"
+
+                                    fld_char3 = create_element('w:fldChar')
+                                    create_attribute(fld_char3, 'w:fldCharType', 'end')
+
+                                    instr_text_or2 = create_element('w:instrText')
+                                    create_attribute(instr_text_or2, 'xml:space', 'preserve')
+                                    instr_text_or2.text = " - 2 +" + number_page
+
+                                    fld_char4 = create_element('w:fldChar')
+                                    create_attribute(fld_char4, 'w:fldCharType', 'end')
+
+                                    page_num_run._r.append(fld_char1)
+                                    page_num_run._r.append(instr_text_or1)
+                                    page_num_run._r.append(fld_char2)
+                                    page_num_run._r.append(instrText)
+                                    page_num_run._r.append(fld_char3)
+                                    page_num_run._r.append(instr_text_or2)
+                                    page_num_run._r.append(fld_char4)
+
+                                doc = docx.Document(pathlib.Path(path_old, el))  # Открываем
+                                footer_1 = doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
+                                foot_1 = footer_1.paragraphs[0]  # Параграф
+                                foot_1.text = footer_1.paragraphs[0].text + '\t\t' + num_start  # Текст
+                                foot_format = foot_1.paragraph_format  # Настройки параграфа
+                                foot_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
+                                if num_second_page:
+                                    footer_2 = doc.sections[1].footer.paragraphs[0]  # Нижний колонтитул страницы
+                                    mask_page = num_second_page.rpartition('/')[0] + '/'
+                                    start_number = num_second_page.rpartition('/')[2]
+                                    add_page_number(footer_2, mask_page, start_number)
+                                doc.save(pathlib.Path(path_old, el))  # Сохраняем
                                 print('doc', el)
                                 print('start', num_start, 'stop', num_stop)
-                                input_file.save(path_old + '\\' + name_pdf, incremental=True,
-                                                encryption=fitz.PDF_ENCRYPT_KEEP)
-                                input_file.close()  # Закрываем
+                                # logging.info('Преобразуем в pdf ' + str(el))
+                                try:
+                                    word2pdf(str(pathlib.Path(path_old, el)), str(pathlib.Path(path_old, name_pdf)))
+                                except BaseException:
+                                    word = win32com.client.Dispatch("Word.Application")
+                                    word.Quit()
                                 doc_old = docx.Document(path_old + '\\' + el)  # Открываем
                                 last = doc_old.sections[len(doc_old.sections) - 1].first_page_footer  # Колонтитул
                                 logging.info('Вставляем номера в 27 форму')
@@ -650,6 +712,7 @@ class PrintDoc(QThread):  # Поток для печати
         self.logging.info("Новый запуск")
         time_start = datetime.datetime.now()
         self.progress.emit(0)  # Обнуление прогресс бара
+        self.status.emit('Начинаем печать документов')
 
         # def form_27_name(path_wb):
         #     wb_ = openpyxl.load_workbook(path_wb)
@@ -665,7 +728,7 @@ class PrintDoc(QThread):  # Поток для печати
                 path_ = self.path_old + '\\' + folder
                 path_form27_ = path_ + '\\' + 'Форма 27.xlsx' if self.path_form27 else False
                 self.incoming['path_old_print'], self.incoming['path_form_27'] = path_, path_form27_
-                self.logging.info('Входные параметы:')
+                self.logging.info('Входные параметры:')
                 self.logging.info(self.incoming)
                 ex = print_doc(path_, self.account_num_path, self.add_path_account_num, self.print_flag,
                                self.name_printer, path_form27_, self.print_order, self.service, self.path_for_def,
@@ -675,7 +738,7 @@ class PrintDoc(QThread):  # Поток для печати
                     self.messageChanged.emit("ВНИМАНИЕ!", ex)
                     return
         else:
-            self.logging.info('Входные параметы:')
+            self.logging.info('Входные параметры:')
             self.logging.info(self.incoming)
             ex = print_doc(self.path_old, self.account_num_path, self.add_path_account_num, self.print_flag,
                            self.name_printer, self.path_form27, self.print_order, self.service, self.path_for_def,

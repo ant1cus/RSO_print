@@ -28,9 +28,7 @@ class AccountNumWindow(QDialog, account_num.Ui_Dialog):  # Для файла с 
         if not path:
             QMessageBox.critical(self, 'УПС!', 'Путь к файлу учетных номеров пуст')
             return
-        if os.path.isdir(path):
-            pass
-        else:
+        if not os.path.isdir(path):
             QMessageBox.critical(self, 'УПС!', 'Указанный путь к файлу учетных номеров не является директорией')
             return
         number_start = " ".join(self.lineEdit_account_num_start.text().split())
@@ -52,7 +50,7 @@ class AccountNumWindow(QDialog, account_num.Ui_Dialog):  # Для файла с 
         for el in range(1, 25001):  # Заполняем
             i += 1
             ws.cell(i, j).value = number_start + '/' + str(el)
-            if i % 100 == 0:  # Переходим на следующий столбец, чтобы не много значений в одном
+            if i % 100 == 0:  # Переходим на следующий столбец, чтобы немного значений в одном
                 i = 0
                 j += 1
                 ws.column_dimensions[get_column_letter(j)].width = 12  # Ширина
