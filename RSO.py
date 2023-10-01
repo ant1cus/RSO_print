@@ -11,6 +11,7 @@ import about
 from Default import DefaultWindow
 from AccountNum import AccountNumWindow
 from NumberInstance import NumberInstance
+from SortingFile import SortingFile
 from Check import doc_format, doc_print
 from PrintDoc import PrintDoc
 from FormatDoc import FormatDoc
@@ -85,6 +86,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.action_instance.triggered.connect(create_instance)
         self.action_about.triggered.connect(about)
         self.action_account_number.triggered.connect(account_number)
+        self.action_sorting.triggered.connect(self.sorting)
         # Группа для кнопок принтера
         self.button_gr = [self.radioButton_group4_last_duplex, self.radioButton_group4_duplex,
                           self.radioButton_group4_one_side]
@@ -108,6 +110,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'data-executor_acc_sheet': ['Сопровод', self.lineEdit_executor_acc_sheet],
                      'data-act': ['Акт', self.lineEdit_act],
                      'data-statement': ['Утверждение', self.lineEdit_statement],
+                     'data-checkBox_conclusion_number': ['Включить номер заключения', self.checkBox_conclusion_number],
+                     'data-conclusion_number': ['Номер заключения', self.lineEdit_conclusion_number],
                      'sp-groupBox_sp': ['Включить СП', self.groupBox_sp],
                      'sp-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
                      'sp-path_file_sp': ['Путь к файлу с номерами', self.lineEdit_path_file_sp],
@@ -209,6 +213,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         window_add = DefaultWindow(self, self.path_for_default, self.list)
         window_add.show()
 
+    def sorting(self):  # Запускаем окно для сортировки.
+        window_add = SortingFile(self, logging)
+        window_add.exec_()
+
     def on_message_changed(self, title, description):  # Для вывода сообщений
         if title == 'УПС!':  # Ошибка
             QMessageBox.critical(self, title, description)
@@ -252,6 +260,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                 self.lineEdit_executor_acc_sheet, self.label_protocol, self.label_conclusion,
                                 self.label_prescription, self.label_print, self.label_executor_acc_sheet,
                                 self.lineEdit_date, self.lineEdit_act, self.lineEdit_statement,
+                                self.checkBox_conclusion_number, self.lineEdit_conclusion_number,
                                 self.groupBox_inventory_insert, self.radioButton_group2_40_num,
                                 self.radioButton_group2_all_doc, self.lineEdit_account_post,
                                 self.lineEdit_account_signature, self.lineEdit_path_folder_account, self.hdd_number,

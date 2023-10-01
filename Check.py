@@ -10,7 +10,8 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                combobox_classified, lineedit_num_scroll, lineedit_list_item, lineedit_number, lineedit_protocol,
                lineedit_conclusion, lineedit_prescription, lineedit_print, lineedit_executor_acc_sheet, label_protocol,
                label_conclusion, label_prescription, label_print, label_executor_acc_sheet, lineedit_date, lineedit_act,
-               lineedit_statement, groupbox_inventory_insert, radiobutton_40_num, radiobutton_all_doc,
+               lineedit_statement, checkbox_conclusion_number, lineedit_conclusion_number,
+               groupbox_inventory_insert, radiobutton_40_num, radiobutton_all_doc,
                lineedit_account_post, lineedit_account_signature, lineedit_account_path, hdd_number,
                groupbox_form27_insert, lineedit_firm, lineedit_path_form_27_create, qroupbox_instance,
                lineedit_number_instance, checkbox_conclusion, checkbox_protocol, checkbox_preciption, package,
@@ -150,6 +151,11 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
         time.strptime(date, '%d.%m.%Y')
     except ValueError:
         return ['УПС!', 'Формат даты указан неверно! (необходимый формат: dd.mm.yyyy)']
+    conclusion_number = False
+    if checkbox_conclusion_number.isChecked():
+        conclusion_number = lineedit_conclusion_number.text().strip()
+        if conclusion_number is False:
+            return ['УПС!', 'Не указан номер заключения']
     account = None
     flag_inventory = None
     account_post = None
@@ -233,7 +239,7 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
             'firm': firm, 'form_27': form_27, 'second_copy': second_copy, 'service': service, 'hdd_number': hdd_number,
             'package': package_, 'action_MO': action_mo_, 'act': act, 'statement': statement,
             'number_instance': complect, 'path_sp': path_sp, 'path_file_sp': path_file_sp, 'name_gk': name_gk,
-            'check_sp': check_sp}
+            'check_sp': check_sp, 'conclusion_number': conclusion_number}
 
 
 def doc_print(radiobutton_fsb_print, radiobutton_fstek_print, checkbox_conclusion_print, checkbox_protocol_print,

@@ -67,6 +67,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.path_file_sp = incoming_data['path_file_sp']
         self.name_gk = incoming_data['name_gk']
         self.check_sp = incoming_data['check_sp']
+        self.conclusion_number = incoming_data['conclusion_number']
         self.num_1 = self.num_2 = 0
 
     def run(self):
@@ -76,7 +77,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         date, conclusion, executor, prescription, hdd_number,
                         print_people, progress, flag_inventory,
                         account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
-                        number_instance, path_sp, name_gk, check_sp):
+                        number_instance, path_sp, name_gk, check_sp, conclusion_number):
 
             def create_element(attrib_name):
                 return OxmlElement(attrib_name)
@@ -230,9 +231,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         os.mkdir(path_new)
                     except FileExistsError:
                         pass
-                logging.info("Вставляем номера страниц")
-                header_2 = doc_.sections[1].header.paragraphs[0]  # Колонтитул страницы для номера
-                add_page_number(header_2)
+                # logging.info("Вставляем номера страниц")
+                # header_2 = doc_.sections[1].header.paragraphs[0]  # Колонтитул страницы для номера
+                # add_page_number(header_2)
                 doc_.save(os.path.abspath(path_new + '\\' + name_file_))  # Сохраняем
 
             def change_date(docum, param):  # Параметр используется для шрифта
@@ -470,7 +471,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             name_conclusion = re.sub('Заключение', 'Заключение СП', name_conclusion)
                         protocol[name_el] = text_for_foot
                         if len(conclusion_num) == 0:
-                            conclusion_num_text = False
+                            if conclusion_number:
+                                conclusion_num_text = conclusion_number
+                            else:
+                                conclusion_num_text = False
                         elif len(conclusion_num) == 1:
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) \
                                                   + ' от ' + date
@@ -506,7 +510,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         else:
                             protocol_num_text = False
                         if len(conclusion_num) == 0:
-                            conclusion_num_text = False
+                            if conclusion_number:
+                                conclusion_num_text = conclusion_number
+                            else:
+                                conclusion_num_text = False
                         elif len(conclusion_num) == 1:
                             conclusion_num_text = 'уч. № ' + str(conclusion_num[list(conclusion_num.keys())[0]]) + \
                                                   ' от ' + date
@@ -1215,7 +1222,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                              self.hdd_number, self.print_people, self.progress, self.flag_inventory,
                                              self.account_post, self.account_signature, self.account_path,
                                              self.executor_acc_sheet, self.service, False, self.number_instance,
-                                             self.path_sp, self.name_gk, self.check_sp)
+                                             self.path_sp, self.name_gk, self.check_sp, self.conclusion_number)
                     self.num_1, self.num_2 = return_val[0], return_val[1]
                     docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
                     for txt_file in docs_txt:
@@ -1226,7 +1233,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             self.conclusion, self.protocol, self.prescription, self.hdd_number, self.print_people,
                             self.progress, self.flag_inventory, self.account_post, self.account_signature,
                             self.account_path, self.executor_acc_sheet, self.service, self.path_form_27,
-                            self.number_instance, self.path_sp, self.name_gk, self.check_sp)
+                            self.number_instance, self.path_sp, self.name_gk, self.check_sp, self.conclusion_number)
                 docs_txt = [file for file in os.listdir(self.path_old) if file[-4:] == '.txt']  # Список txt
                 for txt_file in docs_txt:
                     shutil.copy(txt_file, self.path_new)
