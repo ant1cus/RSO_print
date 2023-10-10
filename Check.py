@@ -69,12 +69,10 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
             return ['УПС!', 'Указанный путь к файлу номеров является директорией']
         else:
             if os.path.exists(file_num):
-                if file_num.endswith('.xlsx'):
-                    pass
-                else:
+                if file_num.endswith('.xlsx') is False:
                     return ['УПС!', 'Файл номеров не формата .xlsx']
             else:
-                return ['УПС!', 'Файл номеров удалён или переименван']
+                return ['УПС!', 'Файл номеров удалён или переименован']
     path_sp, path_file_sp, name_gk, check_sp = False, False, False, False
     if groupbox_sp.isChecked():
         path_sp = lineedit_path_folder_sp.text().strip()
@@ -87,6 +85,10 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
             return ['УПС!', 'Путь к файлу с номерами СП пуст']
         if os.path.isdir(path_file_sp):
             return ['УПС!', 'Указанный путь к файлу с номерами СП не является файлом']
+        if os.path.exists(path_file_sp) is False:
+            return ['УПС!', 'Файл номеров СП удалён или переименован']
+        if path_file_sp.endswith('.xlsx') is False:
+            return ['УПС!', 'Файл номеров СП не формата .xlsx']
         if checkbox_name_gk.isChecked():
             name_gk = lineedit_name_gk.text().strip()
             if name_gk is False:

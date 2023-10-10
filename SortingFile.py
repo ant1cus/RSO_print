@@ -37,6 +37,11 @@ class SortingFile(QDialog, sorting.Ui_Dialog):  # Для файла с номе�
             line_edit.setText(directory)
 
     def sorting(self):
+        def check(n, e):
+            for symbol in e:
+                if n == symbol:
+                    return True
+            return False
         try:
             self.log.info('Старт сортировки')
             path_documents = self.lineEdit_path_folder_document.text().strip()
@@ -64,6 +69,11 @@ class SortingFile(QDialog, sorting.Ui_Dialog):  # Для файла с номе�
             if name_gk is False:
                 QMessageBox.critical(self, 'УПС!', 'Введите имя ГК')
                 return
+            for i in name_gk:
+                if check(i, ("<", ">", ":", "«", "»", "/", "\\", "|", "?", "*")):
+                    QMessageBox.critical(self, 'УПС!', 'Имя файла не должно содержать следующих символов:\n'
+                                                       "<", ">", ":", "«", "»", "/", "\\", "|", "?", "*")
+                    return
             check_file = [True if i.isChecked() else False for i in [self.checkBox_conclusion_sp,
                                                                      self.checkBox_protocol_sp,
                                                                      self.checkBox_preciption_sp,
