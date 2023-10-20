@@ -10,7 +10,13 @@
     "data-HDD_number": "30d",
     "data-act": "Фамилия 6",
     "data-checkBox_conclusion_number": false,
-    "data-classified": "C",
+    "data-comboBox_classified": [
+        false,
+        false,
+        true,
+        false,
+        false
+    ],
     "data-conclusion": "Фамилия 2",
     "data-conclusion_number": "12/13/1c",
     "data-date": "30.03.2023",
@@ -29,6 +35,7 @@
     "form27-firm": "Организация",
     "form27-groupBox_form27_insert": false,
     "form27-path_folder_form_27_create": "D:\\Python\\Project_RSO\\тесты\\конечные",
+    "insert-checkBox_file_num": true,
     "insert-checkBox_folder_path_sp": true,
     "insert-path_folder_new": "d:\\python\\project_rso\\тесты\\конечные",
     "insert-path_folder_old": "d:\\python\\project_rso\\тесты\\тест (без заключения для сп после)",

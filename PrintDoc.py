@@ -222,6 +222,7 @@ class PrintDoc(QThread):  # Поток для печати
                 try:
                     percent = 100 / per  # Процент от общего
                 except ZeroDivisionError:
+                    percent = 0
                     logging.warning('Деление на 0, ни одного документа для печати')
                 status.emit('Считаем количество листов в документах...')
                 logging.info('Считаем количество листов в документах')

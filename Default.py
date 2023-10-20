@@ -103,6 +103,19 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                 self.combo[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
                 self.combo[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
                 grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
+            elif 'comboBox' in el:
+                self.combo[i] = QComboBox(frame)  # Помещаем в фрейм
+                name_combo = self.name_list[el][2]
+                radio_index = 0
+                if el in self.data:
+                    for button, radio_check in enumerate(self.data[el]):
+                        if radio_check:
+                            radio_index = button
+                self.combo[i].addItems(name_combo)
+                self.combo[i].setCurrentIndex(radio_index)
+                self.combo[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
+                self.combo[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
+                grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
             else:
                 self.button[i] = QPushButton("Изменить", frame)  # Создаем кнопку
                 self.button[i].setFont(QFont("Times", 12, QFont.Light))  # Размер шрифта
@@ -180,6 +193,9 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
             elif 'radioButton' in el:
                 self.data[el] = [True if self.name_list[el][1].index(radio) + 1 == self.combo[i].currentIndex()
                                  else False for radio in self.name_list[el][1]]
+            elif 'comboBox' in el:
+                self.data[el] = [True if self.name_list[el][2].index(combo) == self.combo[i].currentIndex()
+                                 else False for combo in self.name_list[el][2]]
             else:
                 if self.name[i].isEnabled():  # Если виджет активный (означает потенциальное изменение)
                     if self.name[i].text():  # Если внутри виджета есть текст, то помещаем внутрь базы

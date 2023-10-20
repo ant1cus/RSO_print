@@ -1180,9 +1180,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 dict_file = {}
                 wb = openpyxl.load_workbook(self.file_num)  # Откроем книгу.
                 ws = wb.active  # Делаем активным первый лист.
-                for i in range(1, ws.max_row + 1):  # Пока есть значения
+                for i in range(1, ws.max_row):  # Пока есть значения
                     if ws.cell(i, 1).value:
-                        # cv = ws.cell(i, 1).value.partition(' ')[0].lower()  # Получаем значние
+                        # cv = ws.cell(i, 1).value.partition(' ')[0].lower()  # Получаем значение
                         # if cv == 'заключение' or cv == 'предписание' or cv == 'протокол' or cv == 'форма' \
                         #         or cv == 'опись' or cv == 'сопроводит' or cv == 'акт':
                         dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c',
@@ -1249,6 +1249,15 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 self.logging.info("\n*******************************************************************************\n")
                 self.status.emit('Готово!')  # Посылаем значние если готово
                 self.progress.emit(100)  # Завершаем прогресс бар
-        except BaseException as e:  # Если ошибка
+        # except BaseException as e:  # Если ошибка
+        #     self.status.emit('Ошибка')  # Сообщение в статус бар
+        #     self.logging.error("Ошибка:\n " + str(e) + '\n' + traceback.format_exc())
+        except KeyError as keyError:  # Если ошибка по ключу
+            self.status.emit('Ошибка')  # Сообщение в статус бар
+            self.logging.error("Ошибка:\n " + str(keyError) + '\n' + traceback.format_exc())
+            self.messageChanged.emit('УПС!', 'Программа не может найти файл ' + str(keyError))
+            self.progress.emit(0)  # Завершаем прогресс бар
+        except BaseException as e:
             self.status.emit('Ошибка')  # Сообщение в статус бар
             self.logging.error("Ошибка:\n " + str(e) + '\n' + traceback.format_exc())
+            self.progress.emit(0)  # Завершаем прогресс бар

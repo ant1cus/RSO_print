@@ -95,10 +95,12 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         # Имена в файле
         self.list = {'insert-path_folder_old': ['Путь к исходным файлам', self.lineEdit_path_folder_old_doc],
                      'insert-path_folder_new': ['Путь к конечным файлам', self.lineEdit_path_folder_new_doc],
+                     'insert-checkBox_file_num': ['Включить файл номеров', self.checkBox_file_num],
                      'insert-path_file_file_num': ['Путь к файлу номеров', self.lineEdit_path_file_file_num],
                      'data-radioButton_group1': ['Ведомство при рег.', [self.radioButton_group1_FSB_df,
                                                                         self.radioButton_group1_FSTEK_df]],
-                     'data-classified': ['Гриф секретности', self.comboBox_classified],
+                     'data-comboBox_classified': ['Гриф секретности', self.comboBox_classified,
+                                                  ['', 'ДСП', 'С', 'СС', 'ОВ']],
                      'data-num_scroll': ['Номер экземпляра', self.lineEdit_num_scroll],
                      'data-list_item': ['Пункт перечня', self.lineEdit_list_item],
                      'data-number': ['Номер', self.lineEdit_number],
@@ -205,6 +207,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                             button.setAutoExclusive(False)
                             button.setChecked(False)
                         button.setAutoExclusive(True)
+                elif 'comboBox' in el:
+                    for index, combo in enumerate(incoming_data[el]):
+                        if combo:
+                            self.list[el][1].setCurrentIndex(index)
                 else:  # Если любой другой элемент
                     self.list[el][1].setText(incoming_data[el])  # Помещаем значение
 
