@@ -314,6 +314,7 @@ class Ui_MainWindow(object):
         self.gridLayout_10 = QtWidgets.QGridLayout(self.groupBox_printer)
         self.gridLayout_10.setObjectName("gridLayout_10")
         self.lineEdit_printer = QtWidgets.QLineEdit(self.groupBox_printer)
+        self.lineEdit_printer.setEnabled(False)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
