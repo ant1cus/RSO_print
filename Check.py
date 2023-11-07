@@ -4,6 +4,7 @@ import time
 
 import openpyxl
 import pandas as pd
+import psutil
 
 
 def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df, radiobutton_fstek_df,
@@ -17,13 +18,16 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                lineedit_number_instance, checkbox_conclusion, checkbox_protocol, checkbox_preciption, package,
                action_mo, groupbox_sp, lineedit_path_folder_sp, checkbox_name_gk, lineedit_name_gk,
                checkbox_conclusion_sp, checkbox_protocol_sp, checkbox_preciption_sp, checkbox_infocard_sp,
-               lineedit_path_file_sp):
+               lineedit_path_file_sp, checkbox_file_num):
     def check(n, e):
         for symbol in e:
             if n == symbol:
                 return False
         return True
 
+    for proc in psutil.process_iter():
+        if proc.name() == 'WINWORD.EXE':
+            return ['УПС!', 'Закройте все файлы Word!']
     package_ = True if package.isChecked() else False
     action_mo_ = True if action_mo.isChecked() else False
     # Путь к исходным документам и проверки
@@ -52,9 +56,16 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
     else:
         return ['УПС!', 'Указанный путь к исходным документам не является директорией']
     if action_mo_:
-        file_mo = [mo for mo in os.listdir(path_old) if mo[-3:] == 'txt' and 'F19' in mo]
-        if not file_mo:
-            return ['УПС!', 'Нет текстового файла с серийниками для создания отчёта для МО']
+        if package_:
+            for folder_mo in os.listdir(path_old):
+                file_mo = [mo for mo in os.listdir(path_old + '\\' + folder_mo) if mo[-3:] == 'txt' and 'F19' in mo]
+                if not file_mo:
+                    return ['УПС!', f'Нет текстового файла с серийниками для создания отчёта для'
+                                    f' МО в папке {folder_mo}']
+        else:
+            file_mo = [mo for mo in os.listdir(path_old) if mo[-3:] == 'txt' and 'F19' in mo]
+            if not file_mo:
+                return ['УПС!', 'Нет текстового файла с серийниками для создания отчёта для МО']
     # Путь к конечным документам и проверки
     path_new = lineedit_new.text().strip()
     if not path_new:
@@ -63,16 +74,20 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
         return ['УПС!', 'Указанный путь к конечной папке не является директорией']
     if len(os.listdir(path_new)) != 0:
         return ['УПС!', 'Конечная папка не пуста, очистите директорию']
-    file_num = lineedit_file_num.text().strip()
-    if file_num:
-        if os.path.isdir(file_num):
-            return ['УПС!', 'Указанный путь к файлу номеров является директорией']
-        else:
-            if os.path.exists(file_num):
-                if file_num.endswith('.xlsx') is False:
-                    return ['УПС!', 'Файл номеров не формата .xlsx']
+    file_num, number = False, False
+    if checkbox_file_num.isChecked():
+        file_num = lineedit_file_num.text().strip()
+        if file_num:
+            if os.path.isdir(file_num):
+                return ['УПС!', 'Указанный путь к файлу номеров является директорией']
             else:
-                return ['УПС!', 'Файл номеров удалён или переименован']
+                if os.path.exists(file_num):
+                    if file_num.endswith('.xlsx') is False:
+                        return ['УПС!', 'Файл номеров не формата .xlsx']
+                else:
+                    return ['УПС!', 'Файл номеров удалён или переименован']
+        else:
+            return ['УПС!', 'Не указан файл номеров']
     path_sp, path_file_sp, name_gk, check_sp = False, False, False, False
     if groupbox_sp.isChecked():
         path_sp = lineedit_path_folder_sp.text().strip()
@@ -116,14 +131,14 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
     # Номер экземпляра
     num_scroll = lineedit_num_scroll.text().strip()
     if not num_scroll:
-        return ['УПС!', 'Не выбран номер экземпляра']
+        return ['УПС!', 'Не указан номер экземпляра']
     # Пункт перечня
     list_item = lineedit_list_item.text().strip()
     if not list_item:
         return ['УПС!', 'Не указан пункт перечня']
     # Номер
     number = lineedit_number.text().strip()
-    if not file_num:
+    if number:
         if number[-1] in ['С', 'с']:
             number = number.replace(number[-1], 'c')
         if not number:
@@ -133,6 +148,8 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                 return ['УПС!', 'Есть лишние символы в номере']
         if (re.match(r'\w+/\w+/\w+c$', number) is None) and (re.match(r'НС-\w+c$', number) is None):
             return ['УПС!', 'Секретный номер указан неверно']
+    else:
+        return ['УПС!', 'Не указан секретный номер']
     # Исполнитель, заключение, предписание, протокол, печать
     act = lineedit_act.text().strip()
     statement = lineedit_statement.text().strip()
@@ -156,14 +173,22 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
     conclusion_number = False
     if checkbox_conclusion_number.isChecked():
         conclusion_number = lineedit_conclusion_number.text().strip()
-        if conclusion_number is False:
+        if conclusion_number[-1] in ['С', 'с']:
+            conclusion_number = conclusion_number.replace(conclusion_number[-1], 'c')
+        if not conclusion_number:
             return ['УПС!', 'Не указан номер заключения']
+        for i in conclusion_number:
+            if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/', 'c', 'с', '-', 'Н', 'С', 'с')):
+                return ['УПС!', 'Есть лишние символы в номере заключения']
+        if (re.match(r'\w+/\w+/\w+c$', conclusion_number) is None) and (re.match(r'НС-\w+c$',
+                                                                                 conclusion_number) is None):
+            return ['УПС!', 'Номер заключения указан неверно']
     account = None
     flag_inventory = None
     account_post = None
     account_signature = None
     account_path = None
-    if groupbox_inventory_insert.isChecked() and package_ is False:
+    if groupbox_inventory_insert.isChecked():
         account = True
         if radiobutton_40_num.isChecked() or radiobutton_all_doc.isChecked():
             flag_inventory = 40 if radiobutton_40_num.isChecked() else 1
@@ -203,6 +228,8 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
     complect = None
     if qroupbox_instance.isChecked():
         number_instance = lineedit_number_instance.text().strip()
+        if not number_instance:
+            return ['УПС!', 'Не указаны номера экземпляров']
         for i in number_instance:
             if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '-', ',', '.')):
                 return ['УПС!', 'Есть лишние символы в номерах экземпляров']
@@ -232,7 +259,7 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
         second_copy = [True if i.isChecked() else False for i in [checkbox_conclusion, checkbox_protocol,
                                                                   checkbox_preciption]]
         if all(i is False for i in second_copy):
-            return ['УПС!', 'Не выбран ни один документ для второго экземпляра']
+            return ['УПС!', 'Не выбран ни один документ для создания экземпляров']
     return {'path_old': path_old, 'path_new': path_new, 'file_num': file_num, 'classified': classified,
             'num_scroll': num_scroll, 'list_item': list_item, 'number': number, 'protocol': protocol,
             'conclusion': conclusion, 'prescription': prescription, 'print_people': print_people, 'date': date,

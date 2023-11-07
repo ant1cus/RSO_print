@@ -87,6 +87,9 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.action_about.triggered.connect(about)
         self.action_account_number.triggered.connect(account_number)
         self.action_sorting.triggered.connect(self.sorting)
+        self.action_instruction.triggered.connect(lambda: self.start_document('documents/Инструкция.docx'))
+        self.action_registration.triggered.connect(lambda: self.start_document('documents/Номера для регистрации.xlsx'))
+        self.action_sp.triggered.connect(lambda: self.start_document('documents/Номера СП.xlsx'))
         # Группа для кнопок принтера
         self.button_gr = [self.radioButton_group4_last_duplex, self.radioButton_group4_duplex,
                           self.radioButton_group4_one_side]
@@ -219,6 +222,9 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         window_add = DefaultWindow(self, self.path_for_default, self.list)
         window_add.show()
 
+    def start_document(self, document):  # Запускаем окно с настройками по умолчанию.
+        os.startfile(pathlib.Path(self.path_for_default, document))
+
     def sorting(self):  # Запускаем окно для сортировки.
         window_add = SortingFile(self, logging)
         window_add.exec_()
@@ -279,7 +285,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                 self.action_report_MO, self.groupBox_sp, self.lineEdit_path_folder_sp,
                                 self.checkBox_name_gk, self.lineEdit_name_gk, self.checkBox_conclusion_sp,
                                 self.checkBox_protocol_sp, self.checkBox_preciption_sp, self.checkBox_infocard_sp,
-                                self.lineEdit_path_file_sp)
+                                self.lineEdit_path_file_sp, self.checkBox_file_num)
             if isinstance(output, list):
                 logging.info('Обнаружены ошибки данных')
                 self.on_message_changed(output[0], output[1])

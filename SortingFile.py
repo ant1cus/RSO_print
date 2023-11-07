@@ -70,9 +70,9 @@ class SortingFile(QDialog, sorting.Ui_Dialog):  # Для файла с номе�
                 QMessageBox.critical(self, 'УПС!', 'Введите имя ГК')
                 return
             for i in name_gk:
-                if check(i, ("<", ">", ":", "«", "»", "/", "\\", "|", "?", "*")):
+                if check(i, ("<", ">", ":", "/", "\\", "|", "?", "*", "\"")):
                     QMessageBox.critical(self, 'УПС!', 'Имя файла не должно содержать следующих символов:\n'
-                                                       "<", ">", ":", "«", "»", "/", "\\", "|", "?", "*")
+                                                       "<", ">", ":", "/", "\\", "|", "?", "*", "\"")
                     return
             check_file = [True if i.isChecked() else False for i in [self.checkBox_conclusion_sp,
                                                                      self.checkBox_protocol_sp,
@@ -94,14 +94,14 @@ class SortingFile(QDialog, sorting.Ui_Dialog):  # Для файла с номе�
                 if name2:
                     os.makedirs(str(pathlib.Path(path_dir_document, str(name2))), exist_ok=True)
             self.log.info('Созданы папки')
-            files = [j_ for i_ in ['акт', 'заключение', 'протокол', 'предписание', 'инфокарта']
+            files = [j_ for i_ in ['акт', 'заключение', 'протокол', 'предписание', 'инфокарта', 'result']
                      for j_ in os.listdir(path_documents) if re.findall(i_.lower(), j_.lower())]
-            result = [file for file in os.listdir(path_documents) if 'result' in file.lower()]
+            # result = [file for file in os.listdir(path_documents) if 'result' in file.lower()]
             self.log.info('Файлы отсортированы, перемещение')
-            if result:
-                shutil.copy(str(pathlib.Path(path_documents, result[0])), str(pathlib.Path(path_dir_document)))
+            # if result:
+            #     shutil.copy(str(pathlib.Path(path_documents, result[0])), str(pathlib.Path(path_dir_document)))
             for file in files:
-                if 'акт' in file.lower():
+                if 'акт' in file.lower() or 'result' in file.lower():
                     shutil.copy(str(pathlib.Path(path_documents, file)), str(pathlib.Path(path_dir_document)))
                 else:
                     no_sn_in_sp = True

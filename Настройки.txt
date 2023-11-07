@@ -5,7 +5,7 @@
     "account-path_folder_account": "D:\\Python\\Project_RSO\\тесты\\конечные",
     "account-radioButton_group2": [
         false,
-        false
+        true
     ],
     "data-HDD_number": "30d",
     "data-act": "Фамилия 6",
@@ -28,17 +28,17 @@
     "data-print_people": "Фамилия 4",
     "data-protocol": "Фамилия 1",
     "data-radioButton_group1": [
-        true,
-        false
+        false,
+        true
     ],
     "data-statement": "Фамилия 7",
     "form27-firm": "Организация",
     "form27-groupBox_form27_insert": false,
     "form27-path_folder_form_27_create": "D:\\Python\\Project_RSO\\тесты\\конечные",
-    "insert-checkBox_file_num": true,
+    "insert-checkBox_file_num": false,
     "insert-checkBox_folder_path_sp": true,
     "insert-path_folder_new": "d:\\python\\project_rso\\тесты\\конечные",
-    "insert-path_folder_old": "d:\\python\\project_rso\\тесты\\тест (без заключения для сп после)",
+    "insert-path_folder_old": "D:/Python/Project_RSO/тесты/тест (отчёт МО)",
     "insert-path_folder_sp": "D:\\Python\\Project_RSO\\тесты\\материалы сп\\Номер ГК",
     "instance-checkBox_conclusion_instance": false,
     "instance-checkBox_preciption_instance": false,

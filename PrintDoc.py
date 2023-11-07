@@ -706,6 +706,10 @@ class PrintDoc(QThread):  # Поток для печати
                         percent_val += percent  # Увеличиваем прогресс
                     progress.emit(int(percent_val))  # Посылаем значение в прогресс бар
             except Exception as e:  # Если ошибка
+                for document in os.listdir(path_old):
+                    if re.findall(r'сопроводит', document.lower()) or re.findall(r'запрос', document.lower()):
+                        if re.findall(r'экз', document.lower()):
+                            os.remove(path_old + '\\' + document)
                 self.status.emit('Ошибка')  # Сообщение в статус бар
                 self.logging.error("Ошибка:\n " + str(e) + '\n' + traceback.format_exc())
 
