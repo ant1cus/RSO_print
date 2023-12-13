@@ -9,6 +9,10 @@
     ],
     "data-HDD_number": "30d",
     "data-act": "Фамилия 6",
+    "data-add_list_item": "пункт перечня 2",
+    "data-add_number": "12/14/1с",
+    "data-checkBox_add_list_item": true,
+    "data-checkBox_add_number": false,
     "data-checkBox_conclusion_number": false,
     "data-comboBox_classified": [
         false,
@@ -28,8 +32,8 @@
     "data-print_people": "Фамилия 4",
     "data-protocol": "Фамилия 1",
     "data-radioButton_group1": [
-        false,
-        true
+        true,
+        false
     ],
     "data-statement": "Фамилия 7",
     "form27-firm": "Организация",
@@ -38,7 +42,7 @@
     "insert-checkBox_file_num": false,
     "insert-checkBox_folder_path_sp": true,
     "insert-path_folder_new": "d:\\python\\project_rso\\тесты\\конечные",
-    "insert-path_folder_old": "D:/Python/Project_RSO/тесты/тест (отчёт МО)",
+    "insert-path_folder_old": "D:/Python/Project_RSO/тесты/тест (все документы)",
     "insert-path_folder_sp": "D:\\Python\\Project_RSO\\тесты\\материалы сп\\Номер ГК",
     "instance-checkBox_conclusion_instance": false,
     "instance-checkBox_preciption_instance": false,

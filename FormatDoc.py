@@ -68,6 +68,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.name_gk = incoming_data['name_gk']
         self.check_sp = incoming_data['check_sp']
         self.conclusion_number = incoming_data['conclusion_number']
+        self.add_list_item = incoming_data['add_list_item']
         self.num_1 = self.num_2 = 0
 
     def run(self):
@@ -159,7 +160,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         input_file_pdf.close()  # Закрываем
                         self.logging.info('Удаляем пдф ' + count_file)
                         os.remove(str(pathlib.Path(file_path, name_file_pdf)))  # Удаляем пдф документ
-                        self.logging.info('Вставляем страницы в ворд ' + count_file)
+                        self.logging.info('Вставляем страницы в word ' + count_file)
                         temp_docx = os.path.join(file_path, count_file)
                         temp_zip = os.path.join(file_path, count_file + ".zip")
                         temp_folder = os.path.join(file_path, "template")
@@ -180,7 +181,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         "<Pages>" + str(count_page) + "</Pages>", string)
                         with open(pages_xml, "wb") as file_wb:
                             file_wb.write(string.encode("UTF-8"))
-                        self.logging.info('Получае ворд из зип ' + count_file)
+                        self.logging.info('Получаем word из зип ' + count_file)
                         os.remove(temp_zip)
                         shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
                         os.rename(temp_zip, temp_docx)  # rename zip file to docx
@@ -194,7 +195,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                               print_people_, date_, path_new, name_file_, fso_):
                 header_1 = doc_.sections[0].first_page_header  # Верхний колонтитул первой страницы
                 head_1 = header_1.paragraphs[0]  # Параграф
-                head_1.insert_paragraph_before(text_first_header_)  # Вставялем перед колонитулом
+                head_1.insert_paragraph_before(text_first_header_)  # Вставляем перед колонтитулом
                 head_1 = header_1.paragraphs[0]  # Выбираем новый первый параграф
                 for header_styles in head_1.runs:
                     header_styles.font.size = Pt(pt_count)
@@ -266,8 +267,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         break
 
             os.chdir(path_old_)  # Меняем рабочую директорию
-            # Параграф для колонтитула первой страницы
-            text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
             fso = False
             logging.info('Файлы в директории:')
             logging.info(os.listdir())
@@ -388,6 +387,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             #         logging.info('Такая папка уже есть ' + str(path_dir_sp))
             # else:
             #     path_dir_sp = pathlib.Path(path_sp)
+            # Параграф для колонтитула первой страницы
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 # if path_sp and (re.findall('заключение', name_el.lower()) or re.findall('предписание', name_el.lower())
@@ -415,7 +415,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 elif re.findall('инфокарта', name_el.lower()):
                     shutil.copy(str(pathlib.Path(path_old_, el_)), str(pathlib.Path(path_, el_)))
                     percent_val += percent  # Увеличиваем прогресс
-                    progress.emit(int(percent_val))  # Посылаем значние в прогресс бар
+                    progress.emit(int(percent_val))  # Посылаем значение в прогресс бар
                     continue
                 pythoncom.CoInitializeEx(0)
                 status.emit('Форматируем документ ' + name_el)
@@ -457,16 +457,23 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 #         errors.append('Документ с с.н. ' + sn_number +
                 #                       ' (' + el_ + ') не найден в материалах СП')
                 else:
+                    # Параграф для колонтитула первой страницы
+                    text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
                     if file_num:  # Если есть файл номеров
                         text_for_foot = dict_file[name_el.rpartition('.')[0]][0]  # Текст для нижнего колонтитула
                         date = dict_file[name_el.rpartition('.')[0]][1]  # Дата
                     else:
-                        text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонитула
+                        text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонтитула
                     if re.findall(r'заключение', name_el.lower()):
                         conclusion_num[name_el] = text_for_foot
                         exec_people = conclusion
                         change_date(doc, True)
                     elif re.findall(r'протокол', name_el.lower()):
+                        # Параграф для колонтитула первой страницы
+                        if self.add_list_item:
+                            text_first_header = classified + '\n' + self.add_list_item + '\nЭкз. №' + num_scroll
+                        else:
+                            text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
                         name_protocol = name_el.rpartition('.')[0].rpartition(' ')[0]
                         name_conclusion = re.sub('Протокол', 'Заключение', name_protocol) + ' ' + \
                                           name_el.rpartition('.')[0].rpartition(' ')[2] + '.docx'
@@ -499,6 +506,11 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         exec_people = executor
                         change_date(doc, False)
                     elif re.findall(r'предписание', name_el.lower()):
+                        # Параграф для колонтитула первой страницы
+                        if self.add_list_item:
+                            text_first_header = classified + '\n' + self.add_list_item + '\nЭкз. №' + num_scroll
+                        else:
+                            text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
                         name_preciption = name_el.rpartition('.')[0].rpartition(' ')[0]
                         x = name_el.rpartition('.')[0].rpartition(' ')[2]
                         name_conclusion = re.sub('Предписание', 'Заключение', name_preciption) + ' ' + x + '.docx'
@@ -587,7 +599,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     #                           ' (' + el_ + ') не найден в материалах СП')
                     logging.info("Определяем количество страниц")
                     if fso:
-                        path_to_file = path_ + '\\' + docs[el_].rpartition('\\')[2]
+                        path_to_file = pathlib.Path(path_, docs[el_].rpartition('\\')[2])
                         num_pages = pages_count(name_el, path_to_file)
                     else:
                         num_pages = pages_count(name_el, path_)
@@ -661,7 +673,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             df_report_rso.iloc[index_df, [ind, ind + 1]] = ['№ ' + text_for_foot + ' от ' +
                                                                             date + ' г.', num_pages - 1]
                     percent_val += percent  # Увеличиваем прогресс
-                    progress.emit(int(percent_val))  # Посылаем значние в прогресс бар
+                    progress.emit(int(percent_val))  # Посылаем значение в прогресс бар
+            # Параграф для колонтитула первой страницы
+            text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
             if self.report_rso:
                 logging.info("Формируем отчет для МВД")
                 status.emit('Формируем отчет для МВД')
@@ -740,7 +754,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     status.emit('Формируем форму 3')
                     logging.info("Формируем форму 3")
                     doc = docx.Document(os.path.abspath(path_old + '\\' + 'Форма 3.docx'))  # Открываем
-                    text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонитула
+                    text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонтитула
                     logging.info("Вставляем колонтитул")
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number, executor,
                                   print_people, date, path_, 'Форма 3.docx')
@@ -922,7 +936,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     doc_old = docx.Document(account_path + '\\' + file)  # Открываем
                                     footer = doc_old.sections[0].first_page_footer  # Нижний колонтитул первой страницы
                                     foot = footer.paragraphs[0]  # Параграф
-                                    foot_text = foot.text  # Текст нижнего колонитула
+                                    foot_text = foot.text  # Текст нижнего колонтитула
                                     text = 'Приложение согласно описи №' + str(number) + ' на ' + str(pages) + ' ' \
                                            + page + ', уч. № ' + foot_text + ', экз. № 1, секретно, только в адрес.'
                                     p.add_run('\n' + str(numbering) + '. ' + text)
@@ -1248,13 +1262,13 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 self.logging.warning('\n'.join(errors))
                 self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
                 self.logging.info("\n*******************************************************************************\n")
-                self.status.emit('Завершено с ошибками!')  # Посылаем значние если готово
+                self.status.emit('Завершено с ошибками!')  # Посылаем значение если готово
                 # self.progress.emit(100)  # Завершаем прогресс бар
                 self.messageChanged.emit('ВНИМАНИЕ!', '\n'.join(errors))
             else:
                 self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
                 self.logging.info("\n*******************************************************************************\n")
-                self.status.emit('Готово!')  # Посылаем значние если готово
+                self.status.emit('Готово!')  # Посылаем значение если готово
                 # self.progress.emit(100)  # Завершаем прогресс бар
         # except BaseException as e:  # Если ошибка
         #     self.status.emit('Ошибка')  # Сообщение в статус бар

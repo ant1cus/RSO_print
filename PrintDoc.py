@@ -126,7 +126,7 @@ class PrintDoc(QThread):  # Поток для печати
                 status.emit('Создаем второй сопроводительный документ')
                 logging.info('Второй сопроводительный')
                 for el in docs:  # Для второго сопроводительного
-                    if re.findall('сопроводит', el.lower()) or re.findall('запрос', el.lower()):
+                    if re.findall('сопровод', el.lower()) or re.findall('запрос', el.lower()):
                         shutil.copy(el, el.rpartition('.')[0] + ' (2 экз.).docx', follow_symlinks=True)
                         doc = docx.Document(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
                         style = doc.styles['Normal']
@@ -173,7 +173,6 @@ class PrintDoc(QThread):  # Поток для печати
                             os.rename(temp_zip, temp_docx)  # rename zip file to docx
                             rm(temp_folder)
                             rm(os.getcwd() + '\\zip')
-                            break
                 docs = [i for i in os.listdir() if i[-4:] == 'docx' and '~' not in i]  # Список файлов
                 logging.info('Сортируем')
                 docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
@@ -206,12 +205,12 @@ class PrintDoc(QThread):  # Поток для печати
                                     docs_.append(i)
                                     break
                     docs_sec = [j for i in ['Форма 3', 'Опись',
-                                            'Сопроводит'] for j in docs if re.findall(i.lower(), j.lower())]
+                                            'Сопровод'] for j in docs if re.findall(i.lower(), j.lower())]
                     docs_ = docs_ + docs_sec
                 else:
                     logging.info('Нет порядка печати')
                     docs_ = [j for i in ['Заключение', 'Протокол', 'Предписание', 'Форма 3', 'Опись',
-                                         'Сопроводит', 'Приложение'] for j in docs if re.findall(i.lower(), j.lower())]
+                                         'Сопровод', 'Приложение'] for j in docs if re.findall(i.lower(), j.lower())]
                 docs_not = [i for i in docs if i not in docs_]
                 docs = docs_not + docs_
                 logging.info('Отсортированные документы:\n' + '-|-'.join(docs))
@@ -321,6 +320,10 @@ class PrintDoc(QThread):  # Поток для печати
                         numbers_list(add_path_account_num, acc_num_for_print, num_in_file, num_for_del)
                     status.emit('Листы посчитаны')
                 else:  # Если номеров не хватает
+                    for document in os.listdir(path_old):
+                        if re.findall(r'сопровод', document.lower()) or re.findall(r'запрос', document.lower()):
+                            if re.findall(r'экз', document.lower()):
+                                os.remove(path_old + '\\' + document)
                     status.emit('Не хватает номеров учетных листов, загрузите дополнительный файл!')
                     # message_changed.emit("ВНИМАНИЕ!",
                     #                      'Не хватает номеров учетных листов, загрузите дополнительный файл!')
@@ -497,7 +500,7 @@ class PrintDoc(QThread):  # Поток для печати
                                     ws = wb.active
                                     for row in range(1, ws.max_row):
                                         if ws.cell(row, 1).value == number:
-                                            if re.findall('сопроводит', el.lower()):
+                                            if re.findall('сопровод', el.lower()):
                                                 if re.findall(' (2 экз.)', el.lower()):
                                                     ws.cell(row + 3, 11).value = num_start
                                                     if num_start != num_stop:
@@ -513,7 +516,7 @@ class PrintDoc(QThread):  # Поток для печати
                                                 if num_start != num_stop:
                                                     ws.cell(row + 1, 11).value = num_stop
                                                 break
-                                    if re.findall('сопроводит', el.lower()):
+                                    if re.findall('сопровод', el.lower()):
                                         for row in range(2, ws.max_row):
                                             if ws.cell(row, 1).value:
                                                 if ws.cell(row, 1).value == number:
@@ -696,7 +699,7 @@ class PrintDoc(QThread):  # Поток для печати
                             logging.info(traceback.format_exc())
                     logging.info('Удаляем пдф ' + name_pdf)
                     os.remove(path_old + '\\' + name_pdf)
-                    if re.findall(r'сопроводит', el.lower()) or re.findall(r'запрос', el.lower()):
+                    if re.findall(r'сопровод', el.lower()) or re.findall(r'запрос', el.lower()):
                         if re.findall(r'экз', el.lower()):
                             os.remove(path_old + '\\' + el)
                     if el.partition(' ')[0].lower() in ['протокол', 'приложение'] and service:
@@ -707,7 +710,7 @@ class PrintDoc(QThread):  # Поток для печати
                     progress.emit(int(percent_val))  # Посылаем значение в прогресс бар
             except Exception as e:  # Если ошибка
                 for document in os.listdir(path_old):
-                    if re.findall(r'сопроводит', document.lower()) or re.findall(r'запрос', document.lower()):
+                    if re.findall(r'сопровод', document.lower()) or re.findall(r'запрос', document.lower()):
                         if re.findall(r'экз', document.lower()):
                             os.remove(path_old + '\\' + document)
                 self.status.emit('Ошибка')  # Сообщение в статус бар
