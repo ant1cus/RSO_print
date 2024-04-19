@@ -118,7 +118,7 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                     error_for_file_num.append(f'Для записи {file} в файле номеров не указана дата')
         if dict_file:
             for file in dict_file:
-                error_for_file_num.append(f'В файле номеров указан документ {file}, которого нет в исходных файлах')
+                # error_for_file_num.append(f'В файле номеров указан документ {file}, которого нет в исходных файлах')
                 if dict_file[file][0] is False:
                     error_for_file_num.append(f'Для записи {file} в файле номеров не указан секретный номер')
                 elif dict_file[file] is False:
