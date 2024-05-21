@@ -68,6 +68,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.name_gk = incoming_data['name_gk']
         self.check_sp = incoming_data['check_sp']
         self.conclusion_number = incoming_data['conclusion_number']
+        self.conclusion_number_date = incoming_data['conclusion_number_date']
         self.add_list_item = incoming_data['add_list_item']
         self.num_1 = self.num_2 = 0
 
@@ -78,7 +79,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         date, conclusion, executor, prescription, hdd_number,
                         print_people, progress, flag_inventory,
                         account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
-                        number_instance, path_sp, name_gk, check_sp, conclusion_number):
+                        number_instance, path_sp, name_gk, check_sp, conclusion_number, conclusion_number_date):
 
             def create_element(attrib_name):
                 return OxmlElement(attrib_name)
@@ -482,7 +483,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         protocol[name_el] = text_for_foot
                         if len(conclusion_num) == 0:
                             if conclusion_number:
-                                conclusion_num_text = conclusion_number
+                                conclusion_num_text = 'уч. № ' + str(conclusion_number) +\
+                                                      ' от ' + conclusion_number_date
                             else:
                                 conclusion_num_text = False
                         elif len(conclusion_num) == 1:
@@ -526,7 +528,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             protocol_num_text = False
                         if len(conclusion_num) == 0:
                             if conclusion_number:
-                                conclusion_num_text = conclusion_number
+                                conclusion_num_text = 'уч. № ' + str(conclusion_number) +\
+                                                      ' от ' + conclusion_number_date
                             else:
                                 conclusion_num_text = False
                         elif len(conclusion_num) == 1:
@@ -1241,7 +1244,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                              self.hdd_number, self.print_people, self.progress, self.flag_inventory,
                                              self.account_post, self.account_signature, path,
                                              self.executor_acc_sheet, self.service, False, self.number_instance,
-                                             self.path_sp, self.name_gk, self.check_sp, self.conclusion_number)
+                                             self.path_sp, self.name_gk, self.check_sp, self.conclusion_number,
+                                             self.conclusion_number_date)
                     self.progress.emit(100)  # Завершаем прогресс бар
                     self.num_1, self.num_2 = return_val[0], return_val[1]
                     docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
@@ -1253,7 +1257,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             self.conclusion, self.protocol, self.prescription, self.hdd_number, self.print_people,
                             self.progress, self.flag_inventory, self.account_post, self.account_signature,
                             self.account_path, self.executor_acc_sheet, self.service, self.path_form_27,
-                            self.number_instance, self.path_sp, self.name_gk, self.check_sp, self.conclusion_number)
+                            self.number_instance, self.path_sp, self.name_gk, self.check_sp, self.conclusion_number,
+                            self.conclusion_number_date)
                 docs_txt = [file for file in os.listdir(self.path_old) if file[-4:] == '.txt']  # Список txt
                 for txt_file in docs_txt:
                     shutil.copy(txt_file, self.path_new)

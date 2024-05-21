@@ -9,35 +9,6 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-import os
-
-
-class Button(QtWidgets.QLineEdit):
-
-	def __init__(self, parent):
-		super(Button, self).__init__(parent)
-
-		self.setAcceptDrops(True)
-
-	def dragEnterEvent(self, e):
-
-		if e.mimeData().hasUrls():
-			e.accept()
-		else:
-			super(Button, self).dragEnterEvent(e)
-
-	def dragMoveEvent(self, e):
-
-		super(Button, self).dragMoveEvent(e)
-
-	def dropEvent(self, e):
-
-		if e.mimeData().hasUrls():
-			for url in e.mimeData().urls():
-				self.setText(os.path.normcase(url.toLocalFile()))
-				e.accept()
-		else:
-			super(Button, self).dropEvent(e)
 
 
 class Ui_MainWindow(object):
@@ -108,7 +79,7 @@ class Ui_MainWindow(object):
         self.label_folder_form_28.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_folder_form_28.setObjectName("label_folder_form_28")
         self.gridLayout_6.addWidget(self.label_folder_form_28, 3, 0, 1, 1)
-        self.lineEdit_path_folder_account = Button(self.groupBox_inventory_insert)
+        self.lineEdit_path_folder_account = QtWidgets.QLineEdit(self.groupBox_inventory_insert)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -310,7 +281,7 @@ class Ui_MainWindow(object):
         self.checkBox_file_form_27.setTristate(False)
         self.checkBox_file_form_27.setObjectName("checkBox_file_form_27")
         self.gridLayout_11.addWidget(self.checkBox_file_form_27, 3, 0, 1, 1)
-        self.lineEdit_path_file_add_account_numbers = Button(self.groupBox_catalog_print)
+        self.lineEdit_path_file_add_account_numbers = QtWidgets.QLineEdit(self.groupBox_catalog_print)
         self.lineEdit_path_file_add_account_numbers.setEnabled(False)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -332,7 +303,7 @@ class Ui_MainWindow(object):
         self.pushButton_folder_old_print.setFont(font)
         self.pushButton_folder_old_print.setObjectName("pushButton_folder_old_print")
         self.gridLayout_11.addWidget(self.pushButton_folder_old_print, 2, 2, 1, 1)
-        self.lineEdit_path_file_form_27_print = Button(self.groupBox_catalog_print)
+        self.lineEdit_path_file_form_27_print = QtWidgets.QLineEdit(self.groupBox_catalog_print)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
@@ -354,7 +325,7 @@ class Ui_MainWindow(object):
         self.label_file_account_number.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_file_account_number.setObjectName("label_file_account_number")
         self.gridLayout_11.addWidget(self.label_file_account_number, 4, 0, 1, 1)
-        self.lineEdit_path_file_account_numbers = Button(self.groupBox_catalog_print)
+        self.lineEdit_path_file_account_numbers = QtWidgets.QLineEdit(self.groupBox_catalog_print)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
@@ -390,7 +361,7 @@ class Ui_MainWindow(object):
         self.label_folder_old_print.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_folder_old_print.setObjectName("label_folder_old_print")
         self.gridLayout_11.addWidget(self.label_folder_old_print, 2, 0, 1, 1)
-        self.lineEdit_path_folder_old_print = Button(self.groupBox_catalog_print)
+        self.lineEdit_path_folder_old_print = QtWidgets.QLineEdit(self.groupBox_catalog_print)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
@@ -638,7 +609,7 @@ class Ui_MainWindow(object):
         self.label_file_sp.setFont(font)
         self.label_file_sp.setObjectName("label_file_sp")
         self.gridLayout_16.addWidget(self.label_file_sp, 1, 0, 1, 1)
-        self.lineEdit_path_folder_sp = Button(self.groupBox_sp)
+        self.lineEdit_path_folder_sp = QtWidgets.QLineEdit(self.groupBox_sp)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
@@ -646,7 +617,7 @@ class Ui_MainWindow(object):
         self.lineEdit_path_folder_sp.setFont(font)
         self.lineEdit_path_folder_sp.setObjectName("lineEdit_path_folder_sp")
         self.gridLayout_16.addWidget(self.lineEdit_path_folder_sp, 0, 1, 1, 1)
-        self.lineEdit_path_file_sp = Button(self.groupBox_sp)
+        self.lineEdit_path_file_sp = QtWidgets.QLineEdit(self.groupBox_sp)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
@@ -761,7 +732,7 @@ class Ui_MainWindow(object):
         self.label_folder_new_doc.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_folder_new_doc.setObjectName("label_folder_new_doc")
         self.gridLayout_15.addWidget(self.label_folder_new_doc, 1, 0, 1, 1)
-        self.lineEdit_path_folder_old_doc = Button(self.groupBox_catalog_insert)
+        self.lineEdit_path_folder_old_doc = QtWidgets.QLineEdit(self.groupBox_catalog_insert)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -788,7 +759,7 @@ class Ui_MainWindow(object):
         self.pushButton_file_file_num.setFont(font)
         self.pushButton_file_file_num.setObjectName("pushButton_file_file_num")
         self.gridLayout_15.addWidget(self.pushButton_file_file_num, 2, 2, 1, 1)
-        self.lineEdit_path_file_file_num = Button(self.groupBox_catalog_insert)
+        self.lineEdit_path_file_file_num = QtWidgets.QLineEdit(self.groupBox_catalog_insert)
         self.lineEdit_path_file_file_num.setEnabled(False)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -815,7 +786,7 @@ class Ui_MainWindow(object):
         self.pushButton_folder_old_doc.setFont(font)
         self.pushButton_folder_old_doc.setObjectName("pushButton_folder_old_doc")
         self.gridLayout_15.addWidget(self.pushButton_folder_old_doc, 0, 2, 1, 1)
-        self.lineEdit_path_folder_new_doc = Button(self.groupBox_catalog_insert)
+        self.lineEdit_path_folder_new_doc = QtWidgets.QLineEdit(self.groupBox_catalog_insert)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -902,7 +873,7 @@ class Ui_MainWindow(object):
         self.label_folder_form_27_create.setFont(font)
         self.label_folder_form_27_create.setObjectName("label_folder_form_27_create")
         self.gridLayout_3.addWidget(self.label_folder_form_27_create, 1, 0, 1, 1)
-        self.lineEdit_path_folder_form_27_create = Button(self.groupBox_form27_insert)
+        self.lineEdit_path_folder_form_27_create = QtWidgets.QLineEdit(self.groupBox_form27_insert)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
