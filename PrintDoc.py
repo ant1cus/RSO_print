@@ -136,11 +136,24 @@ class PrintDoc(QThread):  # Поток для печати
                         header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
                         head = header.paragraphs[0]  # Параграф
                         if re.findall(r'№1', head.text):
-                            text = re.sub(r'№1', '№2', head.text)
-                            head.text = text
-                            head.style = doc.styles['Normal']
-                            for run in head.runs:
-                                run.font.size = Pt(11)
+                            list_paragraph = []
+                            for enum, paragraph in enumerate(doc.sections[0].first_page_header.paragraphs):
+                                if 'экз.' in paragraph.text.lower():
+                                    list_paragraph = [i for i in range(enum + 1)]
+                                    break
+                            for paragraph in list_paragraph:
+                                doc.sections[0].first_page_header.paragraphs[paragraph].text = None
+                            for paragraph in range(len(list_paragraph) - 1):
+                                p = doc.sections[0].first_page_header.paragraphs[paragraph]._element
+                                p.getparent().remove(p)
+                                p._p = p._element = None
+                            p = doc.sections[0].first_page_header.paragraphs[0]._element
+                            p.getparent().remove(p)
+                            # text = re.sub(r'№1', '№2', head.text)
+                            # head.text = text
+                            # head.style = doc.styles['Normal']
+                            # for run in head.runs:
+                            #     run.font.size = Pt(11)
                             doc.save(os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx'))
                             pythoncom.CoInitializeEx(0)
                             count_file = os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')

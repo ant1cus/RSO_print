@@ -121,7 +121,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'data-conclusion_number': ['Номер заключения', self.lineEdit_conclusion_number],
                      'data-add_conclusion_number_date': ['Доп. дата заключения',
                                                          self.lineEdit_add_conclusion_number_date],
-                     'sp-groupBox_sp': ['Включить СП', self.groupBox_sp],
+                     'sp-groupBox_sp': ['Включить сортировку материалов', self.groupBox_sp],
                      'sp-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
                      'sp-path_file_sp': ['Путь к файлу с номерами', self.lineEdit_path_file_sp],
                      'sp-checkBox_name_gk': ['Включить имя ГК', self.checkBox_name_gk],
