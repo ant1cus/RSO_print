@@ -38,6 +38,8 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
     # Путь к исходным документам и проверки
     if not answer['path_old']:
         return ['УПС!', 'Путь к исходным документам пуст']
+    if os.path.exists(answer['path_old']) is False:
+        return ['УПС!', 'Папка с исходными документами отсутствует или переименована']
     if os.path.isdir(answer['path_old']):
         if len(os.listdir(answer['path_old'])) == 0:
             return ['УПС!', 'Папка с исходными документами пуста']
@@ -73,6 +75,8 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                 return ['УПС!', 'Нет текстового файла с серийниками для создания отчёта для МО']
     # Путь к конечным документам и проверки
     answer['path_new'] = lineedit_new.text().strip()
+    if os.path.exists(answer['path_new']) is False:
+        return ['УПС!', 'Папка с конечными документами отсутствует или переименована']
     if not answer['path_new']:
         return ['УПС!', 'Путь к конечной папке пуст']
     if os.path.isfile(answer['path_new']):
@@ -333,6 +337,8 @@ def doc_print(radiobutton_fsb_print, radiobutton_fstek_print, checkbox_conclusio
                                                                                     checkbox_protocol_print,
                                                                                     checkbox_preciption_print])}
     answer['path_old_print'] = lineedit_old_print.text().strip()
+    if not answer['path_old_print']:
+        return ['УПС!', 'Путь к исходным документам для печати отсутствует или переименован']
     if not answer['path_old_print']:
         return ['УПС!', 'Путь к исходным документам для печати пуст']
     if os.path.isdir(answer['path_old_print']):

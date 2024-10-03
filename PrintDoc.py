@@ -16,6 +16,7 @@ import pythoncom
 import win32api
 import win32com
 import win32event
+from lxml import etree
 from win32comext.shell import shell
 from docx.enum.section import WD_ORIENTATION
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -135,25 +136,49 @@ class PrintDoc(QThread):  # Поток для печати
                         font.size = Pt(11)
                         header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
                         head = header.paragraphs[0]  # Параграф
-                        if re.findall(r'№1', head.text):
-                            list_paragraph = []
+                        if re.findall(r'экз.', head.text.lower()):
+                            header_text = ''
                             for enum, paragraph in enumerate(doc.sections[0].first_page_header.paragraphs):
+                                header_text = doc.sections[0].first_page_header.paragraphs[enum].text
                                 if 'экз.' in paragraph.text.lower():
-                                    list_paragraph = [i for i in range(enum + 1)]
                                     break
-                            for paragraph in list_paragraph:
-                                doc.sections[0].first_page_header.paragraphs[paragraph].text = None
-                            for paragraph in range(len(list_paragraph) - 1):
-                                p = doc.sections[0].first_page_header.paragraphs[paragraph]._element
-                                p.getparent().remove(p)
-                                p._p = p._element = None
-                            p = doc.sections[0].first_page_header.paragraphs[0]._element
-                            p.getparent().remove(p)
-                            # text = re.sub(r'№1', '№2', head.text)
-                            # head.text = text
-                            # head.style = doc.styles['Normal']
-                            # for run in head.runs:
-                            #     run.font.size = Pt(11)
+                            doc.save(os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx'))
+                            temp_docx = os.path.join(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
+                            temp_zip = os.path.join(os.getcwd() + '\\', el.rpartition('.')[0] + ' (2 экз.).docx.zip')
+                            temp_folder = os.path.join(os.getcwd() + '\\', "template")
+                            if os.path.exists(temp_zip):
+                                shutil.rmtree(temp_zip)
+                            if os.path.exists(temp_folder):
+                                shutil.rmtree(temp_folder)
+                            if os.path.exists(os.getcwd() + '\\zip'):
+                                shutil.rmtree(os.getcwd() + '\\zip')
+                            os.rename(temp_docx, temp_zip)
+                            os.mkdir(os.getcwd() + '\\zip')
+                            with zipfile.ZipFile(temp_zip) as my_document:
+                                my_document.extractall(temp_folder)
+                            shutil.copy(pathlib.Path(path_for_def, 'documents', 'header1.xml'),
+                                        pathlib.Path(temp_folder, 'word', 'header1.xml'))
+                            os.remove(temp_zip)
+                            shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
+                            os.rename(temp_zip, temp_docx)  # rename zip file to docx
+                            while True:
+                                try:
+                                    shutil.rmtree(temp_folder)
+                                    shutil.rmtree(os.getcwd() + '\\zip')
+                                    break
+                                except OSError as es:
+                                    self.logging.error(es)
+                                    self.logging.error(traceback.format_exc())
+                                    self.logging.info('Ошибка с удалением, пробуем ещё раз')
+                            doc = docx.Document(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
+                            header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
+                            head = header.paragraphs[0]  # Параграф
+                            head.text = header_text
+                            for header_styles in head.runs:
+                                header_styles.font.size = Pt(11)
+                                header_styles.font.name = 'Times New Roman'
+                            head_format = head.paragraph_format  # Настройки параграфа
+                            head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
                             doc.save(os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx'))
                             pythoncom.CoInitializeEx(0)
                             count_file = os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
