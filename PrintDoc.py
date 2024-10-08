@@ -140,6 +140,7 @@ class PrintDoc(QThread):  # Поток для печати
                             header_text = ''
                             for enum, paragraph in enumerate(doc.sections[0].first_page_header.paragraphs):
                                 header_text = doc.sections[0].first_page_header.paragraphs[enum].text
+                                header_text = re.sub(r'№1', '№2', header_text)
                                 if 'экз.' in paragraph.text.lower():
                                     break
                             doc.save(os.path.abspath(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx'))

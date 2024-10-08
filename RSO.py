@@ -175,9 +175,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.hdd_number = None
         self.default_date(data)
         qt_rectangle = self.frameGeometry()
-        # center_point = QDesktopWidget().availableGeometry().center()
-        # qt_rectangle.moveCenter(center_point)
+        center_point = QDesktopWidget().availableGeometry().center()
+        qt_rectangle.moveCenter(center_point)
         self.move(qt_rectangle.topLeft())
+        # self.move(qt_rectangle.center())
         self.thread = None
 
     def default_date(self, incoming_data):
