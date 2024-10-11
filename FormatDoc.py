@@ -183,12 +183,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         with open(pages_xml, "wb") as file_wb:
                             file_wb.write(string.encode("UTF-8"))
                         self.logging.info('Получаем word из зип ' + count_file)
-                        os.remove(temp_zip)
+                        try_number = 0
+                        while True:
+                            try:
+                                os.remove(temp_zip)
+                                break
+                            except PermissionError:
+                                if try_number == 4:
+                                    self.logging.info('Удаление не выполнено, прерывание')
+                                    break
+                                self.logging.info('Неудачное удаление, ждем и ещё раз')
+                                time.sleep(3)
+                                try_number += 1
+                        if try_number == 4:
+                            return {'error': True, 'text': 'Не удалось удалить файл'}
                         shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
                         os.rename(temp_zip, temp_docx)  # rename zip file to docx
                         rm(temp_folder)
                         rm(file_path + '\\zip')
-                        return count_page
+                        return {'error': False, 'text': count_page}
                     except BaseException as exept:
                         self.logging.error("Ошибка:\n " + str(exept) + '\n' + traceback.format_exc())
 
@@ -580,33 +593,23 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         change_date(doc, False)
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
-                    # Если есть путь для распределения СП
-                    # if path_sp:
-                    #     if re.findall(r'акт', name_el.lower()) or re.findall(r'result', name_el.lower()):
-                    #         for folder_sp in os.listdir(path_sp):
-                    #             shutil.copy(str(pathlib.Path(path_old_, name_el)),
-                    #                         str(pathlib.Path(path_sp, folder_sp)))
-                    #     else:
-                    #         no_sn_in_sp = True
-                    #         sn_number = el_.partition(' ')[2].partition(' ')[0]
-                    #         if sn_number == 'СП':
-                    #             sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
-                    #         for folder_sp in os.listdir(path_sp):
-                    #             for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
-                    #                 if folder_sn.partition(' ')[0] == sn_number:
-                    #                     no_sn_in_sp = False
-                    #                     shutil.copy(str(pathlib.Path(path_, name_el)),
-                    #                                 str(pathlib.Path(path_sp, folder_sp, folder_sn)))
-                    #         if no_sn_in_sp:
-                    #             errors.append('Документ с с.н. ' + sn_number +
-                    #                           ' (' + el_ + ') не найден в материалах СП')
                     logging.info("Определяем количество страниц")
                     if fso:
                         path_to_file = pathlib.Path(path_, docs[el_].rpartition('\\')[2])
                         num_pages = pages_count(name_el, path_to_file)
+                        if num_pages['error']:
+                            self.logging.error(num_pages['text'])
+                            return {'error': True, 'text': num_pages['text']}
+                        else:
+                            num_pages = num_pages['text']
                     else:
                         num_pages = pages_count(name_el, path_)
-                    for_27.append([text_for_foot, date, classified, firm, name_el[:-5], executor, '1',
+                        if num_pages['error']:
+                            self.logging.error(num_pages['text'])
+                            return {'error': True, 'text': num_pages['text']}
+                        else:
+                            num_pages = num_pages['text']
+                    for_27.append([text_for_foot, date, classified, firm, name_el[:-5], exec_people, '1',
                                    '№ 1', str(num_pages - 1)])
                     if account:  # Если активирована опись добавляем
                         dict_40.append({name_el: [classified, text_for_foot, num_scroll, str(num_pages - 1)]})
@@ -759,7 +762,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     doc = docx.Document(os.path.abspath(path_old + '\\' + 'Форма 3.docx'))  # Открываем
                     text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонтитула
                     logging.info("Вставляем колонтитул")
-                    insert_header(doc, 11, text_first_header, text_for_foot, hdd_number, executor,
+                    insert_header(doc, 11, text_first_header, text_for_foot, hdd_number, exec_people,
                                   print_people, date, path_, 'Форма 3.docx')
                     if '/' in num_1:  # Добавляем номер для описи
                         num_1 = text_for_foot.rpartition('/')[0] + '/'
@@ -769,8 +772,13 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         num_2 = str(int((text_for_foot.partition('-')[2]).rpartition('c')[0]) + 1)
                     logging.info("Количество страниц")
                     num_pages = pages_count('Форма 3.docx', path_old)
+                    if num_pages['error']:
+                        self.logging.error(num_pages['text'])
+                        return {'error': True, 'text': num_pages['text']}
+                    else:
+                        num_pages = num_pages['text']
                     if firm:
-                        for_27.append([text_for_foot, date, classified, firm, 'Форма 3.docx', executor,
+                        for_27.append([text_for_foot, date, classified, firm, 'Форма 3.docx', exec_people,
                                        '1', '№ 1', str(num_pages - 1)])
 
             # Если необходимо печатать опись
@@ -882,6 +890,11 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         doc = docx.Document(account_path + '\\' + el)  # Открываем
                         number = doc.sections[0].first_page_footer.paragraphs[0].text
                         num_pages = pages_count(el, account_path)
+                        if num_pages['error']:
+                            self.logging.error(num_pages['text'])
+                            return {'error': True, 'text': num_pages['text']}
+                        else:
+                            num_pages = num_pages['text']
                         if firm:
                             for_27.append([number, date, classified, firm, el, executor, '1', '№ 1',
                                            str(num_pages - 1)])
@@ -1002,6 +1015,11 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     doc.save(path_ + '\\' + acc_doc)  # Сохраняем
                     num_pages = pages_count(acc_doc,
                                             acc_doc_path.rpartition('\\')[0])
+                    if num_pages['error']:
+                        self.logging.error(num_pages['text'])
+                        return {'error': True, 'text': num_pages['text']}
+                    else:
+                        num_pages = num_pages['text']
                     if firm:
                         for_27.append([text_for_foot, date, classified, firm,
                                        acc_doc_path.rpartition('\\')[2][:-5],
@@ -1189,7 +1207,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         percent_val += percent  # Увеличиваем прогресс
                         self.progress.emit(int(percent_val))  # Обновляем прогресс бар
             self.progress.emit(100)  # Обновляем прогресс бар
-            return [num_1, num_2]
+            return {'error': False, 'text': [num_1, num_2]}
 
         time_start = datetime.datetime.now()
         self.progress.emit(0)  # Обновляем статус бар
@@ -1246,19 +1264,36 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                              self.executor_acc_sheet, self.service, False, self.number_instance,
                                              self.path_sp, self.name_gk, self.check_sp, self.conclusion_number,
                                              self.conclusion_number_date)
+                    if return_val['error']:
+                        self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
+                        self.logging.info(
+                            "\n*******************************************************************************\n")
+                        self.status.emit('Ошибки!')  # Посылаем значение если готово
+                        # self.progress.emit(100)  # Завершаем прогресс бар
+                        self.progress.emit(0)  # Завершаем прогресс бар
+                        return
                     self.progress.emit(100)  # Завершаем прогресс бар
-                    self.num_1, self.num_2 = return_val[0], return_val[1]
+                    self.num_1, self.num_2 = return_val['text'][0], return_val['text'][1]
                     docs_txt = [file for file in os.listdir(path_old) if file[-4:] == '.txt']  # Список txt
                     for txt_file in docs_txt:
                         shutil.copy(txt_file, path)
             else:
-                format_doc_(self.path_old, self.classified, self.list_item, self.num_scroll, self.account, self.firm,
-                            self.logging, self.status, self.path_new, self.file_num, self.num_1, self.num_2, self.date,
-                            self.conclusion, self.protocol, self.prescription, self.hdd_number, self.print_people,
-                            self.progress, self.flag_inventory, self.account_post, self.account_signature,
-                            self.account_path, self.executor_acc_sheet, self.service, self.path_form_27,
-                            self.number_instance, self.path_sp, self.name_gk, self.check_sp, self.conclusion_number,
-                            self.conclusion_number_date)
+                return_val = format_doc_(self.path_old, self.classified, self.list_item, self.num_scroll, self.account,
+                                         self.firm, self.logging, self.status, self.path_new, self.file_num, self.num_1,
+                                         self.num_2, self.date, self.conclusion, self.protocol, self.prescription,
+                                         self.hdd_number, self.print_people, self.progress, self.flag_inventory,
+                                         self.account_post, self.account_signature, self.account_path,
+                                         self.executor_acc_sheet, self.service, self.path_form_27, self.number_instance,
+                                         self.path_sp, self.name_gk, self.check_sp, self.conclusion_number,
+                                         self.conclusion_number_date)
+                if return_val['error']:
+                    self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
+                    self.logging.info(
+                        "\n*******************************************************************************\n")
+                    self.status.emit('Ошибки!')  # Посылаем значение если готово
+                    # self.progress.emit(100)  # Завершаем прогресс бар
+                    self.progress.emit(0)  # Завершаем прогресс бар
+                    return
                 docs_txt = [file for file in os.listdir(self.path_old) if file[-4:] == '.txt']  # Список txt
                 for txt_file in docs_txt:
                     shutil.copy(txt_file, self.path_new)

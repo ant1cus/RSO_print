@@ -157,8 +157,17 @@ class PrintDoc(QThread):  # Поток для печати
                             os.mkdir(os.getcwd() + '\\zip')
                             with zipfile.ZipFile(temp_zip) as my_document:
                                 my_document.extractall(temp_folder)
+                            name_header = ''
+                            size_header = 0
+                            for header_file in os.listdir(pathlib.Path(temp_folder, 'word')):
+                                if 'header' in header_file:
+                                    if os.path.getsize(pathlib.Path(temp_folder, 'word', header_file)) > size_header:
+                                        size_header = os.path.getsize(pathlib.Path(temp_folder, 'word', header_file))
+                                        name_header = header_file
                             shutil.copy(pathlib.Path(path_for_def, 'documents', 'header1.xml'),
-                                        pathlib.Path(temp_folder, 'word', 'header1.xml'))
+                                        pathlib.Path(temp_folder, 'word', name_header))
+                            # shutil.copy(pathlib.Path(path_for_def, 'documents', 'header1.xml'),
+                            #             pathlib.Path(temp_folder, 'word', 'header1.xml'))
                             os.remove(temp_zip)
                             shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
                             os.rename(temp_zip, temp_docx)  # rename zip file to docx
@@ -221,7 +230,7 @@ class PrintDoc(QThread):  # Поток для печати
                     docs_name = {}
                     for element in docs:
                         for doc_name in ['Заключение', 'Протокол', 'Приложение', 'Предписание']:
-                            if re.findall(doc_name, element):
+                            if re.findall(doc_name.lower(), element.lower()):
                                 quantity_docs[doc_name] += 1
                                 doc_number = element.rpartition('.')[0].rpartition(' ')[2]
                                 if doc_number in docs_name:
@@ -240,7 +249,7 @@ class PrintDoc(QThread):  # Поток для печати
                     for element in docs_name:
                         for doc_name in ['Заключение', 'Протокол', 'Приложение', 'Предписание']:
                             for i in docs_name[element]:
-                                if re.findall(doc_name, i):
+                                if re.findall(doc_name.lower(), i.lower()):
                                     docs_.append(i)
                                     break
                     docs_sec = [j for i in ['Форма 3', 'Опись',
