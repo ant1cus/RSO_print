@@ -433,7 +433,7 @@ class PrintDoc(QThread):  # Поток для печати
                                 logging.info('Запускаем в печать ' + str(el))
                                 printing_date = [computer_name, user_name, path_old + '\\' + str(el),
                                                  str(datetime.date.today()), printer]
-                                win32api.ShellExecute(0, "print", path_old + '\\' + name_pdf,
+                                win32api.ShellExecute(0, "print", path_old + '\\' + el,
                                                       name_printer, ".", 0)
                                 jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                                 printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
@@ -617,15 +617,6 @@ class PrintDoc(QThread):  # Поток для печати
                                                 pass
                                             # Печатаем
                                             logging.info('Печатаем ' + name_pdf)
-                                            # Пробуем
-                                            # wait_dict = shell.ShellExecuteEx(fMask=256 + 64,
-                                            #                                  lpFile=path_old + '\\' + name_pdf,
-                                            #                                  lpVerb='print')
-                                            # hh = wait_dict['hProcess']
-                                            # print(hh)
-                                            # ret = win32event.WaitForSingleObject(hh, -1)
-                                            # print(ret)
-                                            # конец
                                             win32api.ShellExecute(0, 'print', path_old + '\\' + name_pdf,
                                                                   name_printer, '.', 0)
                                             status.emit('Печатаем документ ' + name_pdf)
@@ -745,8 +736,9 @@ class PrintDoc(QThread):  # Поток для печати
                             flag_for_exit = False
                         except BaseException:
                             logging.info(traceback.format_exc())
-                    logging.info('Удаляем пдф ' + name_pdf)
-                    os.remove(path_old + '\\' + name_pdf)
+                    if os.path.exists(pathlib.Path(path_old, name_pdf)):
+                        logging.info('Удаляем пдф ' + name_pdf)
+                        os.remove(path_old + '\\' + name_pdf)
                     if re.findall(r'сопровод', el.lower()) or re.findall(r'запрос', el.lower()):
                         if re.findall(r'экз', el.lower()):
                             os.remove(path_old + '\\' + el)
@@ -769,16 +761,6 @@ class PrintDoc(QThread):  # Поток для печати
         time_start = datetime.datetime.now()
         self.progress.emit(0)  # Обнуление прогресс бара
         self.status.emit('Начинаем печать документов')
-
-        # def form_27_name(path_wb):
-        #     wb_ = openpyxl.load_workbook(path_wb)
-        #     ws_ = wb_.active
-        #     number_ = [ws_.cell(i_, 1).value for i_ in range(2, ws_.max_row+1) if ws_.cell(i_, 1).value]
-        #     number_ = natsorted(number_)
-        #     wb_.close()
-        #     name_wb = '\\Форма 27' \
-        #               ' ' + str(number_[0]).replace('/', ',') + ' - ' + str(number_[-1]).replace('/', ',') + '.xlsx'
-        #     os.rename(path_wb, os.path.dirname(path_wb) + name_wb)
         if self.package:
             for folder in os.listdir(self.path_old):
                 path_ = self.path_old + '\\' + folder
