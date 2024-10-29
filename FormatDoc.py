@@ -24,6 +24,7 @@ from docx.shared import Pt
 from openpyxl.utils import get_column_letter
 from natsort import natsorted
 from word2pdf import word2pdf
+from lxml import etree
 
 
 class FormatDoc(QThread):  # Если требуется вставить колонтитулы
@@ -295,7 +296,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             #         return float(input_str.partition('.')[2][:-5])
             #     except ValueError:
             #         return 1
-
+            application_dict = {}  # Для подсчёта листов - новое.
             if fso:
                 docs = {}
                 docs_not = {}
@@ -356,7 +357,20 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 docx_for_progress = 0
                 for name_file in os.listdir():
                     if re.findall(r'приложение', name_file.lower()):
-                        pass
+                        with zipfile.ZipFile(pathlib.Path(path_old_, name_file)) as my_doc:
+                            xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
+                            pages = int(re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())[0])
+                        if pages == 1:
+                            pythoncom.CoInitializeEx(0)
+                            self.logging.info(f"Считаем кол-во листов в приложении {name_file}")
+                            status.emit(f"Считаем кол-во листов в приложении {name_file}")
+                            word2pdf(str(pathlib.Path(path_old_, name_file)),
+                                     str(pathlib.Path(path_old_, name_file + '.pdf')))
+                            input_file = fitz.open(str(pathlib.Path(path_old_, name_file + '.pdf')))  # Открываем
+                            pages = input_file.page_count  # Получаем кол-во страниц
+                            input_file.close()  # Закрываем
+                            os.remove(str(pathlib.Path(path_old_, name_file + '.pdf')))  # Удаляем pdf документ
+                        application_dict[name_file] = pages
                     else:
                         docx_for_progress += 1
             per = 90 if account else 100
@@ -962,23 +976,33 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.size = Pt(14)
                                         run.font.name = 'Times New Roman'
                             else:
-                                file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
                                 len_appendix = 0
-                                for file in file_appendix:
-                                    with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
-                                        xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
-                                        pages = re.findall(r'<Pages>(\w*)</Pages>',
-                                                           xml_content.decode())[0]  # Ищем кол-во страниц
-                                        len_appendix += int(pages)
+                                for appendix in application_dict:
+                                    len_appendix += application_dict[appendix]
+                                # file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
+                                # for file in file_appendix:
+                                #     with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
+                                #         xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
+                                #         pages = re.findall(r'<Pages>(\w*)</Pages>',
+                                #                            xml_content.decode())[0]  # Ищем кол-во страниц
+                                #         len_appendix += int(pages)
                                 numbering = 1
                                 ness_file = ['Заключение', 'Предписание'] if self.service else ['Заключение',
                                                                                                 'Протокол',
                                                                                                 'Предписание']
                                 for file in for_27:
                                     if file[4].partition(' ')[0] in ness_file:
-                                        page = 'листе' if int(file[8]) == 1 else 'листах'
+                                        # Новое для подсчета листов в протоколе с приложением
+                                        number_page = file[8]
+                                        if 'протокол' in file[4].lower():
+                                            num_prot = file[4].rpartition('.')[0].rpartition(' ')[2]
+                                            for app in application_dict:
+                                                if num_prot in app:
+                                                    number_page = str(int(number_page) + int(application_dict[app]))
+                                        # Конец
+                                        page = 'листе' if int(number_page) == 1 else 'листах'
                                         text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз.' + file[7] + \
-                                               ' , на ' + file[8] + ' ' + page + ' , секретно, только в адрес.'
+                                               ' , на ' + number_page + ' ' + page + ' , секретно, только в адрес.'
                                         p.add_run('\n' + str(numbering) + '. ' + text)
                                         p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
                                         numbering += 1
@@ -1219,7 +1243,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 dict_file = {}
                 wb = openpyxl.load_workbook(self.file_num)  # Откроем книгу.
                 ws = wb.active  # Делаем активным первый лист.
-                for i in range(1, ws.max_row):  # Пока есть значения
+                for i in range(1, ws.max_row + 1):  # Пока есть значения
                     if ws.cell(i, 1).value:
                         # cv = ws.cell(i, 1).value.partition(' ')[0].lower()  # Получаем значение
                         # if cv == 'заключение' or cv == 'предписание' or cv == 'протокол' or cv == 'форма' \

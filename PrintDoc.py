@@ -257,8 +257,8 @@ class PrintDoc(QThread):  # Поток для печати
                     docs_ = docs_ + docs_sec
                 else:
                     logging.info('Нет порядка печати')
-                    docs_ = [j for i in ['Заключение', 'Протокол', 'Предписание', 'Форма 3', 'Опись',
-                                         'Сопровод', 'Приложение'] for j in docs if re.findall(i.lower(), j.lower())]
+                    docs_ = [j for i in ['Заключение', 'Протокол', 'Приложение', 'Предписание', 'Форма 3', 'Опись',
+                                         'Сопровод'] for j in docs if re.findall(i.lower(), j.lower())]
                 docs_not = [i for i in docs if i not in docs_]
                 docs = docs_not + docs_
                 logging.info('Отсортированные документы:\n' + '-|-'.join(docs))
@@ -427,6 +427,7 @@ class PrintDoc(QThread):  # Поток для печати
                             status.emit('Форматируем документ ' + str(el))
                             if re.findall(r'приложение', el.lower()):
                                 if service is True:
+                                    logging.info('Не печатаем приложение ' + str(el) + ' (service true)')
                                     flag_for_exit = False
                                     continue
                                 status.emit('Печатаем документ ' + str(el))

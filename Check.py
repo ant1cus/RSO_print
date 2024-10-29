@@ -107,7 +107,7 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
         dict_file = {}
         wb = openpyxl.load_workbook(answer['file_num'])  # Откроем книгу.
         ws = wb.active  # Делаем активным первый лист.
-        for i in range(1, ws.max_row):  # Пока есть значения
+        for i in range(1, ws.max_row + 1):  # Пока есть значения
             if ws.cell(i, 1).value:
                 dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c',
                                                   ws.cell(i, 3).value.strftime("%d.%m.%Y")]  # Делаем список
