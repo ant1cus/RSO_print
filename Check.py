@@ -113,9 +113,15 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                                                   ws.cell(i, 3).value.strftime("%d.%m.%Y")]  # Делаем список
         error_for_file_num = []
         for file in file_in_directory:
+            # accepted_file = False
+            # for name_file in ['акт', 'заключение', 'протокол', 'предписание', 'сопроводит', 'опись']:
+            #     if name_file in file.lower():
+            accepted_file = [False if name_file in file.lower() else True for name_file in ['акт', 'заключение', 'протокол', 'предписание', 'сопроводит', 'опись']]
+            if all(accepted_file):
+                continue
             num_date = dict_file.pop(file.rpartition('.')[0], 'File not found')
             if num_date == 'File not found':
-                error_for_file_num.append(f'{file} не найден в файле номеров')
+                error_for_file_num.append(f'Документ {file} не найден в файле номеров')
             else:
                 if num_date[0] is False:
                     error_for_file_num.append(f'Для записи {file} в файле номеров не указан секретный номер')
