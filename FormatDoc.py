@@ -477,15 +477,37 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     change_date(doc, False)
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
                 elif re.findall(r'приложение', name_el.lower()):
-                    for p in doc.paragraphs:
-                        if re.findall(r'\[АКТНОМ\]', p.text):
-                            text = re.sub(r'\[АКТНОМ\]', 'от date № ' + act_number,
-                                            p.text)
-                            p.text = text
-                            for run in p.runs:
-                                run.font.size = Pt(pt_num)
-                                run.font.name = 'Times New Roman'
-                            break
+                    if re.findall(r'заключени', name_el.lower()):
+                        conclusion_num_text = ''
+                        if len(conclusion_num) == 0:
+                            if conclusion_number:
+                                conclusion_num_text = f'от {conclusion_number_date} № {str(conclusion_number)}'
+                            else:
+                                conclusion_num_text = False
+                        elif len(conclusion_num) == 1:
+                            conclusion_num_text = f'от {date} № {str(conclusion_num[list(conclusion_num.keys())[0]])}'
+                        else:
+                            conclusion_num_text = f'от {date} № {str(conclusion_num[name_conclusion])}'
+                        if conclusion_num_text:
+                            for val_p, p in enumerate(doc.paragraphs):
+                                if re.findall(r'\[ЗАКЛНОМ]', p.text):
+                                    text = re.sub(r'\[ЗАКЛНОМ]', conclusion_num_text, p.text)
+                                    p.text = text
+                                    for run in p.runs:
+                                        run.font.size = Pt(12)
+                                        run.font.name = 'Times New Roman'
+                                    break
+                        exec_people = executor
+                    else:
+                        for p in doc.paragraphs:
+                            if re.findall(r'\[АКТНОМ\]', p.text):
+                                text = re.sub(r'\[АКТНОМ\]', 'от date № ' + act_number, p.text)
+                                p.text = text
+                                for run in p.runs:
+                                    run.font.size = Pt(12)
+                                    run.font.name = 'Times New Roman'
+                                break
+                        exec_people = self.act
                     change_date_app(doc, True)
                     if self.add_list_item:
                         text_first_header = classified + '\n' + self.add_list_item + '\nЭкз. №' + num_scroll
@@ -496,29 +518,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         date = dict_file[name_el.rpartition('.')[0]][1]  # Дата
                     else:
                         text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонтитула
-                    exec_people = self.act
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
-                # elif re.findall(r'инфокарта', name_el.lower()) and path_sp:
-                #     no_sn_in_sp = True
-                #     sn_number = el_.partition(' ')[2].partition(' ')[0]
-                #     name_infocard = re.sub('Инфокарта', 'info', name_el)
-                #     if sn_number == 'СП':
-                #         sn_number = el_.partition(' ')[2].partition(' ')[2].partition(' ')[0]
-                #     for folder_sp in os.listdir(path_sp):
-                #         for folder_sn in os.listdir(str(pathlib.Path(path_sp, folder_sp))):
-                #             if folder_sn.partition(' ')[0] == sn_number:
-                #                 no_sn_in_sp = False
-                #                 shutil.copy(str(pathlib.Path(path_old_, name_el)),
-                #                             str(pathlib.Path(path_sp, folder_sp, folder_sn)))
-                #                 pathlib.Path(path_sp, folder_sp,
-                #                              folder_sn, name_el).rename(pathlib.Path(path_sp, folder_sp,
-                #                                                                      folder_sn, name_infocard))
-                #     shutil.copy(str(pathlib.Path(path_old_, name_el)), str(pathlib.Path(path_, name_el)))
-                #     if no_sn_in_sp:
-                #         errors.append('Документ с с.н. ' + sn_number +
-                #                       ' (' + el_ + ') не найден в материалах СП')
                 else:
                     # Параграф для колонтитула первой страницы
                     text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
