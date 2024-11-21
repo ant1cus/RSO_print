@@ -226,7 +226,7 @@ class PrintDoc(QThread):  # Поток для печати
                 docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
                 if print_order:
                     logging.info('Есть порядок печати')
-                    quantity_docs = {'Заключение': 0, 'Протокол': 0, 'Приложение': 0, 'Предписание': 0}
+                    quantity_docs = {'Заключение': 0, 'Протокол': 0, 'Приложение А': 0, 'Предписание': 0}
                     docs_name = {}
                     for element in docs:
                         for doc_name in ['Заключение', 'Протокол', 'Приложение А', 'Предписание']:
@@ -323,7 +323,6 @@ class PrintDoc(QThread):  # Поток для печати
                         #     else:
                         #         num_of_sheets_logs[doc_path] = list_doc(doc_path)
                         #         num_of_sheets += num_of_sheets_logs[doc_path]
-                print(num_of_sheets)
                 logging.info('Листы в документах:')
                 logging.info(num_of_sheets_logs)
 
@@ -373,11 +372,9 @@ class PrintDoc(QThread):  # Поток для печати
                             if re.findall(r'экз', document.lower()):
                                 os.remove(path_old + '\\' + document)
                     status.emit('Не хватает номеров учетных листов, загрузите дополнительный файл!')
-                    # message_changed.emit("ВНИМАНИЕ!",
-                    #                      'Не хватает номеров учетных листов, загрузите дополнительный файл!')
                     return 'Не хватает номеров учетных листов, загрузите дополнительный файл!'
-                print('Number', len(acc_num_for_print))
-                print(acc_num_for_print)
+                # print('Number', len(acc_num_for_print))
+                # print(acc_num_for_print)
 
                 def del_col(path_save):  # Ф-я для удаления пустых колонок в файле с учетными номерами листов
                     w_b = openpyxl.load_workbook(path_save)  # Открываем
@@ -520,8 +517,8 @@ class PrintDoc(QThread):  # Поток для печати
                                     start_number = num_second_page.rpartition('/')[2]
                                     add_page_number(footer_2, mask_page, start_number)
                                 doc.save(pathlib.Path(path_old, el))  # Сохраняем
-                                print('doc', el)
-                                print('start', num_start, 'stop', num_stop)
+                                # print('doc', el)
+                                # print('start', num_start, 'stop', num_stop)
                                 # logging.info('Преобразуем в pdf ' + str(el))
                                 try:
                                     word2pdf(str(pathlib.Path(path_old, el)), str(pathlib.Path(path_old, name_pdf)))
@@ -765,7 +762,7 @@ class PrintDoc(QThread):  # Поток для печати
                                self.name_printer, path_form27_, self.print_order, self.service, self.path_for_def,
                                self.logging, self.status, self.progress)
                 if ex:
-                    print(ex)
+                    # print(ex)
                     self.messageChanged.emit("ВНИМАНИЕ!", ex)
                     return
         else:
@@ -775,7 +772,7 @@ class PrintDoc(QThread):  # Поток для печати
                            self.name_printer, self.path_form27, self.print_order, self.service, self.path_for_def,
                            self.logging, self.status, self.progress)
             if ex:
-                print(ex)
+                # print(ex)
                 self.messageChanged.emit("ВНИМАНИЕ!", ex)
                 return
         self.progress.emit(100)  # Завершаем прогресс бар
