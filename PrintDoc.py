@@ -229,7 +229,7 @@ class PrintDoc(QThread):  # Поток для печати
                     quantity_docs = {'Заключение': 0, 'Протокол': 0, 'Приложение': 0, 'Предписание': 0}
                     docs_name = {}
                     for element in docs:
-                        for doc_name in ['Заключение', 'Протокол', 'Приложение', 'Предписание']:
+                        for doc_name in ['Заключение', 'Протокол', 'Приложение А', 'Предписание']:
                             if re.findall(doc_name.lower(), element.lower()):
                                 quantity_docs[doc_name] += 1
                                 doc_number = element.rpartition('.')[0].rpartition(' ')[2]
@@ -247,7 +247,7 @@ class PrintDoc(QThread):  # Поток для печати
                         return
                     docs_ = []
                     for element in docs_name:
-                        for doc_name in ['Заключение', 'Протокол', 'Приложение', 'Предписание']:
+                        for doc_name in ['Заключение', 'Протокол', 'Приложение А', 'Предписание']:
                             for i in docs_name[element]:
                                 if re.findall(doc_name.lower(), i.lower()):
                                     docs_.append(i)
@@ -257,14 +257,14 @@ class PrintDoc(QThread):  # Поток для печати
                     docs_ = docs_ + docs_sec
                 else:
                     logging.info('Нет порядка печати')
-                    docs_ = [j for i in ['Заключение', 'Протокол', 'Приложение', 'Предписание', 'Форма 3', 'Опись',
+                    docs_ = [j for i in ['Заключение', 'Протокол', 'Приложение А', 'Предписание', 'Форма 3', 'Опись',
                                          'Сопровод'] for j in docs if re.findall(i.lower(), j.lower())]
                 docs_not = [i for i in docs if i not in docs_]
                 docs = docs_not + docs_
                 logging.info('Отсортированные документы:\n' + '-|-'.join(docs))
                 per = 0
                 for file in docs:
-                    if file.partition(' ')[0].lower() not in ['протокол', 'приложение'] and service:
+                    if file.partition(' ')[0].lower() not in ['протокол', 'приложение а'] and service:
                         per += 1
                 try:
                     percent = 100 / per  # Процент от общего
@@ -294,7 +294,7 @@ class PrintDoc(QThread):  # Поток для печати
                             continue
                         elif re.findall('предписание', doc_path.lower()) and self.document_list['предписание'] is False:
                             continue
-                        elif re.findall('приложение', doc_path.lower()):
+                        elif re.findall('приложение а', doc_path.lower()):
                             continue
                         else:
                             num_of_sheets_logs[doc_path] = list_doc(doc_path)
@@ -385,19 +385,11 @@ class PrintDoc(QThread):  # Поток для печати
                     flag_ = False  # Для выхода
                     for j_ in range(1, w_s.max_column + 1):  # Колонки
                         for i_ in range(1, w_s.max_row + 1):  # Строки
-                            # with open('file_del_number.txt', mode_) as file_:
-                            #     print(w_s.cell(i_, j_).value, file=file_)
                             if w_s.cell(i_, j_).value:  # Если есть значение
-                                # with open('file_del_number.txt', mode_) as file_:
-                                #     print('exit flag', file=file_)
                                 flag_ = True  # Для дальнейшего выхода
                                 break  # Выход
                         if flag_:  # Если есть метка
-                            # with open('file_del_number.txt', mode_) as file_:
-                            #     print('exit', file=file_)
                             break  # Выход
-                        # with open('file_del_number.txt', mode_) as file_:
-                        #     print('delete col - ' + str(j_), file=file_)
                         w_s.delete_cols(1, j_)  # Если прошли всю колонку и не вышли - удаляем колонку
                     w_b.save(path_save)  # Сохраняем книгу
                     w_b.close()  # Закрываем
@@ -425,7 +417,7 @@ class PrintDoc(QThread):  # Поток для печати
                             pythoncom.CoInitializeEx(0)
                             logging.info('Форматируем документ ' + str(el))
                             status.emit('Форматируем документ ' + str(el))
-                            if re.findall(r'приложение', el.lower()):
+                            if re.findall(r'приложение а', el.lower()):
                                 if service is True:
                                     logging.info('Не печатаем приложение ' + str(el) + ' (service true)')
                                     flag_for_exit = False

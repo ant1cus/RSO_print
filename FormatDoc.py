@@ -252,6 +252,16 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 # add_page_number(header_2)
                 doc_.save(os.path.abspath(path_new + '\\' + name_file_))  # Сохраняем
 
+            def change_date_app(docum, param):  # Параметр используется для шрифта
+                for parag_ in docum.paragraphs:
+                    if re.findall(r'date', parag_.text):
+                        text_date = re.sub(r'date', f"{date}", parag_.text)
+                        parag_.text = text_date
+                        for runs_ in parag_.runs:
+                            runs_.font.size = Pt(12) if param else Pt(pt_num)
+                            runs_.font.name = 'Times New Roman'
+                        break
+
             def change_date(docum, param):  # Параметр используется для шрифта
                 RU_MONTH_VALUES = {
                     1: 'января',
@@ -338,7 +348,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         docs[element] = path_old_
                 docx_for_progress = len(docs)
             else:
-                docs = [file for file in os.listdir() if file[-4:] == 'docx']  # Список документов
+                docs = [file for file in os.listdir() if file.endswith('.docx')]  # Список документов
                 # docs.sort(key=sort)  # Сортировка
                 docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
                 docs_ = [j_ for i_ in
@@ -356,7 +366,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 # Процент для прогресса
                 docx_for_progress = 0
                 for name_file in os.listdir():
-                    if re.findall(r'приложение', name_file.lower()):
+                    if re.findall(r'приложение а', name_file.lower()):
                         with zipfile.ZipFile(pathlib.Path(path_old_, name_file)) as my_doc:
                             xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
                             pages = int(re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())[0])
@@ -370,7 +380,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                             pages = input_file.page_count  # Получаем кол-во страниц
                             input_file.close()  # Закрываем
                             os.remove(str(pathlib.Path(path_old_, name_file + '.pdf')))  # Удаляем pdf документ
-                        application_dict[name_file] = pages
+                        application_dict[name_file] = pages                        
                     else:
                         docx_for_progress += 1
             per = 90 if account else 100
@@ -416,6 +426,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             # else:
             #     path_dir_sp = pathlib.Path(path_sp)
             # Параграф для колонтитула первой страницы
+            act_number = ''
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 # if path_sp and (re.findall('заключение', name_el.lower()) or re.findall('предписание', name_el.lower())
@@ -448,7 +459,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 pythoncom.CoInitializeEx(0)
                 status.emit('Форматируем документ ' + name_el)
                 doc = docx.Document(el_)  # Открываем
-                if re.findall(r'приложение', name_el.lower()):
+                if re.findall(r'приложение а', name_el.lower()):
                     number_protocol = name_el.rpartition(' ')[2].rpartition('.')[0]
                     for appendix_num in for_27:
                         if re.findall('протокол', appendix_num[4].lower()) \
@@ -464,6 +475,30 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     break
                             break
                     change_date(doc, False)
+                    doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
+                elif re.findall(r'приложение', name_el.lower()):
+                    for p in doc.paragraphs:
+                        if re.findall(r'\[АКТНОМ\]', p.text):
+                            text = re.sub(r'\[АКТНОМ\]', 'от date № ' + act_number,
+                                            p.text)
+                            p.text = text
+                            for run in p.runs:
+                                run.font.size = Pt(pt_num)
+                                run.font.name = 'Times New Roman'
+                            break
+                    change_date_app(doc, True)
+                    if self.add_list_item:
+                        text_first_header = classified + '\n' + self.add_list_item + '\nЭкз. №' + num_scroll
+                    else:
+                        text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
+                    if file_num:  # Если есть файл номеров
+                        text_for_foot = dict_file[name_el.rpartition('.')[0]][0]  # Текст для нижнего колонтитула
+                        date = dict_file[name_el.rpartition('.')[0]][1]  # Дата
+                    else:
+                        text_for_foot = num_1 + num_2 + 'c'  # Текст для нижнего колонтитула
+                    exec_people = self.act
+                    insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
+                                  exec_people, print_people, date, path_, name_el, fso)
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
                 # elif re.findall(r'инфокарта', name_el.lower()) and path_sp:
                 #     no_sn_in_sp = True
@@ -602,6 +637,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     if re.findall(r'акт', name_el.lower()):
                         exec_people = self.act
                         change_date(doc, False)
+                        act_number = text_for_foot
                     if re.findall(r'утверждение', name_el.lower()):
                         exec_people = self.statement
                         change_date(doc, False)
