@@ -16,6 +16,7 @@ import openpyxl
 import pythoncom
 import pandas as pd
 import openpyxl.styles
+from itertools import groupby
 from PyQt5.QtCore import QThread, pyqtSignal
 from docx.enum.section import WD_ORIENTATION
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -352,9 +353,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                 # docs.sort(key=sort)  # Сортировка
                 docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
                 docs_ = [j_ for i_ in
-                         ['Заключение', 'Протокол', 'Приложение', 'Предписание', 'Форма 3', 'Опись',
-                          'Сопроводит'] for j_ in docs if
-                         re.findall(i_.lower(), j_.lower())]
+                         ['^Акт', 'Приложение \d? к акту', '^Заключение', 'Приложение \d? к заключению', 'Протокол',
+                          'Приложение', 'Предписание', 'Форма 3', 'Опись', 'Сопроводит'] for j_ in docs if
+                         re.findall(i_, j_, re.I)]
                 docs_not = [i_ for i_ in docs if i_ not in docs_ and '~' not in i_]
                 docs = docs_not + docs_
                 logging.info("Отсортированы документы:\n" + '-|-'.join([i_ for i_ in docs]))
@@ -427,6 +428,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
             #     path_dir_sp = pathlib.Path(path_sp)
             # Параграф для колонтитула первой страницы
             act_number = ''
+            # Кривая реализация, времени не было
+            new_docs = []
+            for el_ in docs:
+                if el_ not in new_docs:
+                    new_docs.append(el_)
+            docs = new_docs
             for el_ in docs:  # Для файлов в папке
                 name_el = el_
                 # if path_sp and (re.findall('заключение', name_el.lower()) or re.findall('предписание', name_el.lower())
@@ -478,7 +485,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
                 elif re.findall(r'приложение', name_el.lower()):
                     if re.findall(r'заключени', name_el.lower()):
-                        conclusion_num_text = ''
                         if len(conclusion_num) == 0:
                             if conclusion_number:
                                 conclusion_num_text = f'от {conclusion_number_date} № {str(conclusion_number)}'
@@ -487,7 +493,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         elif len(conclusion_num) == 1:
                             conclusion_num_text = f'от {date} № {str(conclusion_num[list(conclusion_num.keys())[0]])}'
                         else:
-                            conclusion_num_text = f'от {date} № {str(conclusion_num[name_conclusion])}'
+                            # Такого случая не предусмотрено, если произошло - косяк.
+                            self.logging.warning('НЕСТАНДАРТНАЯ СИТУАЦИЯ, АЛГОРИТМ НЕ ПРОДУМАН И НЕ ОТЛАЖЕН')
+                            errors.append(f'В {name_el} не добавлен секретный номер, ситуация не согласована')
+                            conclusion_num_text = f'от {date} № '
                         if conclusion_num_text:
                             for val_p, p in enumerate(doc.paragraphs):
                                 if re.findall(r'\[ЗАКЛНОМ]', p.text):
@@ -521,6 +530,15 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     insert_header(doc, 11, text_first_header, text_for_foot, hdd_number,
                                   exec_people, print_people, date, path_, name_el, fso)
                     doc.save(os.path.abspath(path_ + '\\' + name_el))  # Сохраняем
+                    # Добавляем данные в 27 форму
+                    num_pages = pages_count(name_el, path_)
+                    if num_pages['error']:
+                        self.logging.error(num_pages['text'])
+                        return {'error': True, 'text': num_pages['text']}
+                    else:
+                        num_pages = num_pages['text']
+                    for_27.append([text_for_foot, date, classified, firm, name_el[:-5], exec_people, '1',
+                                   '№ 1', str(num_pages - 1)])
                 else:
                     # Параграф для колонтитула первой страницы
                     text_first_header = classified + '\n' + list_item + '\nЭкз. №' + num_scroll
