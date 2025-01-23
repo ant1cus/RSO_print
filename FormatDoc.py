@@ -21,7 +21,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from docx.enum.section import WD_ORIENTATION
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement, ns
-from docx.shared import Pt
+from docx.shared import Pt, Cm
 from openpyxl.utils import get_column_letter
 from natsort import natsorted
 from word2pdf import word2pdf
@@ -72,6 +72,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
         self.conclusion_number = incoming_data['conclusion_number']
         self.conclusion_number_date = incoming_data['conclusion_number_date']
         self.add_list_item = incoming_data['add_list_item']
+        self.inventory = incoming_data['inventory']
+        self.application = incoming_data['application']
+        self.telephone_acc = incoming_data['telephone_acc']
+        self.add_telephone = incoming_data['add_telephone']
         self.num_1 = self.num_2 = 0
 
     def run(self):
@@ -81,7 +85,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         date, conclusion, executor, prescription, hdd_number,
                         print_people, progress, flag_inventory,
                         account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
-                        number_instance, path_sp, name_gk, check_sp, conclusion_number, conclusion_number_date):
+                        number_instance, path_sp, name_gk, check_sp, conclusion_number, conclusion_number_date,
+                        inventory, application, telephone_acc, add_telephone):
 
             def create_element(attrib_name):
                 return OxmlElement(attrib_name)
@@ -293,6 +298,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         break
 
             os.chdir(path_old_)  # Меняем рабочую директорию
+            repair = False
+            if re.findall(r' Р-', path_old_, re.I):
+                repair = True
             fso = False
             logging.info('Файлы в директории:')
             logging.info(os.listdir())
@@ -853,6 +861,25 @@ class FormatDoc(QThread):  # Если требуется вставить кол
 
             # Если необходимо печатать опись
             if account:  # Если активирована опись
+                logging.info("Новое форматирование для несекретных приложений")
+                # dict_40.append({name_el: [classified, text_for_foot, num_scroll, str(num_pages - 1)]})
+                # application_dict[name_file] = pages
+                dict_40_new = {}
+                if application_dict:
+                    for app in application_dict:
+                        num_app = app.rpartition('.')[0].rpartition(' ')[2]
+                        for document in dict_40:
+                            name_doc = list(document.keys())[0]
+                            if name_doc not in list(dict_40_new.keys()):
+                                dict_40_new[name_doc] = document[name_doc]
+                            if re.findall('Протокол', name_doc) and re.findall(num_app, name_doc):
+                                dict_40_new[name_doc] = [document[name_doc][0] + '/Приложение несекретно',
+                                                         document[name_doc][1],
+                                                         document[name_doc][2],
+                                                         document[name_doc][3] + '/' + str(application_dict[app])
+                                                         ]
+                if dict_40_new:
+                    dict_40 = [{el: dict_40_new[el]} for el in dict_40_new]
                 logging.info("Формируем опись")
                 status.emit('Формируем опись')
 
@@ -906,6 +933,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         section.orientation = WD_ORIENTATION.LANDSCAPE  # Альбомная ориентация
                         section.page_width = new_width
                         section.page_height = new_height
+                        section.left_margin = Cm(1.27)
+                        section.right_margin = Cm(1.27)
+                        section.top_margin = Cm(1.27)
+                        section.bottom_margin = Cm(1.27)
                         section.different_first_page_header_footer = True
                         # Добавляем необходимые надписи перед таблицей, выравниваем, создаем таблицу
                         p = document.add_paragraph('Опись документов № ' + str(inventory))
@@ -1057,8 +1088,26 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                     number_page = str(int(number_page) + int(application_dict[app]))
                                         # Конец
                                         page = 'листе' if int(number_page) == 1 else 'листах'
-                                        text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз.' + file[7] + \
-                                               ' , на ' + number_page + ' ' + page + ' , секретно, только в адрес.'
+                                        # Новое для добавления приложения в опись к протоколу
+                                        if repair and 'протокол' in file[4].lower() and application_dict:
+                                            num_prot = file[4].rpartition('.')[0].rpartition(' ')[2]
+                                            for app in application_dict:
+                                                if num_prot in app:
+                                                    page_app = 'листа' if int(application_dict[app]) > 1 else 'лист'
+                                                    text = file[4].partition(' ')[0] + ', уч. № ' + file[
+                                                        0] + ', экз.' + file[7] + \
+                                                           ', на ' + number_page + ' ' + page + ', секретно, ' + \
+                                                           str(application_dict[app]) + ' ' + page_app + \
+                                                           ' - несекретно, только в адрес.'
+                                                    number_page = str(int(number_page) + int(application_dict[app]))
+                                        # Конец
+                                        else:
+                                            text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз.' +\
+                                                   file[7] + ' , на ' + number_page + ' ' + page + \
+                                                   ', секретно, только в адрес.'
+                                        # text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз.' + \
+                                        #        file[7] + ' , на ' + number_page + ' ' + page + \
+                                        #        ' , секретно, только в адрес.'
                                         p.add_run('\n' + str(numbering) + '. ' + text)
                                         p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
                                         numbering += 1
@@ -1104,6 +1153,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         for_27.append([text_for_foot, date, classified, firm,
                                        acc_doc_path.rpartition('\\')[2][:-5],
                                        executor_acc_sheet, '1', '№ 1', str(num_pages - 1)])
+                    shutil.copy(path_ + '\\' + acc_doc, path_ + '\\' + acc_doc.rpartition('.')[0] + ' (2 экз.).docx',
+                                follow_symlinks=True)
+                    doc = docx.Document(path_ + '\\' + acc_doc)
+                    if para:
+                        foot = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
+                    else:
+                        foot = doc.sections[len(doc.sections) - 1].footer  # Нижний колонтитул
+                    # Текст для фонарика
+                    foot.paragraphs[0].text = "Исполнил " + executor_acc_sheet + "\n" + "Телефон " + telephone_acc +\
+                                              "\n" + "Добавочный номер " + add_telephone
+                    doc.save(path_ + '\\' + acc_doc)  # Сохраняем
             if not file_num:
                 if '/' in num_1:  # Добавляем номер для возврата
                     num_2 = str(int((text_for_foot.rpartition('/')[2]).rpartition('c')[0]) + 1)  # Увеличиваем номер
@@ -1343,7 +1403,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                              self.account_post, self.account_signature, path,
                                              self.executor_acc_sheet, self.service, False, self.number_instance,
                                              self.path_sp, self.name_gk, self.check_sp, self.conclusion_number,
-                                             self.conclusion_number_date)
+                                             self.conclusion_number_date, self.inventory, self.application,
+                                             self.telephone_acc, self.add_telephone)
                     if return_val['error']:
                         self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
                         self.logging.info(
@@ -1365,7 +1426,8 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                          self.account_post, self.account_signature, self.account_path,
                                          self.executor_acc_sheet, self.service, self.path_form_27, self.number_instance,
                                          self.path_sp, self.name_gk, self.check_sp, self.conclusion_number,
-                                         self.conclusion_number_date)
+                                         self.conclusion_number_date, self.inventory, self.application,
+                                         self.telephone_acc, self.add_telephone)
                 if return_val['error']:
                     self.logging.info("Конец программы, время работы: " + str(datetime.datetime.now() - time_start))
                     self.logging.info(

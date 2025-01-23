@@ -21,7 +21,8 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                lineedit_number_instance, checkbox_conclusion, checkbox_protocol, checkbox_preciption, package,
                action_mo, groupbox_sp, lineedit_path_folder_sp, checkbox_name_gk, lineedit_name_gk,
                checkbox_conclusion_sp, checkbox_protocol_sp, checkbox_preciption_sp, checkbox_infocard_sp,
-               lineedit_path_file_sp, checkbox_file_num):
+               lineedit_path_file_sp, checkbox_file_num, lineedit_inventory, lineedit_application,
+               lineedit_telephone_acc, lineedit_add_telephone):
     def check(n, e):
         for symbol in e:
             if n == symbol:
@@ -212,6 +213,10 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
     answer['prescription'] = lineedit_prescription.text().strip()
     answer['print_people'] = lineedit_print.text().strip()
     answer['executor_acc_sheet'] = lineedit_executor_acc_sheet.text().strip()
+    answer['inventory'] = lineedit_inventory.text().strip()
+    answer['application'] = lineedit_application.text().strip()
+    answer['telephone_acc'] = lineedit_telephone_acc.text().strip()
+    answer['add_telephone'] = lineedit_add_telephone.text().strip()
     list_label = [label_protocol, label_conclusion, label_prescription, label_print, label_executor_acc_sheet]
     i = 0
     for element in [answer['protocol'], answer['conclusion'], answer['prescription'],

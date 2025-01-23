@@ -115,8 +115,12 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'data-print_people': ['Печать', self.lineEdit_print],
                      'data-date': ['Дата', self.lineEdit_date],
                      'data-executor_acc_sheet': ['Сопровод', self.lineEdit_executor_acc_sheet],
-                     'data-act': ['Акт', self.lineEdit_act],
+                     'data-telephone_acc': ['Тел. исп. сопровода', self.lineEdit_telephone_acc],
+                     'data-add_telephone': ['Доб. номер', self.lineEdit_add_telephone],
                      'data-statement': ['Утверждение', self.lineEdit_statement],
+                     'data-act': ['Акт', self.lineEdit_act],
+                     'data-inventory': ['Опись', self.lineEdit_inventory],
+                     'data-application': ['Приложение', self.lineEdit_application],
                      'data-checkBox_conclusion_number': ['Включить номер заключения', self.checkBox_conclusion_number],
                      'data-conclusion_number': ['Номер заключения', self.lineEdit_conclusion_number],
                      'data-add_conclusion_number_date': ['Доп. дата заключения',
@@ -292,7 +296,9 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                 self.action_report_MO, self.groupBox_sp, self.lineEdit_path_folder_sp,
                                 self.checkBox_name_gk, self.lineEdit_name_gk, self.checkBox_conclusion_sp,
                                 self.checkBox_protocol_sp, self.checkBox_preciption_sp, self.checkBox_infocard_sp,
-                                self.lineEdit_path_file_sp, self.checkBox_file_num)
+                                self.lineEdit_path_file_sp, self.checkBox_file_num,
+                                self.lineEdit_inventory, self.lineEdit_application, self.lineEdit_telephone_acc,
+                                self.lineEdit_add_telephone)
             if isinstance(output, list):
                 logging.info('Обнаружены ошибки данных')
                 self.on_message_changed(output[0], output[1])

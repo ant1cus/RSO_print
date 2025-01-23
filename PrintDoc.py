@@ -127,7 +127,8 @@ class PrintDoc(QThread):  # Поток для печати
                 status.emit('Создаем второй сопроводительный документ')
                 logging.info('Второй сопроводительный')
                 for el in docs:  # Для второго сопроводительного
-                    if re.findall('сопровод', el.lower()) or re.findall('запрос', el.lower()):
+                    # if re.findall('сопровод', el.lower()) or re.findall('запрос', el.lower()):
+                    if re.findall('запрос', el.lower()):
                         shutil.copy(el, el.rpartition('.')[0] + ' (2 экз.).docx', follow_symlinks=True)
                         doc = docx.Document(os.getcwd() + '\\' + el.rpartition('.')[0] + ' (2 экз.).docx')
                         style = doc.styles['Normal']
@@ -729,7 +730,8 @@ class PrintDoc(QThread):  # Поток для печати
                     if os.path.exists(pathlib.Path(path_old, name_pdf)):
                         logging.info('Удаляем пдф ' + name_pdf)
                         os.remove(path_old + '\\' + name_pdf)
-                    if re.findall(r'сопровод', el.lower()) or re.findall(r'запрос', el.lower()):
+                    # if re.findall(r'сопровод', el.lower()) or re.findall(r'запрос', el.lower()):
+                    if re.findall(r'запрос', el.lower()):
                         if re.findall(r'экз', el.lower()):
                             os.remove(path_old + '\\' + el)
                     if el.partition(' ')[0].lower() in ['протокол', 'приложение'] and service:
