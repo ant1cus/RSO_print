@@ -86,7 +86,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         print_people, progress, flag_inventory,
                         account_post, account_signature, account_path, executor_acc_sheet, service, path_form_27,
                         number_instance, path_sp, name_gk, check_sp, conclusion_number, conclusion_number_date,
-                        inventory, application, telephone_acc, add_telephone):
+                        exec_inventory, application, telephone_acc, add_telephone):
 
             def create_element(attrib_name):
                 return OxmlElement(attrib_name)
@@ -514,7 +514,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.size = Pt(12)
                                         run.font.name = 'Times New Roman'
                                     break
-                        exec_people = executor
+                        exec_people = application
                     else:
                         for p in doc.paragraphs:
                             if re.findall(r'\[АКТНОМ\]', p.text):
@@ -524,7 +524,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                     run.font.size = Pt(12)
                                     run.font.name = 'Times New Roman'
                                 break
-                        exec_people = self.act
+                        exec_people = application
                     change_date_app(doc, True)
                     if self.add_list_item:
                         text_first_header = classified + '\n' + self.add_list_item + '\nЭкз. №' + num_scroll
@@ -957,7 +957,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         p.paragraph_format.keep_together = True  # Чтобы подпись не убегала одна
                         logging.info("Вставляем колонтитул")
                         insert_header(document, 11, value[1][0] + '\n(без приложения не секретно)\nЭкз.№ 1',
-                                      text_for_foot, hdd_number, executor,
+                                      text_for_foot, hdd_number, exec_inventory,
                                       print_people, date, account_path, name_count, fso)
                         flag_for_op = 1  # Чтобы не создавать, если это не нужно
                     # Открываем необходимую опись
@@ -997,7 +997,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         else:
                             num_pages = num_pages['text']
                         if firm:
-                            for_27.append([number, date, classified, firm, el, executor, '1', '№ 1',
+                            for_27.append([number, date, classified, firm, el, exec_inventory, '1', '№ 1',
                                            str(num_pages - 1)])
 
             # Добавление сопровода
@@ -1020,18 +1020,19 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     acc_doc_path = os.path.abspath(path_ + '\\' + os.path.basename(acc_doc))
                     shutil.copy(path_old_ + '\\' + acc_doc, path_ + '\\')
                     doc = docx.Document(path_ + '\\' + acc_doc)
-                    para = True  # Для вставки если сделали не особую первую страницу
-                    if doc.sections[0].different_first_page_header_footer:
-                        header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
-                        doc.sections[0].footer.paragraphs[0].text = text_for_foot
-                    else:
-                        para = False
-                        header = doc.sections[0].header
-                    head = header.paragraphs[0]  # Параграф
-                    head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
-                    head = header.paragraphs[0]  # Выбираем новый первый параграф
-                    head_format = head.paragraph_format  # Настройки параграфа
-                    head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
+                    para = True if doc.sections[0].different_first_page_header_footer else False
+                    # para = True  # Для вставки если сделали не особую первую страницу
+                    # if doc.sections[0].different_first_page_header_footer:
+                        # header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
+                        # doc.sections[0].footer.paragraphs[0].text = text_for_foot
+                    # else:
+                    #     para = False
+                        # header = doc.sections[0].header
+                    # head = header.paragraphs[0]  # Параграф
+                    # head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+                    # head = header.paragraphs[0]  # Выбираем новый первый параграф
+                    # head_format = head.paragraph_format  # Настройки параграфа
+                    # head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
                     for p in doc.paragraphs:  # Для каждого параграфа
                         if re.findall(r'registration_number', p.text):  # Ищем метку
                             p.text = re.sub(r'registration_number', text_for_foot + ' от ' + date, p.text)
@@ -1063,9 +1064,9 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.size = Pt(14)
                                         run.font.name = 'Times New Roman'
                             else:
-                                len_appendix = 0
-                                for appendix in application_dict:
-                                    len_appendix += application_dict[appendix]
+                                # len_appendix = 0
+                                # for appendix in application_dict:
+                                #     len_appendix += application_dict[appendix]
                                 # file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
                                 # for file in file_appendix:
                                 #     with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
@@ -1088,8 +1089,10 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                                     number_page = str(int(number_page) + int(application_dict[app]))
                                         # Конец
                                         page = 'листе' if int(number_page) == 1 else 'листах'
+                                        text = ''
                                         # Новое для добавления приложения в опись к протоколу
-                                        if repair and 'протокол' in file[4].lower() and application_dict:
+                                        # if repair and 'протокол' in file[4].lower() and application_dict:
+                                        if 'протокол' in file[4].lower() and application_dict:
                                             num_prot = file[4].rpartition('.')[0].rpartition(' ')[2]
                                             for app in application_dict:
                                                 if num_prot in app:
@@ -1114,15 +1117,15 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         for run in p.runs:
                                             run.font.size = Pt(14)
                                             run.font.name = 'Times New Roman'
-                                if len_appendix:
-                                    page = 'листе' if int(len_appendix) == 1 else 'листах'
-                                    text = 'Приложение А, на ' + str(len_appendix) + ' ' + page + ' , несекретно.'
-                                    p.add_run('\n' + str(numbering) + '. ' + text)
-                                    p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
-                                    numbering += 1
-                                    for run in p.runs:
-                                        run.font.size = Pt(14)
-                                        run.font.name = 'Times New Roman'
+                                # if len_appendix:
+                                #     page = 'листе' if int(len_appendix) == 1 else 'листах'
+                                #     text = 'Приложение А, на ' + str(len_appendix) + ' ' + page + ' , несекретно.'
+                                #     p.add_run('\n' + str(numbering) + '. ' + text)
+                                #     p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
+                                #     numbering += 1
+                                #     for run in p.runs:
+                                #         run.font.size = Pt(14)
+                                #         run.font.name = 'Times New Roman'
                     doc.add_section()  # Добавляем последнюю страницу
                     if para:
                         last = doc.sections[
@@ -1157,10 +1160,17 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                 follow_symlinks=True)
                     doc = docx.Document(path_ + '\\' + acc_doc)
                     if para:
+                        header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
                         foot = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
                     else:
+                        header = doc.sections[0].header
                         foot = doc.sections[len(doc.sections) - 1].footer  # Нижний колонтитул
                     # Текст для фонарика
+                    head = header.paragraphs[0]  # Параграф
+                    head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+                    head = header.paragraphs[0]  # Выбираем новый первый параграф
+                    head_format = head.paragraph_format  # Настройки параграфа
+                    head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
                     foot.paragraphs[0].text = "Исполнил " + executor_acc_sheet + "\n" + "Телефон " + telephone_acc +\
                                               "\n" + "Добавочный номер " + add_telephone
                     doc.save(path_ + '\\' + acc_doc)  # Сохраняем
