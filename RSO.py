@@ -6,7 +6,7 @@ import pathlib
 import logging
 import traceback
 
-import Main
+import New_Main
 import about
 from Default import DefaultWindow
 from AccountNum import AccountNumWindow
@@ -18,8 +18,8 @@ from FormatDoc import FormatDoc
 
 from PyQt5 import QtPrintSupport
 
-from PyQt5.QtCore import (QDir, QTranslator, QLocale, QLibraryInfo)
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QFileDialog, QMessageBox, QDialog, QDesktopWidget)
+from PyQt5.QtCore import (QDir, QTranslator, QLocale, QLibraryInfo, QDate)
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QFileDialog, QMessageBox, QDialog, QDesktopWidget, QDateEdit)
 
 from queue import Queue
 
@@ -45,7 +45,7 @@ def create_instance():  # Запускаем окно для создания э
     window_add.exec_()
 
 
-class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
+class MainWindow(QMainWindow, New_Main.Ui_MainWindow):  # Главное окно
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -113,14 +113,13 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                      'data-conclusion': ['Заключение', self.lineEdit_conclusion],
                      'data-prescription': ['Предписание', self.lineEdit_prescription],
                      'data-print_people': ['Печать', self.lineEdit_print],
-                     'data-date': ['Дата', self.lineEdit_date],
+                     'data-dateEdit_date': ['Дата', self.dateEdit_date],
                      'data-executor_acc_sheet': ['Сопровод', self.lineEdit_executor_acc_sheet],
                      'data-act': ['Акт', self.lineEdit_act],
                      'data-statement': ['Утверждение', self.lineEdit_statement],
                      'data-checkBox_conclusion_number': ['Включить номер заключения', self.checkBox_conclusion_number],
                      'data-conclusion_number': ['Номер заключения', self.lineEdit_conclusion_number],
-                     'data-add_conclusion_number_date': ['Доп. дата заключения',
-                                                         self.lineEdit_add_conclusion_number_date],
+                     'data-dateEdit_conclusion_number': ['Доп. дата заключения', self.dateEdit_conclusion_number],
                      'sp-groupBox_sp': ['Включить сортировку материалов', self.groupBox_sp],
                      'sp-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
                      'sp-path_file_sp': ['Путь к файлу с номерами', self.lineEdit_path_file_sp],
@@ -180,9 +179,11 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.move(qt_rectangle.topLeft())
         # self.move(qt_rectangle.center())
         self.thread = None
+        self.thread_dict = {'format_doc': {}, 'print_doc': {}}
 
     def default_date(self, incoming_data):
         for el in self.list:
+            groupbox_sp = False
             if el in incoming_data:
                 if el == 'data-classified':  # Если элемент гриф секретности
                     index = 0
@@ -207,6 +208,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                 elif 'checkBox' in el or 'groupBox' in el:
                     self.list[el][1].setChecked(True) if incoming_data[el] \
                         else self.list[el][1].setChecked(False)
+                    groupbox_sp = True if el == 'sp-groupBox_sp' and incoming_data[el] is True else False
                 elif 'radioButton' in el:
                     for radio, button in zip(incoming_data[el], self.list[el][1]):
                         if radio:
@@ -219,7 +221,18 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                     for index, combo in enumerate(incoming_data[el]):
                         if combo:
                             self.list[el][1].setCurrentIndex(index)
+                elif 'dateEdit' in el:
+                    if incoming_data[el]:
+                        self.list[el][1].setDate(QDate.fromString(incoming_data[el], 'dd.MM.yyyy'))
+                    else:
+                        self.list[el][1].setDate(QDate.currentDate())
                 else:  # Если любой другой элемент
+                    if el == 'sp-lineEdit_name_gk' and groupbox_sp:
+                        self.groupBox_sp.setChecked(False)
+                        self.groupBox_sp.setChecked(True)
+                    elif el == 'sp-lineEdit_name_gk':
+                        self.groupBox_sp.setChecked(True)
+                        self.groupBox_sp.setChecked(False)
                     self.list[el][1].setText(incoming_data[el])  # Помещаем значение
 
     def default_settings(self):  # Запускаем окно с настройками по умолчанию.
@@ -277,9 +290,9 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                 self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
                                 self.lineEdit_executor_acc_sheet, self.label_protocol, self.label_conclusion,
                                 self.label_prescription, self.label_print, self.label_executor_acc_sheet,
-                                self.lineEdit_date, self.lineEdit_act, self.lineEdit_statement,
+                                self.dateEdit_date, self.lineEdit_act, self.lineEdit_statement,
                                 self.checkBox_conclusion_number, self.lineEdit_conclusion_number,
-                                self.lineEdit_add_conclusion_number_date,
+                                self.dateEdit_conclusion_number,
                                 self.groupBox_inventory_insert, self.radioButton_group2_40_num,
                                 self.radioButton_group2_all_doc, self.lineEdit_account_post,
                                 self.lineEdit_account_signature, self.lineEdit_path_folder_account, self.hdd_number,
@@ -299,15 +312,16 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                 return
             # Если всё прошло запускаем поток
             logging.info('Запуск на выполнение')
+            output['move'], output['default_path'] = len(self.thread_dict['format_doc']), self.path_for_default
             output['queue'], output['logging'] = self.queue, logging
             logging.info('Входные данные:')
             log_data = {file: output[file] if file not in ['firm', 'number', 'list_item'] else 'замена'
                         for file in output}
             logging.info(log_data)
             self.thread = FormatDoc(output)
-            self.thread.progress.connect(self.progressBar.setValue)
+            # self.thread.progress.connect(self.progressBar.setValue)
             self.thread.status.connect(self.show_mess)
-            self.thread.messageChanged.connect(self.on_message_changed)
+            # self.thread.messageChanged.connect(self.on_message_changed)
             self.thread.finished.connect(self.stop_thread)
             self.thread.start()
         except BaseException as exception:
@@ -340,7 +354,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             logging.info('Входные данные:')
             logging.info(output)
             self.thread = PrintDoc(output)
-            self.thread.progress.connect(self.progressBar.setValue)
+            # self.thread.progress.connect(self.progressBar.setValue)
             self.thread.status.connect(self.show_mess)
             self.thread.messageChanged.connect(self.on_message_changed)
             self.thread.start()

@@ -12,9 +12,9 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
                combobox_classified, lineedit_num_scroll, lineedit_list_item, lineedit_number, checkbox_add_list_item,
                lineedit_add_list_item, lineedit_protocol,
                lineedit_conclusion, lineedit_prescription, lineedit_print, lineedit_executor_acc_sheet, label_protocol,
-               label_conclusion, label_prescription, label_print, label_executor_acc_sheet, lineedit_date, lineedit_act,
+               label_conclusion, label_prescription, label_print, label_executor_acc_sheet, dateedit_date, lineedit_act,
                lineedit_statement, checkbox_conclusion_number, lineedit_conclusion_number,
-               lineedit_add_conclusion_number_date,
+               dateedit_conclusion_number,
                groupbox_inventory_insert, radiobutton_40_num, radiobutton_all_doc,
                lineedit_account_post, lineedit_account_signature, lineedit_account_path, hdd_number,
                groupbox_form27_insert, lineedit_firm, lineedit_path_form_27_create, qroupbox_instance,
@@ -220,11 +220,12 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
             return ['УПС!', 'Не указан(а) ' + list_label[i].text()]
         i += 1
     # Дата
-    answer['date'] = lineedit_date.text().strip()
-    try:
-        time.strptime(answer['date'], '%d.%m.%Y')
-    except ValueError:
-        return ['УПС!', 'Формат даты указан неверно! (необходимый формат: dd.mm.yyyy)']
+    answer['date'] = dateedit_date.date().toString('dd.MM.yyyy')
+    # answer['date'] = lineedit_date.text().strip()
+    # try:
+    #     time.strptime(answer['date'], '%d.%m.%Y')
+    # except ValueError:
+    #     return ['УПС!', 'Формат даты указан неверно! (необходимый формат: dd.mm.yyyy)']
     answer['conclusion_number'] = False
     answer['conclusion_number_date'] = False
     if checkbox_conclusion_number.isChecked():
@@ -239,11 +240,12 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
         if (re.match(r'\w+/\w+/\w+c$', answer['conclusion_number']) is None)\
                 and (re.match(r'НС-\w+c$', answer['conclusion_number']) is None):
             return ['УПС!', 'Номер заключения указан неверно']
-        answer['conclusion_number_date'] = lineedit_add_conclusion_number_date.text().strip()
-        try:
-            time.strptime(answer['conclusion_number_date'], '%d.%m.%Y')
-        except ValueError:
-            return ['УПС!', 'Формат доп. даты заключения указан неверно! (необходимый формат: dd.mm.yyyy)']
+        answer['conclusion_number_date'] = dateedit_conclusion_number.date().toString('dd.MM.yyyy')
+        # answer['conclusion_number_date'] = lineedit_add_conclusion_number_date.text().strip()
+        # try:
+        #     time.strptime(answer['conclusion_number_date'], '%d.%m.%Y')
+        # except ValueError:
+        #     return ['УПС!', 'Формат доп. даты заключения указан неверно! (необходимый формат: dd.mm.yyyy)']
     answer['account'], answer['flag_inventory'], answer['account_post'] = False, False, False
     answer['account_signature'], answer['account_path'] = False, False
     if groupbox_inventory_insert.isChecked():

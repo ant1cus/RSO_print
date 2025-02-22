@@ -6,8 +6,10 @@ from PyQt5.QtCore import QDir
 
 import default_window
 
+from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QLineEdit, QDialog, QButtonGroup, QLabel, QSizePolicy, QPushButton, QComboBox, QFileDialog
+from PyQt5.QtWidgets import (QLineEdit, QDialog, QButtonGroup, QLabel, QSizePolicy, QPushButton, QComboBox,
+                             QFileDialog, QDateEdit)
 
 
 class Button(QLineEdit):
@@ -65,6 +67,7 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.line = {}  # Для имен
         self.name = {}  # Для значений
         self.combo = {}  # Для комбобоксов
+        self.date = {}  # Для дат
         self.button = {}  # Для кнопки «изменить»
         self.button_clear = {}  # Для кнопки «очистить»
         self.button_open = {}  # Для кнопки «открыть»
@@ -116,6 +119,16 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                 self.combo[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
                 self.combo[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
                 grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
+            elif 'dateEdit' in el:
+                self.date[i] = QDateEdit(frame)
+                self.date[i].setCalendarPopup(True)
+                if el in self.data and self.data[el]:
+                    self.date[i].setDate(QDate.fromString(self.data[el], 'dd.MM.yyyy'))
+                else:
+                    self.date[i].setDate(QDate.currentDate())
+                self.date[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
+                self.date[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
+                grid.addWidget(self.date[i], i, 3)  # Помещаем в фрейм
             else:
                 self.button[i] = QPushButton("Изменить", frame)  # Создаем кнопку
                 self.button[i].setFont(QFont("Times", 12, QFont.Light))  # Размер шрифта
@@ -145,18 +158,6 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                     self.button_open[i].setDisabled(True)  # Неактивный
                     self.buttongroup_open.addButton(self.button_open[i], i)  # Добавляем в группу
                     grid.addWidget(self.button_open[i], i, 4)  # Добавляем в фрейм по месту
-            # self.name[i] = Button(frame)  # Помещаем в фрейм
-            # if el in self.data:
-            #     self.name[i].setText(self.data[el])
-            # self.name[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
-            # self.name[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
-            # self.name[i].setDisabled(True)  # Неактивный
-            # grid.addWidget(self.name[i], i, 1)  # Помещаем в фрейм
-            # self.button[i] = QPushButton("Изменить", frame)  # Создаем кнопку
-            # self.button[i].setFont(QFont("Times", 12, QFont.Light))  # Размер шрифта
-            # self.button[i].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Размеры виджета
-            # self.buttongroup_add.addButton(self.button[i], i)  # Добавляем в группу
-            # grid.addWidget(self.button[i], i, 2)  # Добавляем в фрейм по месту
 
     def open_button_clicked(self, num):  # Для кнопки открыть
         value = self.line[num].text()
@@ -196,6 +197,8 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
             elif 'comboBox' in el:
                 self.data[el] = [True if self.name_list[el][2].index(combo) == self.combo[i].currentIndex()
                                  else False for combo in self.name_list[el][2]]
+            elif 'dateEdit' in el:
+                self.data[el] = self.name_list[el][1].date().toString('dd.MM.yyyy')
             else:
                 if self.name[i].isEnabled():  # Если виджет активный (означает потенциальное изменение)
                     if self.name[i].text():  # Если внутри виджета есть текст, то помещаем внутрь базы
