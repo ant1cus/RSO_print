@@ -915,7 +915,7 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                     dict_after = dict_40  # Если все в одной описи
                 flag_for_op = 0
                 percent = 10 / len(dict_after)
-                logging.info(dict_after)
+                # logging.info(dict_after)
                 for el in dict_after:  # Для получившихся элементов
                     value = el.popitem()  # Забираем элемент
                     status.emit('Добавляем документ ' + str(value[0]) + ' в опись')

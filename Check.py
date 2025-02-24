@@ -270,7 +270,7 @@ def doc_format(lineedit_old, lineedit_new, lineedit_file_num, radiobutton_fsb_df
             if os.path.isdir(answer['account_path']):
                 pass
             else:
-                return ['УПС!', 'Для описи необходимо указать файл']
+                return ['УПС!', 'Указанный путь для описи удален или переименован']
     if not hdd_number:
         return ['УПС!', 'Отсутствует номер жесткого диска']
     else:
