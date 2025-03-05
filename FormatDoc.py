@@ -7,6 +7,7 @@ import time
 import traceback
 import zipfile
 import itertools
+import copy
 
 import docx
 import fitz
@@ -1064,16 +1065,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         run.font.size = Pt(14)
                                         run.font.name = 'Times New Roman'
                             else:
-                                # len_appendix = 0
-                                # for appendix in application_dict:
-                                #     len_appendix += application_dict[appendix]
-                                # file_appendix = [i_ for i_ in os.listdir(path_) if 'приложение' in i_.lower()]
-                                # for file in file_appendix:
-                                #     with zipfile.ZipFile(path_ + '\\' + file) as my_doc:
-                                #         xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
-                                #         pages = re.findall(r'<Pages>(\w*)</Pages>',
-                                #                            xml_content.decode())[0]  # Ищем кол-во страниц
-                                #         len_appendix += int(pages)
                                 numbering = 1
                                 ness_file = ['Заключение', 'Предписание'] if self.service else ['Заключение',
                                                                                                 'Протокол',
@@ -1091,7 +1082,6 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                         page = 'листе' if int(number_page) == 1 else 'листах'
                                         text = ''
                                         # Новое для добавления приложения в опись к протоколу
-                                        # if repair and 'протокол' in file[4].lower() and application_dict:
                                         if 'протокол' in file[4].lower() and application_dict:
                                             num_prot = file[4].rpartition('.')[0].rpartition(' ')[2]
                                             for app in application_dict:
@@ -1108,24 +1098,12 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                                             text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз.' +\
                                                    file[7] + ' , на ' + number_page + ' ' + page + \
                                                    ', секретно, только в адрес.'
-                                        # text = file[4].partition(' ')[0] + ', уч. № ' + file[0] + ', экз.' + \
-                                        #        file[7] + ' , на ' + number_page + ' ' + page + \
-                                        #        ' , секретно, только в адрес.'
                                         p.add_run('\n' + str(numbering) + '. ' + text)
                                         p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
                                         numbering += 1
                                         for run in p.runs:
                                             run.font.size = Pt(14)
                                             run.font.name = 'Times New Roman'
-                                # if len_appendix:
-                                #     page = 'листе' if int(len_appendix) == 1 else 'листах'
-                                #     text = 'Приложение А, на ' + str(len_appendix) + ' ' + page + ' , несекретно.'
-                                #     p.add_run('\n' + str(numbering) + '. ' + text)
-                                #     p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравниваем по левому краю
-                                #     numbering += 1
-                                #     for run in p.runs:
-                                #         run.font.size = Pt(14)
-                                #         run.font.name = 'Times New Roman'
                     doc.add_section()  # Добавляем последнюю страницу
                     if para:
                         last = doc.sections[
@@ -1156,8 +1134,109 @@ class FormatDoc(QThread):  # Если требуется вставить кол
                         for_27.append([text_for_foot, date, classified, firm,
                                        acc_doc_path.rpartition('\\')[2][:-5],
                                        executor_acc_sheet, '1', '№ 1', str(num_pages - 1)])
-                    shutil.copy(path_ + '\\' + acc_doc, path_ + '\\' + acc_doc.rpartition('.')[0] + ' (2 экз.).docx',
-                                follow_symlinks=True)
+                    doc_2_ = str(pathlib.Path(path_, acc_doc.rpartition('.')[0] + ' (2 экз.).docx'))
+                    shutil.copy(path_ + '\\' + acc_doc, doc_2_, follow_symlinks=True)
+                    # Удаление шапки
+                    doc = docx.Document(doc_2_)  # Открываем
+
+                    def paragraph_del(par):
+                        par.text = None
+                        paragraph_ = par._element
+                        paragraph_.getparent().remove(paragraph_)
+                        paragraph_._p = paragraph_._element = None
+
+                    list_paragraph = []
+                    for enum, paragraph in enumerate(doc.sections[0].first_page_header.paragraphs):
+                        if 'экз.' in paragraph.text.lower():
+                            list_paragraph = [i for i in range(enum + 1)]
+                            break
+                    for paragraph in list_paragraph:
+                        doc.sections[0].first_page_header.paragraphs[paragraph].text = None
+                    for paragraph in range(len(list_paragraph) - 1):
+                        p = doc.sections[0].first_page_header.paragraphs[paragraph]._element
+                        p.getparent().remove(p)
+                        p._p = p._element = None
+                    p = doc.sections[0].first_page_header.paragraphs[0]._element
+                    p.getparent().remove(p)
+                    p._p = p._element = None
+                    doc.sections[0].first_page_footer.paragraphs[0].text = None
+                    date = []
+                    if len(doc.sections) == 1:
+                        for paragraph in doc.sections[len(doc.sections) - 1].footer.paragraphs:
+                            if re.findall(r'\d{2}\.\d{2}\.\d{4}', paragraph.text):
+                                date = re.findall(r'\d{2}\.\d{2}\.\d{4}', paragraph.text)
+                            if 'Б/ч' in paragraph.text:
+                                paragraph_del(paragraph)
+                                break
+                            paragraph_del(paragraph)
+                    else:
+                        doc.sections[0].footer.paragraphs[0].text = None
+                        if doc.sections[len(doc.sections) - 1].different_first_page_header_footer:
+                            for paragraph in doc.sections[len(doc.sections) - 1].first_page_footer.paragraphs:
+                                if re.findall(r'\d{2}\.\d{2}\.\d{4}', paragraph.text):
+                                    date = re.findall(r'\d{2}\.\d{2}\.\d{4}', paragraph.text)
+                                if 'Б/ч' in paragraph.text:
+                                    paragraph_del(paragraph)
+                                    break
+                                paragraph_del(paragraph)
+                            doc.sections[
+                                len(doc.sections) - 1].first_page_header.is_linked_to_previous = False  # header
+                            doc.sections[len(doc.sections) - 1].first_page_footer.is_linked_to_previous = False  # Футер
+                        else:
+                            for paragraph in doc.sections[len(doc.sections) - 1].footer.paragraphs:
+                                if re.findall(r'\d{2}\.\d{2}\.\d{4}', paragraph.text):
+                                    date = re.findall(r'\d{2}\.\d{2}\.\d{4}', paragraph.text)
+                                if 'Б/ч' in paragraph.text:
+                                    paragraph_del(paragraph)
+                                    break
+                                paragraph_del(paragraph)
+                    while True:
+                        flag_for_exit = 0
+                        if flag_for_exit == 3:
+                            break
+                        try:
+                            doc.save(pathlib.Path(path_ + '\\' + acc_doc.rpartition('.')[0] + ' (2 экз.).docx'))
+                            break
+                        except PermissionError:
+                            logging.warning(f"Документ {acc_doc.rpartition('.')[0]} не удалось сохранить, ждём...")
+                            flag_for_exit += 1
+                            time.sleep(3)
+                    doc = docx.Document(doc_2_)
+                    self.logging.info('Удаляем лишние параграфы в конце документа')
+                    sectPrs = doc._element.xpath(".//w:pPr/w:sectPr")
+                    for sectPr in sectPrs:
+                        sectPr.getparent().remove(sectPr)
+                    doc.add_section()  # Добавляем последнюю страницу
+                    if para:
+                        last = doc.sections[
+                            len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
+                        last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
+                        foot = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
+                        foot.is_linked_to_previous = False  # Отвязываем
+                    else:
+                        last = doc.sections[len(doc.sections) - 1].header  # Колонтитул для последней страницы
+                        last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
+                        foot = doc.sections[len(doc.sections) - 1].footer  # Нижний колонтитул
+                        foot.is_linked_to_previous = False  # Отвязываем
+                    if doc.sections[0].different_first_page_header_footer:
+                        header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
+                        doc.sections[0].footer.paragraphs[0].text = text_for_foot
+                    else:
+                        para = False
+                        header = doc.sections[0].header
+                    head = header.paragraphs[0]  # Параграф
+                    head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+                    head = header.paragraphs[0]  # Выбираем новый первый параграф
+                    head_format = head.paragraph_format  # Настройки параграфа
+                    head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
+                    # Текст для фонарика
+                    foot.paragraphs[0].text = "Уч. № " + text_for_foot + \
+                                              "\nОтп. 2 экз.\n№ 1 - в адрес\n№ 2 - в дело \n" \
+                                              + hdd_number + "\nИсп. " \
+                                              + executor_acc_sheet + "\nПеч. " + print_people + \
+                                              "\n" + date[0] + "\nБ/ч"
+                    doc.save(doc_2_)
+                    # Конец
                     doc = docx.Document(path_ + '\\' + acc_doc)
                     if para:
                         header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
