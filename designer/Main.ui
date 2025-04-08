@@ -242,7 +242,7 @@
           <string>27 форма</string>
          </property>
          <property name="checked">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="tristate">
           <bool>false</bool>
@@ -285,6 +285,9 @@
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="lineEdit_path_file_form_27_print">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="font">
           <font>
            <pointsize>10</pointsize>
@@ -387,6 +390,9 @@
        </item>
        <item row="3" column="2">
         <widget class="QPushButton" name="pushButton_file_form27_print">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="font">
           <font>
            <pointsize>10</pointsize>
