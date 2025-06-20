@@ -279,8 +279,10 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 pdf_path = Path(data.finish_path.parent, data.finish_path.name + '_copy1.pdf')
                 word2pdf(str(data.finish_path), str(pdf_path))
                 doc = fitz.open(str(pdf_path))
-                page = doc.load_page(len(doc) - 2)
+                page = doc.load_page(0)
                 text_instances = {name[3: len(name) - 3]: page.search_for(name) for name in find_name}
+                last_page = doc.load_page(len(doc) - 2)
+                last_text_instances = {name[3: len(name) - 3]: last_page.search_for(name) for name in find_name}
                 doc.close()
                 os.remove(pdf_path)
                 for paragraph in document.paragraphs:
@@ -290,11 +292,16 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 document.save(data.finish_path)  # Сохраняем
                 word2pdf(str(data.finish_path), str(pdf_path))
                 doc = fitz.open(str(pdf_path))
-                page = doc.load_page(len(doc) - 2)
+                page = doc.load_page(0)
+                last_page = doc.load_page(len(doc) - 2)
                 for inst in text_instances:
                     for i in text_instances[inst]:
                         rect = fitz.Rect(i.x0 - 25, i.y0 - 25, i.x1 + 25, i.y1 + 25)
                         page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
+                for inst in last_text_instances:
+                    for i in last_text_instances[inst]:
+                        rect = fitz.Rect(i.x0 - 25, i.y0 - 25, i.x1 + 25, i.y1 + 25)
+                        last_page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                 doc.save(str(Path(data.finish_path.parent, data.finish_path.stem + '.pdf')))
                 doc.close()
                 os.remove(pdf_path)
