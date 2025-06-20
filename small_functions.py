@@ -3,6 +3,8 @@ import re
 import shutil
 import time
 import traceback
+import itertools
+import zipfile
 
 import pythoncom
 import fitz
@@ -16,206 +18,339 @@ from natsort import natsorted
 from typing import Any
 
 
-def sorting_files(path: Path, path_new: Path, fso: bool) -> dict:
-	"""Сортирует файлы для подсчета значения прогресса и последующей вставки текстовки и номеров"""
-	try:
-		application_dict = {}  # Для подсчёта листов - новое.
-		error_text = []
-		data = {}
-		if fso:
-			docs = {}
-			for folder in os.listdir(path):
-				if 'проверке' in folder.lower():
-					if folder != 'Материалы по специальной проверке технических средств':
-						error_text.append('Название папки «Материалы по специальной проверке'
-										  ' технических средств» написано с ошибками')
-					else:
-						file = os.listdir(Path(path, folder))
-						file = natsorted(file, key=lambda y: y.rpartition(' ')[2][:-5])
-						for name_element in ['акт', 'заключение']:
-							for element in file:
-								if name_element in element.lower():
-									docs[element] = Path(path, folder)
-				elif 'исследованиям' in folder.lower():
-					if folder != 'Материалы по специальным исследованиям технических средств':
-						error_text.append('Название папки «Материалы по специальным исследованиям'
-										  ' технических средств» написано с ошибками')
-					else:
-						file = os.listdir(Path(path, folder))
-						file = natsorted(file, key=lambda y: y.rpartition(' ')[2][:-5])
-						for name_element in ['протокол', 'предписание']:
-							for element in file:
-								if name_element in element.lower():
-									docs[element] = Path(path, folder)
-				elif 'дополнительные' in folder.lower() and os.path.isdir(folder):
-					if folder != 'Дополнительные материалы':
-						error_text.append('Название папки «Дополнительные материалы» написано с ошибками')
-					else:
-						shutil.copytree(Path(path, folder), Path(path_new, folder))
-			if error_text:
-				return {'error': True, 'text': error_text, 'data': {}}
-			for element in os.listdir():
-				if 'сопроводит' in element.lower():
-					docs[element] = path
-			data['docx_for_progress'] = len(docs)
-		else:
-			docs = [file for file in os.listdir(path) if file.endswith('.docx')]  # Список документов
-			docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
-			docs_ = [j_ for i_ in
-					 ['^Акт', 'Приложение \d? к акту', '^Заключение', 'Приложение \d? к заключению', 'Протокол',
-					  'Приложение А', 'Предписание', 'Форма 3', 'Опись', 'Сопроводит'] for j_ in docs if
-					 re.findall(i_, j_, re.I)]
-			docs_not = [i_ for i_ in docs if i_ not in docs_ and '~' not in i_]
-			docs = docs_not + docs_
-			# Процент для прогресса
-			docx_for_progress = 0
-			for name_file in os.listdir(path):
-				if re.findall(r'приложение а', name_file.lower()):
-					with ZipFile(Path(path, name_file)) as my_doc:
-						xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
-						pages = int(re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())[0])
-					if pages == 1:
-						pythoncom.CoInitializeEx(0)
-						# self.logging.info(f"Считаем кол-во листов в приложении {name_file}")
-						# status.emit(f"Считаем кол-во листов в приложении {name_file}")
-						word2pdf(str(Path(path, name_file)), str(Path(path, name_file + '.pdf')))
-						input_file = fitz.open(str(Path(path, name_file + '.pdf')))  # Открываем
-						pages = input_file.page_count  # Получаем кол-во страниц
-						input_file.close()  # Закрываем
-						os.remove(str(Path(path, name_file + '.pdf')))  # Удаляем pdf документ
-					application_dict[name_file] = pages
-				else:
-					docx_for_progress += 1
-			data['docs_for_progress'] = docx_for_progress
-		data['docs'] = [Path(path, doc) for doc in docs]
-		return {'error': False, 'text': '', 'data': data}
-	except BaseException as exception:
-		return {'error': True, 'text': str(exception) + '\n' + traceback.format_exc(), 'data': {}}
+def sorting_files(path: Path, path_new: Path, fso: bool, inventory: list) -> dict:
+    """Сортирует файлы для подсчета значения прогресса и последующей вставки текстовки и номеров"""
+    try:
+        application_dict = {}  # Для подсчёта листов - новое.
+        error_text = []
+        data = {}
+        if fso:
+            docs = {}
+            for folder in os.listdir(path):
+                if 'проверке' in folder.lower():
+                    if folder != 'Материалы по специальной проверке технических средств':
+                        error_text.append('Название папки «Материалы по специальной проверке'
+                                          ' технических средств» написано с ошибками')
+                    else:
+                        file = os.listdir(Path(path, folder))
+                        file = natsorted(file, key=lambda y: y.rpartition(' ')[2][:-5])
+                        for name_element in ['акт', 'заключение']:
+                            for element in file:
+                                if name_element in element.lower():
+                                    docs[element] = Path(path, folder)
+                elif 'исследованиям' in folder.lower():
+                    if folder != 'Материалы по специальным исследованиям технических средств':
+                        error_text.append('Название папки «Материалы по специальным исследованиям'
+                                          ' технических средств» написано с ошибками')
+                    else:
+                        file = os.listdir(Path(path, folder))
+                        file = natsorted(file, key=lambda y: y.rpartition(' ')[2][:-5])
+                        for name_element in ['протокол', 'предписание']:
+                            for element in file:
+                                if name_element in element.lower():
+                                    docs[element] = Path(path, folder)
+                elif 'дополнительные' in folder.lower() and os.path.isdir(folder):
+                    if folder != 'Дополнительные материалы':
+                        error_text.append('Название папки «Дополнительные материалы» написано с ошибками')
+                    else:
+                        shutil.copytree(Path(path, folder), Path(path_new, folder))
+            if error_text:
+                return {'error': True, 'text': error_text, 'data': {}}
+            for element in os.listdir():
+                if 'сопроводит' in element.lower():
+                    docs[element] = path
+            data['docx_for_progress'] = len(docs)
+        else:
+            docs = [file for file in os.listdir(path) if file.endswith('.docx')]  # Список документов
+            inventory_list = [file.name for file in inventory]
+            docs = [*docs, *inventory_list]
+            docs = natsorted(docs, key=lambda y: y.rpartition(' ')[2][:-5])
+            docs_ = [j_ for i_ in
+                     ['^Акт', 'Приложение \d? к акту', '^Заключение', 'Приложение \d? к заключению', 'Протокол',
+                      'Приложение А', 'Предписание', 'Форма 3', 'Опись', 'Сопроводит'] for j_ in docs if
+                     re.findall(i_, j_, re.I)]
+            docs_not = [i_ for i_ in docs if i_ not in docs_ and '~' not in i_]
+            docs = docs_not + docs_
+            # Процент для прогресса
+            docx_for_progress = 0
+            for name_file in os.listdir(path):
+                if re.findall(r'приложение а', name_file.lower()):
+                    # Удалить это отсюда, не нужно
+                    with ZipFile(Path(path, name_file)) as my_doc:
+                        xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
+                        pages = int(re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())[0])
+                    if pages == 1:
+                        pythoncom.CoInitializeEx(0)
+                        # self.logging.info(f"Считаем кол-во листов в приложении {name_file}")
+                        # status.emit(f"Считаем кол-во листов в приложении {name_file}")
+                        word2pdf(str(Path(path, name_file)), str(Path(path, name_file + '.pdf')))
+                        input_file = fitz.open(str(Path(path, name_file + '.pdf')))  # Открываем
+                        pages = input_file.page_count  # Получаем кол-во страниц
+                        input_file.close()  # Закрываем
+                        os.remove(str(Path(path, name_file + '.pdf')))  # Удаляем pdf документ
+                    application_dict[name_file] = pages
+                else:
+                    docx_for_progress += 1
+            data['docs_for_progress'] = docx_for_progress
+        data['docs'] = [Path(path, doc) for doc in docs]
+        return {'error': False, 'text': '', 'data': data}
+    except BaseException as exception:
+        return {'error': True, 'text': str(exception), 'trace': traceback.format_exc()}
 
 
 def report_rso(path: Path):
-	"""Функция для генерации отчёта МВД"""
-	file_mo = [mo for mo in os.listdir(path) if mo[-3:] == 'txt' and 'F19' in mo][0]
-	df_report_rso = pd.read_csv(Path(path, file_mo), delimiter='|', encoding='ANSI', names=[
-		'Порядковый номер лицензиата',
-		'Серийный номер комплекта',
-		'Серийный номер системного блока', 'удалить'])
-	df_report_rso['Порядковый номер лицензиата'] = df_report_rso['Порядковый номер лицензиата'].astype(str)
-	df_report_rso['№'] = np.arange(1, 1 + len(df_report_rso))
-	df_report_rso = df_report_rso.reindex(columns=['№',
-												   'Порядковый номер лицензиата',
-												   'Серийный номер комплекта',
-												   'Серийный номер системного блока',
-												   'Заключение',
-												   'Кол-во листов закл.',
-												   'Протокол',
-												   'Кол-во листов прот.',
-												   'Предписание',
-												   'Кол-во листов пред.',
-												   'Сумма листов на комплект'])
+    """Функция для генерации отчёта МВД"""
+    file_mo = [mo for mo in os.listdir(path) if mo[-3:] == 'txt' and 'F19' in mo][0]
+    df_report_rso = pd.read_csv(Path(path, file_mo), delimiter='|', encoding='ANSI', names=[
+        'Порядковый номер лицензиата',
+        'Серийный номер комплекта',
+        'Серийный номер системного блока', 'удалить'])
+    df_report_rso['Порядковый номер лицензиата'] = df_report_rso['Порядковый номер лицензиата'].astype(str)
+    df_report_rso['№'] = np.arange(1, 1 + len(df_report_rso))
+    df_report_rso = df_report_rso.reindex(columns=['№',
+                                                   'Порядковый номер лицензиата',
+                                                   'Серийный номер комплекта',
+                                                   'Серийный номер системного блока',
+                                                   'Заключение',
+                                                   'Кол-во листов закл.',
+                                                   'Протокол',
+                                                   'Кол-во листов прот.',
+                                                   'Предписание',
+                                                   'Кол-во листов пред.',
+                                                   'Сумма листов на комплект'])
+
+
+def sp_sorting(name_gk: str, finish_path: Path, sp_path_dir: Path, sp_path_file: Path, check_sp: list,
+               progress_value, line_progress) -> dict:
+    errors = []
+    try:
+        if name_gk:
+            logging.info("Создаём папку для СП, если её нет")
+            path_dir_sp = Path(sp_path_dir, name_gk)
+            os.makedirs(path_dir_sp, exist_ok=True)
+        else:
+            path_dir_sp = Path(sp_path_dir)
+        df_number_sp = pd.read_excel(str(Path(sp_path_file)), sheet_name=0, header=None)
+        df_number_sp.fillna(False, inplace=True)
+        df_number_sp.drop(0, inplace=True)
+        for name1, name2 in itertools.zip_longest(df_number_sp[0], df_number_sp[1]):
+            if name1:
+                os.makedirs(str(Path(path_dir_sp, str(name1) + ' В')), exist_ok=True)
+            if name2:
+                os.makedirs(str(Path(path_dir_sp, str(name2))), exist_ok=True)
+        files = [j_ for i_ in ['акт', 'заключение', 'протокол', 'предписание', 'инфокарта', 'result']
+                 for j_ in os.listdir(finish_path) if re.findall(i_.lower(), j_.lower())]
+        percent = 5 / len(files)
+        current_progress = 90
+        for file in files:
+            if 'акт' in file.lower() or 'result' in file.lower():
+                shutil.copy(str(Path(finish_path, file)), str(Path(path_dir_sp)))
+            else:
+                no_sn_in_sp = True
+                sn_number = file.rpartition(' ')[0].rpartition(' ')[2]
+                for folder_sp in os.listdir(str(path_dir_sp)):
+                    if re.findall(sn_number, folder_sp):
+                        no_sn_in_sp = False
+                        shutil.copy(str(Path(finish_path, file)), str(Path(path_dir_sp, folder_sp)))
+                if no_sn_in_sp:
+                    errors.append('Документ с с.н. ' + sn_number + ' (' + file + ') не найден в материалах СП')
+            current_progress += percent
+            line_progress.emit(f'Выполнено {int(current_progress)} %')
+            progress_value.emit(int(current_progress))
+        for folder_sp in os.listdir(str(Path(path_dir_sp))):
+            if os.path.isdir(str(Path(path_dir_sp, folder_sp))):
+                file_sp = [file.partition(' ')[0].lower() for file in
+                           os.listdir(str(Path(path_dir_sp, folder_sp)))]
+                for ind, check_file in enumerate(['заключение', 'протокол', 'предписание', 'инфокарта']):
+                    if check_sp[ind] and (check_file in file_sp) is False:
+                        errors.append('В папке ' + str(folder_sp) + ' отсутствует ' + check_file)
+                current_progress += percent
+                line_progress.emit(f'Выполнено {int(current_progress)} %')
+                progress_value.emit(int(current_progress))
+        if errors:
+            return {'status': 'warning', 'trace': '', 'text': errors}
+        return {'status': 'success', 'trace': '', 'text': ''}
+    except BaseException as es:
+        return {'status': 'error', 'trace': traceback.format_exc(), 'text': f'Ошибка при сортировки СП - {es}',
+                'data': ''}
 
 
 def pages_count(file: Path) -> dict:
-	"""Функция для подсчёта количества страниц в документе. Принимает путь к файлу"""
-	# Конвертируем
-	# while True:
-	try:
-		name = file.name
-		parent_path = file.parent
-		pythoncom.CoInitializeEx(0)
-		name_pdf = name + '.pdf'
-		word2pdf(str(Path(parent_path, name)), str(Path(parent_path, name_pdf)))
-		input_file_pdf = fitz.open(str(Path(parent_path, name_pdf)))  # Открываем пдф
-		count_page = input_file_pdf.page_count  # Получаем кол-во страниц
-		input_file_pdf.close()  # Закрываем
-		os.remove(str(Path(parent_path, name_pdf)))  # Удаляем пдф документ
-		# temp_docx = os.path.join(parent_path, name)
-		# temp_zip = os.path.join(parent_path, name + ".zip")
-		# temp_folder = os.path.join(parent_path, "template")
-		#
-		# if os.path.exists(temp_zip):
-		# 	rm(temp_zip)
-		# if os.path.exists(temp_folder):
-		# 	rm(temp_folder)
-		# if os.path.exists(Path(parent_path, 'zip')):
-		# 	rm(Path(parent_path, 'zip'))
-		# os.rename(temp_docx, temp_zip)
-		# os.mkdir(Path(parent_path, 'zip'))
-		# with ZipFile(temp_zip) as my_document:
-		# 	my_document.extractall(temp_folder)
-		# pages_xml = os.path.join(temp_folder, "docProps", "app.xml")
-		# string = open(pages_xml, 'r', encoding='utf-8').read()
-		# string = re.sub(r"<Pages>(\w*)</Pages>",
-		# 				"<Pages>" + str(count_page) + "</Pages>", string)
-		# with open(pages_xml, "wb") as file_wb:
-		# 	file_wb.write(string.encode("UTF-8"))
-		# try_number = 0
-		# while True:
-		# 	try:
-		# 		os.remove(temp_zip)
-		# 		break
-		# 	except PermissionError:
-		# 		if try_number == 4:
-		# 			break
-		# 		time.sleep(3)
-		# 		try_number += 1
-		# if try_number == 4:
-		# 	return {'error': True, 'text': 'Не удалось удалить файл'}
-		# shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
-		# os.rename(temp_zip, temp_docx)  # rename zip file to docx
-		# rm(temp_folder)
-		# rm(Path(parent_path, 'zip'))
-		return {'error': False, 'text': count_page}
-	except BaseException as exception:
-		return {'error': True, 'text': f'Ошибка при подсчёте количества страниц: {exception}'}
+    """Функция для подсчёта количества страниц в документе. Принимает путь к файлу"""
+    # Конвертируем
+    # while True:
+    try:
+        name = file.name
+        parent_path = file.parent
+        pythoncom.CoInitializeEx(0)
+        name_pdf = name + '.pdf'
+        word2pdf(str(Path(parent_path, name)), str(Path(parent_path, name_pdf)))
+        input_file_pdf = fitz.open(str(Path(parent_path, name_pdf)))  # Открываем пдф
+        count_page = input_file_pdf.page_count + 1  # Получаем кол-во страниц
+        input_file_pdf.close()  # Закрываем
+        os.remove(str(Path(parent_path, name_pdf)))  # Удаляем пдф документ
+        temp_docx = os.path.join(parent_path, name)
+        temp_zip = os.path.join(parent_path, name + ".zip")
+        temp_folder = os.path.join(parent_path, "template")
+
+        if os.path.exists(temp_zip):
+            rm(temp_zip)
+        if os.path.exists(temp_folder):
+            rm(temp_folder)
+        if os.path.exists(Path(parent_path, 'zip')):
+            rm(Path(parent_path, 'zip'))
+        os.rename(temp_docx, temp_zip)
+        os.mkdir(Path(parent_path, 'zip'))
+        with ZipFile(temp_zip) as my_document:
+            my_document.extractall(temp_folder)
+        pages_xml = os.path.join(temp_folder, "docProps", "app.xml")
+        string = open(pages_xml, 'r', encoding='utf-8').read()
+        string = re.sub(r"<Pages>(\w*)</Pages>", "<Pages>" + str(count_page) + "</Pages>", string)
+        with open(pages_xml, "wb") as file_wb:
+            file_wb.write(string.encode("UTF-8"))
+        try_number = 0
+        while True:
+            try:
+                os.remove(temp_zip)
+                break
+            except PermissionError:
+                if try_number == 4:
+                    break
+                time.sleep(3)
+                try_number += 1
+        if try_number == 4:
+            return {'error': True, 'text': 'Не удалось удалить файл'}
+        shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
+        os.rename(temp_zip, temp_docx)  # rename zip file to docx
+        rm(temp_folder)
+        rm(Path(parent_path, 'zip'))
+        return {'error': False, 'text': '', 'pages': count_page}
+    except BaseException as exception:
+        return {'error': True, 'text': exception, 'pages': 0}
 
 
 def rm(folder_path):
-	try:
-		while len(os.listdir(folder_path)) != 0:
-			time.sleep(0.5)
-			for file_object in os.listdir(folder_path):
-				flag_ = True
-				while flag_:
-					try:
-						file_object_path = os.path.join(folder_path, file_object)
-						try:
-							if os.path.isfile(file_object_path) or os.path.islink(file_object_path):
-								os.remove(file_object_path)
-							else:
-								try:
-									shutil.rmtree(file_object_path)
-								except FileNotFoundError:
-									pass
-						except OSError:
-							os.remove(folder_path)
-						flag_ = False
-					except BaseException:
-						pass
-	except NotADirectoryError:
-		os.remove(folder_path)
-	time.sleep(0.05)
-	shutil.rmtree(folder_path)
+    try:
+        while len(os.listdir(folder_path)) != 0:
+            time.sleep(0.5)
+            for file_object in os.listdir(folder_path):
+                flag_ = True
+                while flag_:
+                    try:
+                        file_object_path = os.path.join(folder_path, file_object)
+                        try:
+                            if os.path.isfile(file_object_path) or os.path.islink(file_object_path):
+                                os.remove(file_object_path)
+                            else:
+                                try:
+                                    shutil.rmtree(file_object_path)
+                                except FileNotFoundError:
+                                    pass
+                        except OSError:
+                            os.remove(folder_path)
+                        flag_ = False
+                    except BaseException:
+                        pass
+    except NotADirectoryError:
+        os.remove(folder_path)
+    time.sleep(0.05)
+    shutil.rmtree(folder_path)
+
+
+def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path) -> dict:
+    """Добавление номеров и текстовок для описей"""
+
+    def df_add_inventory(number, finish_path, docs, ind):
+        docs.loc[ind, 'name'] = f'Опись №{number}.docx'
+        docs.loc[ind, 'number'] = number
+        docs.loc[ind, 'finish_path'] = Path(finish_path, f'Опись №{number}.docx')
+        docs.loc[ind, 'parent_path'] = finish_path
+        docs.loc[ind, 'change_date'] = True
+        docs.loc[ind, 'classified'] = incoming_data['classified']
+        docs.loc[ind, 'executor'] = incoming_data['inventory_executor']
+        docs.loc[ind, 'first_header_text'] = f'{incoming_data["classified"]}\n(без приложения не секретно)\nЭкз.№ 1'
+        docs.loc[ind, 'text'] = '\n\n' + incoming_data["account_position"] + '\t\t\t\t\t\t\t\t' + incoming_data["account_executor"]
+        docs.loc[ind, 'date'] = incoming_data['date']
+        return docs
+
+    try:
+        number_inventory = 1
+        if incoming_data['flag_inventory'] == 1:
+            index = documents.loc[documents['name'].str.contains(f'Опись №{number_inventory}.docx', case=False)].index[0]
+            documents = df_add_inventory(number_inventory, incoming_path, documents, index)
+            documents.loc[documents['account_list'] == 1, 'account_list'] = f'Опись №{number_inventory}.docx'
+        else:
+            conclusion_num = len(documents[(documents['name'].str.contains(r'заключение', case=False))])
+            conclusions = documents[(documents['name'].str.contains(r'заключение', case=False))].reset_index()
+            prescriptions = documents[(documents['name'].str.contains(r'предписание', case=False))].reset_index()
+            # conclusion_num = len(documents[(documents['name'].str.contains(r'заключение', case=False)
+            # 								& (documents['parent_path'] == incoming_path))])
+            while True:
+                index = documents.loc[documents['name'].str.contains(f'Опись №{number_inventory}.docx', case=False)].index[0]
+                documents = df_add_inventory(number_inventory, incoming_path, documents, index)
+                docs_40 = []
+                for doc in [conclusions, prescriptions]:
+                    slice_docs = doc.iloc[1:41, 'index'].tolist()
+                    documents.loc[slice_docs, 'account_list'] = f'Опись №{number_inventory}.docx'
+                    docs_40.append(doc.iloc[40:])
+                conclusions, prescriptions = docs_40[0], docs_40[1]
+                if conclusion_num - 40 <= 0:
+                    break
+                else:
+                    conclusion_num = conclusion_num - 40
+                    number_inventory += 1
+        return {'status': 'success', 'trace': '', 'text': '', 'data': documents}
+    except BaseException as es:
+        return {'status': 'error', 'trace': traceback.format_exc(), 'text': f'Ошибка при добавлении описи(ей) - {es}',
+                'data': ''}
+
+
+def sort_order(name: str) -> int:
+    if 'акт' in name.lower():
+        return 1
+    elif 'заключение' in name.lower():
+        return 2
+    elif 'протокол' in name.lower():
+        return 3
+    elif 'приложение а' in name.lower():
+        return 4
+    elif 'предписание' in name.lower():
+        return 5
+    else:
+        return 99
+
+
+def list_doc(dp):
+    # Открываем word документ как зип архив для доступа к xml свойствам
+    with zipfile.ZipFile(dp) as my_doc:
+        xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
+        pages_ = re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())  # Ищем кол-во страниц
+        if int(pages_[0]) > 1:
+            ns = int(pages_[0]) - 1
+        else:
+            ns = int(pages_[0])
+            # ns = list_count(dp)  # Для проверки, вдруг изменилось количество страниц
+    return ns
 
 
 def return_error(log: logging, warning: str, status, status_text: str, default_path: Path, status_finish: list,
-				 window, event: Any = False, error: str = '', info_value=None) -> None:
-	"""Функция для возврата ошибок по всей программе и отмены оперции пользователем. """
-	if info_value is None:
-		info_value = []
-	if event:
-		log.error(error)
-		if isinstance(info_value[2], list):
-			error_text = '\n'.join(info_value[2])
-		else:
-			error_text = 'Работа программы завершена из-за непредвиденной ошибки, обратитесь к разработчику'
-		info_value[0].emit(info_value[1], error_text)
-		event.clear()
-		event.wait()
-		log.error(warning)
-		status.emit(status_text)
-		os.chdir(default_path)
-		status_finish[0].emit(status_finish[1], status_finish[2])
-		time.sleep(1)  # Не удалять, не успевает отработать emit status_finish. Может потом
-		window.close()
-		return
+                 window, event: Any = False, error: str = '', info_value=None) -> None:
+    """Функция для возврата ошибок по всей программе и отмены оперции пользователем. """
+    if info_value is None:
+        info_value = []
+    if event:
+        log.error(error)
+        if isinstance(info_value[2], list):
+            error_text = '\n'.join(info_value[2])
+        else:
+            error_text = 'Работа программы завершена из-за непредвиденной ошибки, обратитесь к разработчику'
+        info_value[0].emit(info_value[1], error_text)
+        event.clear()
+        event.wait()
+        log.error(warning)
+        status.emit(status_text)
+        os.chdir(default_path)
+        status_finish[0].emit(status_finish[1], status_finish[2])
+        time.sleep(1)  # Не удалять, не успевает отработать emit status_finish. Может потом
+        window.close()
+        return

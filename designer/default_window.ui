@@ -95,30 +95,8 @@
          <layout class="QGridLayout" name="gridLayout_10">
           <item row="0" column="0">
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="6" column="0">
-             <widget class="QGroupBox" name="groupBox_catalog_print_default">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="title">
-               <string>Печать файлов</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_17">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_print"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
             <item row="4" column="0">
-             <widget class="QGroupBox" name="groupBox_inventory_default">
+             <widget class="QGroupBox" name="groupBox_addInsert41101">
               <property name="font">
                <font>
                 <pointsize>12</pointsize>
@@ -127,108 +105,20 @@
                </font>
               </property>
               <property name="title">
-               <string>Опись</string>
+               <string>Дополнительные модули для 41101</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
               </property>
               <layout class="QGridLayout" name="gridLayout_15">
                <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_inventory"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QGroupBox" name="groupBox_data_default">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="title">
-               <string>Данные для вставки колонтитулов</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_13">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_data"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QGroupBox" name="groupBox_catalog_insert_default">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="title">
-               <string>Каталоги для вставки колонитулов</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_3">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_catalog"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QGroupBox" name="groupBox_instance">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="title">
-               <string>Экземпляры документов</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_16">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_instance"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QGroupBox" name="groupBox_form_27_default">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="title">
-               <string>Форма 27</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_14">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_form_27"/>
+                <layout class="QGridLayout" name="gridLayout_addInsert41101"/>
                </item>
               </layout>
              </widget>
             </item>
             <item row="2" column="0">
-             <widget class="QGroupBox" name="groupBox_sp">
+             <widget class="QGroupBox" name="groupBox_printMain">
               <property name="font">
                <font>
                 <pointsize>12</pointsize>
@@ -237,14 +127,102 @@
                </font>
               </property>
               <property name="title">
-               <string>Сортировка материалов</string>
+               <string>Данные для печати основной программы</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
               </property>
               <layout class="QGridLayout" name="gridLayout_6">
                <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_sp"/>
+                <layout class="QGridLayout" name="gridLayout_printMain"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QGroupBox" name="groupBox_addInsertMain">
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string>Дополнительные модули для основной программы</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_13">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_addInsertMain"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QGroupBox" name="groupBox_print41101">
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string>Данные для печати 41101</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_16">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_print41101"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QGroupBox" name="groupBox_insert41101">
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string>Основные данные для вставки колонтитулов (41101)</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_14">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_insert41101"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QGroupBox" name="groupBox_insertMain">
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string>Основные данные для вставки колонтитулов</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_3">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_insertMain"/>
                </item>
               </layout>
              </widget>

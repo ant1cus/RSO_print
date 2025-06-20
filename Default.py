@@ -41,21 +41,22 @@ class Button(QLineEdit):
 
 
 class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки по умолчанию
-    def __init__(self, parent, path, name_list):
+    def __init__(self, parent, path, lines, default_data, browse, rewrite_settings):
         super().__init__()
         self.setupUi(self)
         self.parent = parent
         self.path_for_default = path
-        # Имена на английском и русском
-        self.name_list = name_list
-        self.name_box = [self.groupBox_catalog_insert_default, self.groupBox_data_default, self.groupBox_sp,
-                         self.groupBox_form_27_default, self.groupBox_inventory_default, self.groupBox_instance,
-                         self.groupBox_catalog_print_default]
-        self.name_grid = [self.gridLayout_catalog, self.gridLayout_data, self.gridLayout_sp, self.gridLayout_form_27,
-                          self.gridLayout_inventory, self.gridLayout_instance, self.gridLayout_print]
-        self.radio_group = {'group1': []}
-        with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), "r", encoding='utf-8-sig') as f:  # Открываем
-            self.data = json.load(f)  # Загружаем данные
+        self.lines = lines
+        self.default_data = default_data
+        self.browse = browse
+        self.rewrite_settings = rewrite_settings
+        default = self.rewrite_settings(self.path_for_default)
+        self.widget_settings = default['widget_settings']
+        self.gui_settings = default['gui_settings']
+        self.name_box = [self.groupBox_insertMain, self.groupBox_addInsertMain, self.groupBox_printMain,
+                         self.groupBox_insert41101, self.groupBox_addInsert41101, self.groupBox_print41101]
+        self.name_grid = [self.gridLayout_insertMain, self.gridLayout_addInsertMain, self.gridLayout_printMain,
+                          self.gridLayout_insert41101, self.gridLayout_addInsert41101, self.gridLayout_print41101]
         self.buttongroup_add = QButtonGroup()
         self.buttongroup_add.buttonClicked[int].connect(self.add_button_clicked)
         self.buttongroup_clear = QButtonGroup()
@@ -71,14 +72,15 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.button = {}  # Для кнопки «изменить»
         self.button_clear = {}  # Для кнопки «очистить»
         self.button_open = {}  # Для кнопки «открыть»
-        for i, el in enumerate(self.name_list):  # Заполняем
+        for i, el in enumerate(self.lines):  # Заполняем
             frame = grid = False
-            for j, n in enumerate(['insert', 'data', 'sp', 'form27', 'account', 'instance', 'print']):
+            for j, n in enumerate(['insertMain', 'addInsertMain', 'printMain', 'insert41101', 'addInsert41101',
+                                   'print41101']):
                 if n in el.partition('-')[0]:
                     frame, grid = self.name_box[j], self.name_grid[j]
                     break
             self.line[i] = QLabel(frame)  # Помещаем в фрейм
-            self.line[i].setText(self.name_list[el][0])  # Название элемента
+            self.line[i].setText(self.lines[el][0])  # Название элемента
             self.line[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
             self.line[i].setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)  # Размеры виджета
             self.line[i].setFixedWidth(325)
@@ -87,18 +89,18 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
             if 'checkBox' in el or 'groupBox' in el:
                 self.combo[i] = QComboBox(frame)  # Помещаем в фрейм
                 self.combo[i].addItems(['Включён', 'Выключен'])
-                self.combo[i].setCurrentIndex(0) if el in self.data and self.data[el] \
+                self.combo[i].setCurrentIndex(0) if el in self.widget_settings and self.widget_settings[el] \
                     else self.combo[i].setCurrentIndex(1)
                 self.combo[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
                 self.combo[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
                 grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
             elif 'radioButton' in el:
                 self.combo[i] = QComboBox(frame)  # Помещаем в фрейм
-                name_radio = [radio.text() for radio in self.name_list[el][1]]
+                name_radio = [radio.text() for radio in self.lines[el][1]]
                 name_radio.insert(0, '')
                 radio_index = 0
-                if el in self.data:
-                    for button, radio_check in enumerate(self.data[el]):
+                if el in self.widget_settings:
+                    for button, radio_check in enumerate(self.widget_settings[el]):
                         if radio_check:
                             radio_index = button + 1
                 self.combo[i].addItems(name_radio)
@@ -108,10 +110,10 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                 grid.addWidget(self.combo[i], i, 3)  # Помещаем в фрейм
             elif 'comboBox' in el:
                 self.combo[i] = QComboBox(frame)  # Помещаем в фрейм
-                name_combo = self.name_list[el][2]
+                name_combo = self.lines[el][2]
                 radio_index = 0
-                if el in self.data:
-                    for button, radio_check in enumerate(self.data[el]):
+                if el in self.widget_settings:
+                    for button, radio_check in enumerate(self.widget_settings[el]):
                         if radio_check:
                             radio_index = button
                 self.combo[i].addItems(name_combo)
@@ -122,8 +124,8 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
             elif 'dateEdit' in el:
                 self.date[i] = QDateEdit(frame)
                 self.date[i].setCalendarPopup(True)
-                if el in self.data and self.data[el]:
-                    self.date[i].setDate(QDate.fromString(self.data[el], 'dd.MM.yyyy'))
+                if el in self.widget_settings and self.widget_settings[el]:
+                    self.date[i].setDate(QDate.fromString(self.widget_settings[el], 'dd.MM.yyyy'))
                 else:
                     self.date[i].setDate(QDate.currentDate())
                 self.date[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
@@ -142,8 +144,8 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                 grid.addWidget(self.button_clear[i], i, 2)  # Добавляем в фрейм по месту
 
                 self.name[i] = Button(frame)  # Помещаем в фрейм
-                if el in self.data:
-                    self.name[i].setText(self.data[el])
+                if el in self.widget_settings:
+                    self.name[i].setText(self.widget_settings[el])
                 self.name[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер
                 self.name[i].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Размеры виджета
                 self.name[i].setStyleSheet("QLineEdit {"
@@ -151,28 +153,19 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
                                            "}")
                 self.name[i].setDisabled(True)  # Неактивный
                 grid.addWidget(self.name[i], i, 3)  # Помещаем в фрейм
-                if 'Путь' in self.line[i].text():
+                if 'dir' in self.lines[el][1].objectName() or 'file' in self.lines[el][1].objectName():
                     self.button_open[i] = QPushButton("Открыть", frame)  # Создаем кнопку
                     self.button_open[i].setFont(QFont("Times", 12, QFont.Light))  # Размер шрифта
                     self.button_open[i].setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Размеры виджета
                     self.button_open[i].setDisabled(True)  # Неактивный
                     self.buttongroup_open.addButton(self.button_open[i], i)  # Добавляем в группу
+                    # Новое для универсальности. Присваиваем object name в зависимости от того, что нужно открыть
+                    button_name = 'dir' if 'dir' in self.lines[el][1].objectName() else 'file'
+                    self.button_open[i].setObjectName(f"{i}_{button_name}")
                     grid.addWidget(self.button_open[i], i, 4)  # Добавляем в фрейм по месту
 
-    def open_button_clicked(self, num):  # Для кнопки открыть
-        value = self.line[num].text()
-        for key in self.name_list:
-            if value == self.name_list[key][0]:
-                if 'folder' in key:
-                    directory = QFileDialog.getExistingDirectory(self, "Открыть папку", QDir.currentPath())
-                else:
-                    directory = QFileDialog.getOpenFileName(self, "Открыть файл", QDir.currentPath())
-                if directory and isinstance(directory, tuple):
-                    if directory[0]:
-                        self.name[num].setText(directory[0])
-                elif directory and isinstance(directory, str):
-                    self.name[num].setText(directory)
-                break
+    def open_button_clicked(self, number):  # Для кнопки открыть
+        self.browse(self, self.button_open[number], self.name[number], self.path_for_default)
 
     def add_button_clicked(self, number):  # Если кликнули по кнопке
         self.name[number].setEnabled(True)  # Делаем активным для изменения
@@ -188,34 +181,34 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.name[number].clear()
 
     def accept(self):  # Если нажали кнопку принять
-        for i, el in enumerate(self.name_list):  # Пробегаем значения
+        for i, el in enumerate(self.lines):  # Пробегаем значения
             if 'checkBox' in el or 'groupBox' in el:
-                self.data[el] = True if self.combo[i].currentIndex() == 0 else False
+                self.widget_settings[el] = True if self.combo[i].currentIndex() == 0 else False
             elif 'radioButton' in el:
-                self.data[el] = [True if self.name_list[el][1].index(radio) + 1 == self.combo[i].currentIndex()
-                                 else False for radio in self.name_list[el][1]]
+                self.widget_settings[el] = [True if self.lines[el][1].index(radio) + 1 == self.combo[i].currentIndex()
+                                 else False for radio in self.lines[el][1]]
             elif 'comboBox' in el:
-                self.data[el] = [True if self.name_list[el][2].index(combo) == self.combo[i].currentIndex()
-                                 else False for combo in self.name_list[el][2]]
+                self.widget_settings[el] = [True if self.lines[el][2].index(combo) == self.combo[i].currentIndex()
+                                 else False for combo in self.lines[el][2]]
             elif 'dateEdit' in el:
-                self.data[el] = self.name_list[el][1].date().toString('dd.MM.yyyy')
+                self.widget_settings[el] = self.lines[el][1].date().toString('dd.MM.yyyy')
             else:
                 if self.name[i].isEnabled():  # Если виджет активный (означает потенциальное изменение)
                     if self.name[i].text():  # Если внутри виджета есть текст, то помещаем внутрь базы
-                        self.data[el] = self.name[i].text()
+                        self.widget_settings[el] = self.name[i].text()
                     else:  # Если нет текста, то удаляем значение
-                        self.data[el] = None
-        with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), 'w', encoding='utf-8-sig') as f:  # Пишем в файл
-            json.dump(self.data, f, ensure_ascii=False, sort_keys=True, indent=4)
+                        self.widget_settings[el] = None
+        data_insert = {"widget_settings": self.widget_settings, "gui_settings": self.gui_settings}
+        self.rewrite_settings(self.path_for_default, data_insert)
         self.close()  # Закрываем
 
     def closeEvent(self, event):
         os.chdir(pathlib.Path.cwd())
         if self.sender() and self.sender().text() == 'Принять':
             event.accept()
-            with open(pathlib.Path(self.path_for_default, 'Настройки.txt'), "r", encoding='utf-8-sig') as f:
-                data = json.load(f)  # Загружаем данные
-            self.parent.default_date(data)
+            default = self.rewrite_settings(self.path_for_default)
+            data = default['widget_settings']
+            self.default_data(data, self.lines)
             self.parent.show()
         else:
             event.accept()

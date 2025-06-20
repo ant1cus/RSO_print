@@ -1,27 +1,24 @@
-import datetime
 import os
+import queue
 import sys
-import json
 import pathlib
 import logging
-import traceback
-
-import New_Main
+import Main
 import about
-from Default import DefaultWindow
+
+from general_function import browse, default_settings, default_data, rewrite_settings, start_thread
 from AccountNum import AccountNumWindow
 from NumberInstance import NumberInstance
 from SortingFile import SortingFile
 from Check import doc_format, doc_print
-from PrintDoc import PrintDoc
-from FormatDoc import FormatDoc
+from StartThread import StartThreading
+from format_docs import format_doc
+from print_docs import print_docs
 
 from PyQt5 import QtPrintSupport
 
-from PyQt5.QtCore import (QDir, QTranslator, QLocale, QLibraryInfo, QDate)
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QFileDialog, QMessageBox, QDialog, QDesktopWidget, QDateEdit)
-
-from queue import Queue
+from PyQt5.QtCore import (QTranslator, QLocale, QLibraryInfo)
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QDialog)
 
 
 class AboutWindow(QDialog, about.Ui_Dialog):  # Для отображения информации
@@ -45,44 +42,324 @@ def create_instance():  # Запускаем окно для создания э
     window_add.exec_()
 
 
-class MainWindow(QMainWindow, New_Main.Ui_MainWindow):  # Главное окно
+class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        filename = str(datetime.date.today()) + '_logs.log'
-        os.makedirs(pathlib.Path('logs'), exist_ok=True)
-        filemode = 'a' if pathlib.Path('logs', filename).is_file() else 'w'
-        logging.basicConfig(filename=pathlib.Path('logs', filename),
-                            level=logging.DEBUG,
-                            filemode=filemode,
-                            format="%(asctime)s - %(levelname)s - %(funcName)s: %(lineno)d - %(message)s")
-        self.queue = Queue()
-        self.finish = False  # Для запуска следующего потока в очереди
-        self.pushButton_print.clicked.connect(self.printing)  # Кнопка распечатать
-        self.pushButton_insert.clicked.connect(self.insert_head_foot)  # Кнопка вставить
-        # Баттоны для кнопок открыть
-        self.pushButton_folder_old_doc.clicked.connect(lambda: self.browse(self.lineEdit_path_folder_old_doc))
-        self.pushButton_folder_new_doc.clicked.connect(lambda: self.browse(self.lineEdit_path_folder_new_doc))
-        self.pushButton_file_file_num.clicked.connect(lambda: self.browse(self.lineEdit_path_file_file_num))
-        self.pushButton_folder_account.clicked.connect(lambda: self.browse(self.lineEdit_path_folder_account))
-        self.pushButton_folder_open_form_27.clicked.connect(lambda:
-                                                            self.browse(self.lineEdit_path_folder_form_27_create))
-        self.pushButton_folder_old_print.clicked.connect(lambda: self.browse(self.lineEdit_path_folder_old_print))
-        self.pushButton_file_form27_print.clicked.connect(lambda: self.browse(self.lineEdit_path_file_form_27_print))
-        self.pushButton_file_account_numbers.clicked.connect(lambda:
-                                                             self.browse(self.lineEdit_path_file_account_numbers))
-        self.pushButton_file_add_account_numbers.clicked.connect(lambda:
-                                                                 self.browse(
-                                                                     self.lineEdit_path_file_add_account_numbers))
-        self.pushButton_folder_sp.clicked.connect(lambda: self.browse(self.lineEdit_path_folder_sp))
-        self.pushButton_file_sp.clicked.connect(lambda: self.browse(self.lineEdit_path_file_sp))
+        self.default_path = pathlib.Path.cwd()
+        self.mode_description = {'insert_main': {'mode_name': 'insert_main',
+                                                 'title': 'Регистрация документов (основная программа) в папке',
+                                                 'cancel': 'Регистрация документов (основная программа) в папке'
+                                                           ' «name_dir» отменена пользователем',
+                                                 'exception': 'Регистрация документов (основная программа) в папке'
+                                                              ' «name_dir» не завершена из-за ошибки',
+                                                 'success': 'Регистрация документов (основная программа) в папке'
+                                                            ' «name_dir» успешно завершена',
+                                                 'error': 'Регистрация документов (основная программа) в папке'
+                                                          ' «name_dir» завершена с ошибками'
+                                                 },
+                                 'print_main': {'mode_name': 'print_main',
+                                                'title': 'Печать документов (основная программа) в папке',
+                                                'cancel': 'Печать документов (основная программа)в папке «name_dir»'
+                                                          ' отменена пользователем',
+                                                'exception': 'Печать документов (основная программа) в папке «name_dir»'
+                                                             ' не завершена из-за ошибки',
+                                                'success': 'Печать документов (основная программа) в папке «name_dir»'
+                                                           ' успешно завершена',
+                                                'error': 'Печать документов (основная программа) в папке «name_dir»'
+                                                         ' завершена с ошибками'
+                                                },
+                                 'insert_41101': {'mode_name': 'insert_41101',
+                                                  'title': 'Регистрация документов (программа для 41101) в папке',
+                                                  'cancel': 'Регистрация документов (программа для 41101) в папке'
+                                                            ' «name_dir» отменена пользователем',
+                                                  'exception': 'Регистрация документов (программа для 41101) в папке'
+                                                               ' «name_dir» не завершена из-за ошибки',
+                                                  'success': 'Регистрация документов (программа для 41101) в папке'
+                                                            ' «name_dir» успешно завершена',
+                                                  'error': 'Регистрация документов (программа для 41101) в папке'
+                                                           ' «name_dir» завершена с ошибками'
+                                                  },
+                                 'print_41101': {'mode_name': 'print_41101',
+                                                 'title': 'Печать документов (программа для 41101) в папке',
+                                                 'cancel': 'Печать документов (программа для 41101)в папке «name_dir»'
+                                                           ' отменена пользователем',
+                                                 'exception': 'Печать документов (программа для 41101) в папке'
+                                                              ' «name_dir» не завершена из-за ошибки',
+                                                 'success': 'Печать документов (программа для 41101) в папке «name_dir»'
+                                                            ' успешно завершена',
+                                                 'error': 'Печать документов (программа для 41101) в папке «name_dir»'
+                                                          ' завершена с ошибками'
+                                                 },
+                                 }
+        self.pushButton_main_start_path_insert_dir.clicked.connect(lambda:
+                                                                   browse(self,
+                                                                          self.pushButton_main_start_path_insert_dir,
+                                                                          self.lineEdit_main_start_path_insert_dir,
+                                                                          self.default_path))
+        self.pushButton_main_finish_path_insert_dir.clicked.connect(lambda:
+                                                                    browse(self,
+                                                                           self.pushButton_main_finish_path_insert_dir,
+                                                                           self.lineEdit_main_finish_path_insert_dir,
+                                                                           self.default_path))
+        self.pushButton_main_file_num.clicked.connect(lambda: browse(self, self.pushButton_main_file_num,
+                                                                     self.lineEdit_main_file_num_path,
+                                                                     self.default_path))
+        self.pushButton_main_path_signature_dir.clicked.connect(lambda: browse(self,
+                                                                               self.pushButton_main_path_signature_dir,
+                                                                               self.lineEdit_main_path_signature_dir,
+                                                                               self.default_path))
+        self.pushButton_main_account_path_dir.clicked.connect(lambda: browse(self,
+                                                                             self.pushButton_main_account_path_dir,
+                                                                             self.lineEdit_main_account_path_dir,
+                                                                             self.default_path))
+        self.pushButton_main_form27_path_dir.clicked.connect(lambda:
+                                                             browse(self, self.pushButton_main_form27_path_dir,
+                                                                    self.lineEdit_main_form27_path_dir,
+                                                                    self.default_path))
+        self.pushButton_main_folder_sp_dir.clicked.connect(lambda: browse(self, self.pushButton_main_folder_sp_dir,
+                                                                          self.lineEdit_main_sp_path_dir,
+                                                                          self.default_path))
+        self.pushButton_main_file_sp.clicked.connect(lambda: browse(self, self.pushButton_main_file_sp,
+                                                                    self.lineEdit_main_file_sp_path, self.default_path))
+        self.pushButton_main_start_path_print_dir.clicked.connect(lambda:
+                                                                  browse(self,
+                                                                         self.pushButton_main_start_path_print_dir,
+                                                                         self.lineEdit_main_start_path_print_dir,
+                                                                         self.default_path))
+        self.pushButton_main_file_form27_print.clicked.connect(lambda:
+                                                               browse(self, self.pushButton_main_file_form27_print,
+                                                                      self.lineEdit_main_path_file_form27_print,
+                                                                      self.default_path))
+        self.pushButton_main_file_account_numbers.clicked.connect(lambda:
+                                                                  browse(self,
+                                                                         self.pushButton_main_file_account_numbers,
+                                                                         self.lineEdit_main_file_account_numbers_path,
+                                                                         self.default_path))
+        self.pushButton_main_add_account_numbers.clicked.connect(lambda:
+                                                                 browse(self, self.pushButton_main_add_account_numbers,
+                                                                        self.lineEdit_main_add_account_numbers_path,
+                                                                        self.default_path))
+        self.pushButton_41101_start_path_insert_dir.clicked.connect(lambda:
+                                                                    browse(self,
+                                                                           self.pushButton_41101_start_path_insert_dir,
+                                                                           self.lineEdit_41101_start_path_insert_dir,
+                                                                           self.default_path))
+        self.pushButton_41101_finish_path_insert_dir.clicked.connect(lambda:
+                                                                     browse(self,
+                                                                            self.pushButton_41101_finish_path_insert_dir,
+                                                                            self.lineEdit_41101_finish_path_insert_dir,
+                                                                            self.default_path))
+        self.pushButton_41101_file_num.clicked.connect(lambda: browse(self, self.pushButton_41101_file_num,
+                                                                      self.lineEdit_41101_file_num_path,
+                                                                      self.default_path))
+        self.pushButton_41101_account_path_dir.clicked.connect(lambda: browse(self,
+                                                                              self.pushButton_41101_account_path_dir,
+                                                                              self.lineEdit_41101_account_path_dir,
+                                                                              self.default_path))
+        self.pushButton_41101_form27_path_dir.clicked.connect(lambda:
+                                                              browse(self, self.pushButton_41101_form27_path_dir,
+                                                                     self.lineEdit_41101_form27_path_dir,
+                                                                     self.default_path))
+        self.pushButton_41101_start_path_print_dir.clicked.connect(lambda:
+                                                                   browse(self,
+                                                                          self.pushButton_41101_start_path_print_dir,
+                                                                          self.lineEdit_41101_start_path_print_dir,
+                                                                          self.default_path))
+        self.pushButton_41101_file_form27_print.clicked.connect(lambda:
+                                                                browse(self, self.pushButton_41101_file_form27_print,
+                                                                       self.lineEdit_41101_path_file_form27_print,
+                                                                       self.default_path))
+        self.pushButton_41101_file_account_numbers.clicked.connect(lambda:
+                                                                   browse(self,
+                                                                          self.pushButton_41101_file_account_numbers,
+                                                                          self.lineEdit_41101_file_account_numbers_path,
+                                                                          self.default_path))
+        self.pushButton_41101_add_account_numbers.clicked.connect(lambda:
+                                                                  browse(self,
+                                                                         self.pushButton_41101_add_account_numbers,
+                                                                         self.lineEdit_41101_add_account_numbers_path,
+                                                                         self.default_path))
         # Для выбора принтера по умолчанию
-        self.comboBox_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
-        self.comboBox_printer.currentTextChanged.connect(self.text_changed)
-        self.lineEdit_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
+        self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
+        self.comboBox_main_printer.currentTextChanged.connect(self.text_changed)
+        self.lineEdit_main_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
+        # Группа для кнопок принтера
+        self.button_gr = [self.radioButton_main_group4_last_duplex, self.radioButton_main_group4_duplex,
+                          self.radioButton_main_group4_one_side]
+        # Имена в файле
+        self.lines = {'insertMain-start_path_insert': ['Путь к исходным файлам',
+                                                       self.lineEdit_main_start_path_insert_dir],
+                      'insertMain-finish_path_insert': ['Путь к конечным файлам',
+                                                        self.lineEdit_main_finish_path_insert_dir],
+                      'insertMain-checkBox_file_num': ['Включить файл номеров', self.checkBox_main_file_num],
+                      'insertMain-file_num_path': ['Путь к файлу номеров', self.lineEdit_main_file_num_path],
+                      'insertMain-checkBox_signature': ['Включить подписи', self.checkBox_main_signature],
+                      'insertMain-path_signature_dir': ['Путь подписям', self.lineEdit_main_path_signature_dir],
+                      'insertMain-radioButton_group1': ['Ведомство при рег.',
+                                                        [self.radioButton_main_group1_FSB_df,
+                                                         self.radioButton_main_group1_FSTEK_df]],
+                      'insertMain-comboBox_classified': ['Гриф секретности', self.comboBox_main_classified,
+                                                         ['', 'ДСП', 'С', 'СС', 'ОВ']],
+                      'insertMain-num_scroll': ['Номер экземпляра', self.lineEdit_main_num_scroll],
+                      'insertMain-list_item': ['Пункт перечня', self.lineEdit_main_list_item],
+                      'insertMain-checkBox_add_list_item': ['Включить доп. пункт перечня',
+                                                            self.checkBox_main_add_list_item],
+                      'insertMain-add_list_item': ['Доп. пункт перечня', self.lineEdit_main_add_list_item],
+                      'insertMain-secret_number': ['Секретный №', self.lineEdit_main_secret_number],
+                      'insertMain-HDD_number': ['Номер НЖМД', self.lineEdit_main_HDD_number],
+                      'insertMain-telephone': ['Номер телефона', self.lineEdit_main_telephone],
+                      'insertMain-conclusion_executor': ['Исп. заключение', self.lineEdit_main_conclusion_executor],
+                      'insertMain-checkBox_conclusion_number': ['Включить доп номер заключения',
+                                                                self.checkBox_main_conclusion_number],
+                      'insertMain-conclusion_number': ['Доп номер заключения', self.lineEdit_main_conclusion_number],
+                      'insertMain-dateEdit_add_conclusion_date': ['Доп. дата заключения',
+                                                                  self.dateEdit_main_add_conclusion_date],
+                      'insertMain-protocol_executor': ['Исп. протокол', self.lineEdit_main_protocol_executor],
+                      'insertMain-prescription_executor': ['Исп. предписание',
+                                                           self.lineEdit_main_prescription_executor],
+                      'insertMain-acc_sheet_executor': ['Исп. сопровод', self.lineEdit_main_acc_sheet_executor],
+                      'insertMain-telephone_acc_sheet_executor': ['Тел. исп. сопровода',
+                                                                  self.lineEdit_main_telephone_acc_sheet_executor],
+                      'insertMain-add_telephone': ['Доб. номер', self.lineEdit_main_add_telephone],
+                      'insertMain-print_executor': ['Исп. печать', self.lineEdit_main_print_executor],
+                      'insertMain-dateEdit_exec_date': ['Дата', self.dateEdit_main_exec_date],
+                      'insertMain-inventory_executor': ['Исп. опись', self.lineEdit_main_inventory_executor],
+                      'insertMain-application_executor': ['Исп. приложение', self.lineEdit_main_application_executor],
+                      'insertMain-act_executor': ['Исп. акт', self.lineEdit_main_act_executor],
+                      'insertMain-statement_executor': ['Исп. утвержд.', self.lineEdit_main_statement_executor],
+                      'addInsertMain-groupBox_inventory_insert': ['Включить опись',
+                                                                  self.groupBox_main_inventory_insert],
+                      'addInsertMain-radioButton_group2': ['Выбрать кол-во описей',
+                                                           [self.radioButton_main_group2_40_num,
+                                                            self.radioButton_main_group2_all_doc]],
+                      'addInsertMain-account_position': ['Должность', self.lineEdit_main_account_position],
+                      'addInsertMain-account_executor': ['ФИО подпись', self.lineEdit_main_account_executor],
+                      'addInsertMain-account_path_folder': ['Путь к описи', self.lineEdit_main_account_path_dir],
+                      'addInsertMain-groupBox_form27_insert': ['Включить 27 форму', self.groupBox_main_form27_insert],
+                      'addInsertMain-form27_firm': ['Организация', self.lineEdit_main_form27_firm],
+                      'addInsertMain-form27_create_path': ['Путь к форме 27', self.lineEdit_main_form27_path_dir],
+                      'addInsertMain-groupBox_sp': ['Включить сортировку материалов', self.groupBox_main_sp],
+                      'addInsertMain-sp_path_dir': ['Путь к материалам СП', self.lineEdit_main_sp_path_dir],
+                      'addInsertMain-file_sp_path': ['Путь к файлу с номерами', self.lineEdit_main_file_sp_path],
+                      'addInsertMain-checkBox_name_gk': ['Включить имя ГК', self.checkBox_main_name_gk],
+                      'addInsertMain-name_gk': ['Имя ГК', self.lineEdit_main_name_gk],
+                      'addInsertMain-checkBox_conclusion_sp': ['Проверить заключение',
+                                                               self.checkBox_main_conclusion_sp],
+                      'addInsertMain-checkBox_protocol_sp': ['Проверить протокол', self.checkBox_main_protocol_sp],
+                      'addInsertMain-checkBox_prescription_sp': ['Проверить предписание',
+                                                                 self.checkBox_main_prescription_sp],
+                      'addInsertMain-checkBox_infocard_sp': ['Проверить инфокарты', self.checkBox_main_infocard_sp],
+                      'addInsertMain-groupBox_instance': ['Включить экземпляры', self.groupBox_main_instance],
+                      'addInsertMain-main_number_instance': ['Номера экземпляров', self.lineEdit_main_number_instance],
+                      'addInsertMain-checkBox_conclusion_instance': ['Включить заключения',
+                                                                     self.checkBox_main_conclusion_instance],
+                      'addInsertMain-checkBox_protocol_instance': ['Включить протоколы',
+                                                                   self.checkBox_main_protocol_instance],
+                      'addInsertMain-checkBox_prescription_instance': ['Включить предписания',
+                                                                       self.checkBox_main_prescription_instance],
+                      'printMain-radioButton_group3': ['Ведомство при печати',
+                                                       [self.radioButton_main_group3_FSB_print,
+                                                        self.radioButton_main_group3_FSTEK_print]],
+                      'printMain-checkBox_conclusion_print': ['Включить заключения',
+                                                              self.checkBox_main_conclusion_print],
+                      'printMain-checkBox_protocol_print': ['Включить протокол', self.checkBox_main_protocol_print],
+                      'printMain-checkBox_prescription_print': ['Включить предписание',
+                                                                self.checkBox_main_prescription_print],
+                      'printMain-start_path_print': ['Путь к файлам для печати',
+                                                     self.lineEdit_main_start_path_print_dir],
+                      'printMain-file_account_numbers_path': ['Путь к учетным номерам',
+                                                              self.lineEdit_main_file_account_numbers_path],
+                      'printMain-checkBox_add_account_numbers': ['Включить доп. номера',
+                                                                 self.checkBox_main_add_account_numbers],
+                      'printMain-add_account_numbers_path': ['Путь к доп. файлу уч. ном.',
+                                                             self.lineEdit_main_add_account_numbers_path_file],
+                      'printMain-checkBox_file_form27': ['Включить 27 форму', self.checkBox_main_file_form27],
+                      'printMain-path_file_form27_print': ['Путь к форме 27',
+                                                           self.lineEdit_main_path_file_form27_print],
+                      'printMain-radioButton_group4': ['Метод печати', [self.radioButton_main_group4_duplex,
+                                                                        self.radioButton_main_group4_last_duplex,
+                                                                        self.radioButton_main_group4_one_side]],
+                      'printMain-checkBox_print_order': ['Включить печать по порядку', self.checkBox_main_print_order],
+                      'insert41101-start_path_insert': ['Путь к исходным файлам',
+                                                        self.lineEdit_41101_start_path_insert_dir],
+                      'insert41101-finish_path_insert': ['Путь к конечным файлам',
+                                                         self.lineEdit_41101_finish_path_insert_dir],
+                      'insert41101-checkBox_file_num': ['Включить файл номеров', self.checkBox_41101_file_num],
+                      'insert41101-file_num_path': ['Путь к файлу номеров', self.lineEdit_41101_file_num_path],
+                      'insert41101-radioButton_group5': ['Ведомство при рег.',
+                                                         [self.radioButton_41101_group5_FSB_df,
+                                                          self.radioButton_41101_group5_FSTEK_df]],
+                      'insert41101-comboBox_classified': ['Гриф секретности', self.comboBox_41101_classified,
+                                                          ['', 'ДСП', 'С', 'СС', 'ОВ']],
+                      'insert41101-num_scroll': ['Номер экземпляра', self.lineEdit_41101_num_scroll],
+                      'insert41101-list_item': ['Пункт перечня', self.lineEdit_41101_list_item],
+                      'insert41101-checkBox_add_list_item': ['Включить доп. пункт перечня',
+                                                             self.checkBox_41101_add_list_item],
+                      'insert41101-add_list_item': ['Доп. пункт перечня', self.lineEdit_41101_add_list_item],
+                      'insert41101-secret_number': ['Секретный №', self.lineEdit_41101_secret_number],
+                      'insert41101-HDD_number': ['Номер НЖМД', self.lineEdit_41101_HDD_number],
+                      'insert41101-telephone': ['Номер телефона', self.lineEdit_41101_telephone],
+                      'insert41101-conclusion_executor': ['Исп. заключение', self.lineEdit_41101_conclusion_executor],
+                      'insert41101-checkBox_conclusion_number': ['Включить доп номер заключения',
+                                                                 self.checkBox_41101_conclusion_number],
+                      'insert41101-conclusion_number': ['Доп номер заключения', self.lineEdit_41101_conclusion_number],
+                      'insert41101-dateEdit_add_conclusion_date': ['Доп. дата заключения',
+                                                                   self.dateEdit_41101_add_conclusion_date],
+                      'insert41101-protocol_executor': ['Исп. протокол', self.lineEdit_41101_protocol_executor],
+                      'insert41101-prescription_executor': ['Исп. предписание',
+                                                            self.lineEdit_41101_prescription_executor],
+                      'insert41101-acc_sheet_executor': ['Исп. сопровод', self.lineEdit_41101_acc_sheet_executor],
+                      'insert41101-telephone_acc_sheet_executor': ['Тел. исп. сопровода',
+                                                                   self.lineEdit_main_telephone_acc_sheet_executor],
+                      'insert41101-add_telephone': ['Доб. номер', self.lineEdit_41101_add_telephone],
+                      'insert41101-print_executor': ['Исп. печать', self.lineEdit_41101_print_executor],
+                      'insert41101-dateEdit_exec_date': ['Дата', self.dateEdit_41101_exec_date],
+                      'insert41101-inventory_executor': ['Исп. опись', self.lineEdit_41101_inventory_executor],
+                      'insert41101-application_executor': ['Исп. приложение', self.lineEdit_41101_application_executor],
+                      'insert41101-act_executor': ['Исп. акт', self.lineEdit_41101_act_executor],
+                      'insert41101-statement_executor': ['Исп. утвержд.', self.lineEdit_41101_statement_executor],
+                      'addInsert41101-groupBox_inventory_insert': ['Включить опись',
+                                                                   self.groupBox_41101_inventory_insert],
+                      'addInsert41101-radioButton_group6': ['Выбрать кол-во описей',
+                                                            [self.radioButton_41101_group6_40_num,
+                                                             self.radioButton_41101_group6_all_doc]],
+                      'addInsert41101-account_position': ['Должность', self.lineEdit_41101_account_position],
+                      'addInsert41101-account_executor': ['ФИО подпись', self.lineEdit_41101_account_executor],
+                      'addInsert41101-account_path_folder': ['Путь к описи', self.lineEdit_41101_account_path_dir],
+                      'addInsert41101-groupBox_form27_insert': ['Включить 27 форму', self.groupBox_41101_form27_insert],
+                      'addInsert41101-form27_firm': ['Организация', self.lineEdit_41101_form27_firm],
+                      'addInsert41101-form27_create_path': ['Путь к форме 27', self.lineEdit_41101_form27_path_dir],
+                      'print41101-radioButton_group7': ['Ведомство при печати',
+                                                        [self.radioButton_41101_group7_FSB_print,
+                                                         self.radioButton_41101_group7_FSTEK_print]],
+                      'print41101-checkBox_conclusion_print': ['Включить заключения',
+                                                               self.checkBox_41101_conclusion_print],
+                      'print41101-checkBox_protocol_print': ['Включить протокол', self.checkBox_41101_protocol_print],
+                      'print41101-checkBox_prescription_print': ['Включить предписание',
+                                                                 self.checkBox_41101_prescription_print],
+                      'print41101-start_path_print': ['Путь к файлам для печати',
+                                                      self.lineEdit_41101_start_path_print_dir],
+                      'print41101-file_account_numbers_path': ['Путь к учетным номерам',
+                                                               self.lineEdit_41101_file_account_numbers_path],
+                      'print41101-checkBox_add_account_numbers': ['Включить доп. номера',
+                                                                  self.checkBox_41101_add_account_numbers],
+                      'print41101-add_account_numbers_path': ['Путь к доп. файлу уч. ном.',
+                                                              self.lineEdit_41101_add_account_numbers_path_file],
+                      'print41101-checkBox_file_form27': ['Включить 27 форму', self.checkBox_41101_file_form27],
+                      'print41101-path_file_form27_print': ['Путь к форме 27',
+                                                            self.lineEdit_41101_path_file_form27_print],
+                      'print41101-radioButton_group8': ['Метод печати', [self.radioButton_41101_group8_duplex,
+                                                                         self.radioButton_41101_group8_last_duplex,
+                                                                         self.radioButton_41101_group8_one_side]],
+                      }
+        # Кнопки запуска
+        self.pushButton_main_insert.clicked.connect(self.insert_main)
+        self.pushButton_41101_insert.clicked.connect(self.insert_41101)
+        self.pushButton_main_print.clicked.connect(self.print_main)
         # Кнопки в меню
-        self.action_default.triggered.connect(self.default_settings)
+        self.action_default.triggered.connect((lambda: default_settings(self, self.default_path, self.lines)))
         self.action_instance.triggered.connect(create_instance)
         self.action_about.triggered.connect(about)
         self.action_account_number.triggered.connect(account_number)
@@ -90,155 +367,17 @@ class MainWindow(QMainWindow, New_Main.Ui_MainWindow):  # Главное окн�
         self.action_instruction.triggered.connect(lambda: self.start_document('documents/Инструкция.docx'))
         self.action_registration.triggered.connect(lambda: self.start_document('documents/Номера для регистрации.xlsx'))
         self.action_sp.triggered.connect(lambda: self.start_document('documents/Номера СП.xlsx'))
-        # Группа для кнопок принтера
-        self.button_gr = [self.radioButton_group4_last_duplex, self.radioButton_group4_duplex,
-                          self.radioButton_group4_one_side]
-        # Если изменяем начальный номер
-        self.path_for_default = pathlib.Path.cwd()  # Путь для файла настроек
-        # Имена в файле
-        self.list = {'insert-path_folder_old': ['Путь к исходным файлам', self.lineEdit_path_folder_old_doc],
-                     'insert-path_folder_new': ['Путь к конечным файлам', self.lineEdit_path_folder_new_doc],
-                     'insert-checkBox_file_num': ['Включить файл номеров', self.checkBox_file_num],
-                     'insert-path_file_file_num': ['Путь к файлу номеров', self.lineEdit_path_file_file_num],
-                     'data-radioButton_group1': ['Ведомство при рег.', [self.radioButton_group1_FSB_df,
-                                                                        self.radioButton_group1_FSTEK_df]],
-                     'data-comboBox_classified': ['Гриф секретности', self.comboBox_classified,
-                                                  ['', 'ДСП', 'С', 'СС', 'ОВ']],
-                     'data-num_scroll': ['Номер экземпляра', self.lineEdit_num_scroll],
-                     'data-list_item': ['Пункт перечня', self.lineEdit_list_item],
-                     'data-checkBox_add_list_item': ['Включить доп. пункт перечня', self.checkBox_add_list_item],
-                     'data-add_list_item': ['Доп. пункт перечня', self.lineEdit_add_list_item],
-                     'data-number': ['Секретный №', self.lineEdit_number],
-                     'data-protocol': ['Протокол', self.lineEdit_protocol],
-                     'data-conclusion': ['Заключение', self.lineEdit_conclusion],
-                     'data-prescription': ['Предписание', self.lineEdit_prescription],
-                     'data-print_people': ['Печать', self.lineEdit_print],
-                     'data-dateEdit_date': ['Дата', self.dateEdit_date],
-                     'data-executor_acc_sheet': ['Сопровод', self.lineEdit_executor_acc_sheet],
-                     'data-act': ['Акт', self.lineEdit_act],
-                     'data-statement': ['Утверждение', self.lineEdit_statement],
-                     'data-checkBox_conclusion_number': ['Включить номер заключения', self.checkBox_conclusion_number],
-                     'data-conclusion_number': ['Номер заключения', self.lineEdit_conclusion_number],
-                     'data-dateEdit_conclusion_number': ['Доп. дата заключения', self.dateEdit_conclusion_number],
-                     'sp-groupBox_sp': ['Включить сортировку материалов', self.groupBox_sp],
-                     'sp-path_folder_sp': ['Путь к материалам СП', self.lineEdit_path_folder_sp],
-                     'sp-path_file_sp': ['Путь к файлу с номерами', self.lineEdit_path_file_sp],
-                     'sp-checkBox_name_gk': ['Включить имя ГК', self.checkBox_name_gk],
-                     'sp-lineEdit_name_gk': ['Имя ГК', self.lineEdit_name_gk],
-                     'sp-checkBox_conclusion_sp': ['Проверить заключение', self.checkBox_conclusion_sp],
-                     'sp-checkBox_protocol_sp': ['Проверить протокол', self.checkBox_protocol_sp],
-                     'sp-checkBox_preciption_sp': ['Проверить предписание', self.checkBox_preciption_sp],
-                     'sp-checkBox_infocard_sp': ['Проверить инфокарты', self.checkBox_infocard_sp],
-                     'account-groupBox_inventory_insert': ['Включить опись', self.groupBox_inventory_insert],
-                     'account-radioButton_group2': ['Выбрать кол-во описей', [self.radioButton_group2_40_num,
-                                                                              self.radioButton_group2_all_doc]],
-                     'account-account_post': ['Должность', self.lineEdit_account_post],
-                     'account-account_signature': ['ФИО подпись', self.lineEdit_account_signature],
-                     'account-path_folder_account': ['Путь к описи', self.lineEdit_path_folder_account],
-                     'form27-groupBox_form27_insert': ['Включить 27 форму', self.groupBox_form27_insert],
-                     'form27-firm': ['Организация', self.lineEdit_firm],
-                     'form27-path_folder_form_27_create': ['Путь к форме 27', self.lineEdit_path_folder_form_27_create],
-                     'instance-groupBox_instance': ['Включить экземпляры', self.groupBox_instance],
-                     'instance-checkBox_conclusion_instance': ['Включить заключения',
-                                                               self.checkBox_conclusion_instance],
-                     'instance-checkBox_protocol_instance': ['Включить протоколы', self.checkBox_protocol_instance],
-                     'instance-checkBox_preciption_instance': ['Включить предписания',
-                                                               self.checkBox_preciption_instance],
-                     'print-radioButton_group3': ['Ведомство при печати', [self.radioButton_group3_FSB_print,
-                                                  self.radioButton_group3_FSTEK_print]],
-                     'print-checkBox_conclusion_print': ['Включить заключения', self.checkBox_conclusion_print],
-                     'print-checkBox_protocol_print': ['Включить протокол', self.checkBox_protocol_print],
-                     'print-checkBox_preciption_print': ['Включить предписание', self.checkBox_preciption_print],
-                     'print-path_folder_old_print': ['Путь к файлам для печати', self.lineEdit_path_folder_old_print],
-                     'print-path_file_account_numbers': ['Путь к учетным номерам',
-                                                         self.lineEdit_path_file_account_numbers],
-                     'print-checkBox_file_form_27': ['Включить 27 форму', self.checkBox_file_form_27],
-                     'print-path_file_form_27': ['Путь к форме 27', self.lineEdit_path_file_form_27_print],
-                     'print-checkBox_file_add_account_numbers': ['Включить доп. номера',
-                                                                 self.checkBox_file_add_account_numbers],
-                     'print-path_file_add_account_num': ['Путь к доп. файлу уч. ном.',
-                                                         self.lineEdit_path_file_add_account_numbers],
-                     'print-radioButton_group4': ['Метод печати', [self.radioButton_group4_duplex,
-                                                                   self.radioButton_group4_last_duplex,
-                                                                   self.radioButton_group4_one_side]],
-                     'print-checkBox_print_order': ['Включить печать по порядку', self.checkBox_print_order],
-                     'data-HDD_number': ['Номер НЖМД']}
-        # Грузим значения по умолчанию
-        try:
-            with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), "r", encoding='utf-8-sig') as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            with open(pathlib.Path(pathlib.Path.cwd(), 'Настройки.txt'), "w", encoding='utf-8-sig') as f:
-                json.dump({}, f, ensure_ascii=False, sort_keys=True, indent=4)
-                data = {}
-        self.hdd_number = None
-        self.default_date(data)
-        qt_rectangle = self.frameGeometry()
-        center_point = QDesktopWidget().availableGeometry().center()
-        qt_rectangle.moveCenter(center_point)
-        self.move(qt_rectangle.topLeft())
-        # self.move(qt_rectangle.center())
+        self.default_data = rewrite_settings(self.default_path)
+        self.data = self.default_data["widget_settings"]
+        default_data(self.data, self.lines)
+        # Для каждого потока свой лог. Потом сливаем в один и удаляем
+        self.logging_dict = {}
+        # Для сдвига окна при появлении
+        self.thread_dict = {self.mode_description[i]['mode_name']: {} for i in self.mode_description}
         self.thread = None
-        self.thread_dict = {'format_doc': {}, 'print_doc': {}}
-
-    def default_date(self, incoming_data):
-        for el in self.list:
-            groupbox_sp = False
-            if el in incoming_data:
-                if el == 'data-classified':  # Если элемент гриф секретности
-                    index = 0
-                    if incoming_data[el] is None:
-                        self.comboBox_classified.setCurrentIndex(0)
-                        continue
-                    elif incoming_data[el] == 'ДСП':
-                        index = 1
-                    text_element = ['CC', 'СС', 'C', 'С', 'OB', 'ОВ']  # Названия, которые могут быть (англ. и рус.)
-                    for element in text_element:  # Для элементов в списке
-                        if incoming_data[el] == element:  # Если элемент совпадает, то смотрим что бы он был нечетным
-                            if (text_element.index(element) - 1) / 2 < 0 or (text_element.index(element) - 1) % 2 != 0:
-                                text = text_element.index(element) + 1  # Выбираем следующий
-                                index = self.comboBox_classified.findText(text_element[text])  # Запоминаем индекс
-                            else:
-                                text = text_element.index(element)
-                                index = self.comboBox_classified.findText(text_element[text])
-                            break  # Прерываем цикл
-                    self.comboBox_classified.setCurrentIndex(index)  # Помещаем соответствующий элемент
-                elif el == 'data-HDD_number':
-                    self.hdd_number = incoming_data[el]
-                elif 'checkBox' in el or 'groupBox' in el:
-                    self.list[el][1].setChecked(True) if incoming_data[el] \
-                        else self.list[el][1].setChecked(False)
-                    groupbox_sp = True if el == 'sp-groupBox_sp' and incoming_data[el] is True else False
-                elif 'radioButton' in el:
-                    for radio, button in zip(incoming_data[el], self.list[el][1]):
-                        if radio:
-                            button.setChecked(True)
-                        else:
-                            button.setAutoExclusive(False)
-                            button.setChecked(False)
-                        button.setAutoExclusive(True)
-                elif 'comboBox' in el:
-                    for index, combo in enumerate(incoming_data[el]):
-                        if combo:
-                            self.list[el][1].setCurrentIndex(index)
-                elif 'dateEdit' in el:
-                    if incoming_data[el]:
-                        self.list[el][1].setDate(QDate.fromString(incoming_data[el], 'dd.MM.yyyy'))
-                    else:
-                        self.list[el][1].setDate(QDate.currentDate())
-                else:  # Если любой другой элемент
-                    if el == 'sp-lineEdit_name_gk' and groupbox_sp:
-                        self.groupBox_sp.setChecked(False)
-                        self.groupBox_sp.setChecked(True)
-                    elif el == 'sp-lineEdit_name_gk':
-                        self.groupBox_sp.setChecked(True)
-                        self.groupBox_sp.setChecked(False)
-                    self.list[el][1].setText(incoming_data[el])  # Помещаем значение
-
-    def default_settings(self):  # Запускаем окно с настройками по умолчанию.
-        self.close()
-        window_add = DefaultWindow(self, self.path_for_default, self.list)
-        window_add.show()
+        self.default_dict = {'mode_description': self.mode_description, 'logging_dict': self.logging_dict,
+                             'thread_dict': self.thread_dict, 'default_path': self.default_path,
+                             'all_doc': 0, 'now_doc': 0}
 
     def start_document(self, document):  # Запускаем окно с настройками по умолчанию.
         os.startfile(pathlib.Path(self.path_for_default, document))
@@ -247,129 +386,158 @@ class MainWindow(QMainWindow, New_Main.Ui_MainWindow):  # Главное окн�
         window_add = SortingFile(self, logging)
         window_add.exec_()
 
-    def on_message_changed(self, title, description):  # Для вывода сообщений
-        if title == 'УПС!':  # Ошибка
-            QMessageBox.critical(self, title, description)
-        elif title == 'ВНИМАНИЕ!':  # Предупреждение
-            QMessageBox.warning(self, title, description)
-        elif title == 'Вопрос':
-            ans = QMessageBox.question(self, title, description,
-                                       QMessageBox.Cancel | QMessageBox.Ignore | QMessageBox.Retry, QMessageBox.Retry)
-            if ans == QMessageBox.Retry:
-                self.thread.q.put(2)
-            elif ans == QMessageBox.Ignore:
-                self.thread.q.put(3)
-            else:
-                self.thread.q.put(4)
-
-    def browse(self, line_edit):  # Для кнопки открыть
-        if 'folder' in self.sender().objectName():
-            directory = QFileDialog.getExistingDirectory(self, "Открыть папку", QDir.currentPath())
-        else:
-            directory = QFileDialog.getOpenFileName(self, "Открыть файл", QDir.currentPath())
-        if directory and isinstance(directory, tuple):
-            if directory[0]:
-                line_edit.setText(directory[0])
-        elif directory and isinstance(directory, str):
-            line_edit.setText(directory)
-
     def text_changed(self):  # Если изменился выбор принтера
         self.lineEdit_printer.setText(self.comboBox_printer.currentText())
 
-    def insert_head_foot(self):
-        # Проверка введенных данных перед запуском потока
-        try:
-            logging.info('----------------Запускаем insert_head_foot----------------')
-            logging.info('Проверка данных')
-            output = doc_format(self.lineEdit_path_folder_old_doc, self.lineEdit_path_folder_new_doc,
-                                self.lineEdit_path_file_file_num,
-                                self.radioButton_group1_FSB_df, self.radioButton_group1_FSTEK_df,
-                                self.comboBox_classified, self.lineEdit_num_scroll,
-                                self.lineEdit_list_item, self.lineEdit_number, self.checkBox_add_list_item,
-                                self.lineEdit_add_list_item, self.lineEdit_protocol,
-                                self.lineEdit_conclusion, self.lineEdit_prescription, self.lineEdit_print,
-                                self.lineEdit_executor_acc_sheet, self.label_protocol, self.label_conclusion,
-                                self.label_prescription, self.label_print, self.label_executor_acc_sheet,
-                                self.dateEdit_date, self.lineEdit_act, self.lineEdit_statement,
-                                self.checkBox_conclusion_number, self.lineEdit_conclusion_number,
-                                self.dateEdit_conclusion_number,
-                                self.groupBox_inventory_insert, self.radioButton_group2_40_num,
-                                self.radioButton_group2_all_doc, self.lineEdit_account_post,
-                                self.lineEdit_account_signature, self.lineEdit_path_folder_account, self.hdd_number,
-                                self.groupBox_form27_insert, self.lineEdit_firm,
-                                self.lineEdit_path_folder_form_27_create,
-                                self.groupBox_instance, self.lineEdit_number_instance,
-                                self.checkBox_conclusion_instance,
-                                self.checkBox_protocol_instance, self.checkBox_preciption_instance,
-                                self.action_package,
-                                self.action_report_MO, self.groupBox_sp, self.lineEdit_path_folder_sp,
-                                self.checkBox_name_gk, self.lineEdit_name_gk, self.checkBox_conclusion_sp,
-                                self.checkBox_protocol_sp, self.checkBox_preciption_sp, self.checkBox_infocard_sp,
-                                self.lineEdit_path_file_sp, self.checkBox_file_num)
-            if isinstance(output, list):
-                logging.info('Обнаружены ошибки данных')
-                self.on_message_changed(output[0], output[1])
-                return
-            # Если всё прошло запускаем поток
-            logging.info('Запуск на выполнение')
-            output['move'], output['default_path'] = len(self.thread_dict['format_doc']), self.path_for_default
-            output['queue'], output['logging'] = self.queue, logging
-            logging.info('Входные данные:')
-            log_data = {file: output[file] if file not in ['firm', 'number', 'list_item'] else 'замена'
-                        for file in output}
-            logging.info(log_data)
-            self.thread = FormatDoc(output)
-            # self.thread.progress.connect(self.progressBar.setValue)
-            self.thread.status.connect(self.show_mess)
-            # self.thread.messageChanged.connect(self.on_message_changed)
-            self.thread.finished.connect(self.stop_thread)
-            self.thread.start()
-        except BaseException as exception:
-            logging.error('Ошибка insert_head_foot')
-            logging.error(exception)
-            logging.error(traceback.format_exc())
-            self.on_message_changed('УПС!', 'Неизвестная ошибка при проверке данных для вставки колонтитулов')
+    def insert_main(self):
+        queue_main_insert = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['insert_main']['mode_name']
+        name_dir = self.lineEdit_main_start_path_insert_dir.text().strip()
+        out_dict = {
+            'package': True if self.action_package.isChecked() else False,
+            'action_mo': True if self.action_report_MO.isChecked() else False,
+            'start_path': self.lineEdit_main_start_path_insert_dir.text().strip(),
+            'finish_path': self.lineEdit_main_finish_path_insert_dir.text().strip(),
+            'checkBox_file_num': True if self.checkBox_main_file_num.isChecked() else False,
+            'file_num': self.lineEdit_main_file_num_path.text().strip(),
+            'checkBox_signature': True if self.checkBox_main_signature.isChecked() else False,
+            'path_signature': self.lineEdit_main_path_signature_dir.text().strip(),
+            'radioButton_FSB': self.radioButton_main_group1_FSB_df.isChecked(),
+            'radioButton_FSTEK': self.radioButton_main_group1_FSTEK_df.isChecked(),
+            'classified': self.comboBox_main_classified.currentText().strip(),
+            'num_scroll': self.lineEdit_main_num_scroll.text().strip(),
+            'list_item': self.lineEdit_main_list_item.text().strip(),
+            'checkBox_add_list_item': self.checkBox_main_add_list_item.isChecked(),
+            'add_list_item': self.lineEdit_main_add_list_item.text().strip(),
+            'number': self.lineEdit_main_secret_number.text().strip(),
+            'hdd_number': self.lineEdit_main_HDD_number.text().strip(),
+            'telephone': self.lineEdit_main_telephone.text().strip(),
+            'conclusion': self.lineEdit_main_conclusion_executor.text().strip(),
+            'checkBox_conclusion_number': self.checkBox_main_conclusion_number.isChecked(),
+            'conclusion_number': self.lineEdit_main_conclusion_number.text().strip(),
+            'conclusion_number_date': self.dateEdit_main_add_conclusion_date.date().toString('dd.MM.yyyy'),
+            'protocol': self.lineEdit_main_protocol_executor.text().strip(),
+            'prescription': self.lineEdit_main_prescription_executor.text().strip(),
+            'executor_acc_sheet': self.lineEdit_main_acc_sheet_executor.text().strip(),
+            'telephone_acc_sheet': self.lineEdit_main_telephone_acc_sheet_executor.text().strip(),
+            'add_telephone': self.lineEdit_main_add_telephone.text().strip(),
+            'print_executor': self.lineEdit_main_print_executor.text().strip(),
+            'date': self.dateEdit_main_exec_date.date().toString('dd.MM.yyyy'),
+            'inventory_executor': self.lineEdit_main_inventory_executor.text().strip(),
+            'application_executor': self.lineEdit_main_application_executor.text().strip(),
+            'act_executor': self.lineEdit_main_act_executor.text().strip(),
+            'statement_executor': self.lineEdit_main_statement_executor.text().strip(),
+            'inventory_insert': self.groupBox_main_inventory_insert.isChecked(),
+            'radioButton_40_num': self.radioButton_main_group2_40_num.isChecked(),
+            'radioButton_all_doc': self.radioButton_main_group2_all_doc.isChecked(),
+            'flag_inventory': False,
+            'account_position': self.lineEdit_main_account_position.text().strip(),
+            'account_executor': self.lineEdit_main_account_executor.text().strip(),
+            'account_path': self.lineEdit_main_account_path_dir.text().strip(),
+            'form27_insert': self.groupBox_main_form27_insert.isChecked(),
+            'form27_firm': self.lineEdit_main_form27_firm.text().strip(),
+            'form27_path': self.lineEdit_main_form27_path_dir.text().strip(),
+            'main_sp': self.groupBox_main_sp.isChecked(),
+            'sp_path_dir': self.lineEdit_main_sp_path_dir.text().strip(),
+            'sp_path_file': self.lineEdit_main_file_sp_path.text().strip(),
+            'checkBox_gk': self.checkBox_main_name_gk.isChecked(),
+            'name_gk': self.lineEdit_main_name_gk.text().strip(),
+            'conclusion_sp': self.checkBox_main_conclusion_sp.isChecked(),
+            'protocol_sp': self.checkBox_main_protocol_sp.isChecked(),
+            'prescription_sp': self.checkBox_main_prescription_sp.isChecked(),
+            'infocard_sp': self.checkBox_main_infocard_sp.isChecked(),
+            'check_sp': [],
+            'main_instance': self.groupBox_main_instance.isChecked(),
+            'number_instance': self.lineEdit_main_number_instance.text().strip(),
+            'conclusion_instance': self.checkBox_main_conclusion_instance.isChecked(),
+            'protocol_instance': self.checkBox_main_protocol_instance.isChecked(),
+            'prescription_instance': self.checkBox_main_prescription_instance.isChecked(),
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_main_insert, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': format_doc}
+        start_thread(data, self.logging_dict, self.thread_dict, self, doc_format, StartThreading)
 
-    def printing(self):
-        # Проверка введенных данных перед запуском потока
-        try:
-            logging.info('----------------Запускаем printing----------------')
-            logging.info('Проверка данных')
-            output = doc_print(self.radioButton_group3_FSB_print, self.radioButton_group3_FSTEK_print,
-                               self.checkBox_conclusion_print,
-                               self.checkBox_protocol_print, self.checkBox_preciption_print,
-                               self.lineEdit_path_folder_old_print,
-                               self.lineEdit_path_file_account_numbers, self.checkBox_file_add_account_numbers,
-                               self.lineEdit_path_file_add_account_numbers, self.checkBox_file_form_27,
-                               self.lineEdit_path_file_form_27_print,
-                               self.button_gr, self.lineEdit_printer, self.checkBox_print_order, self.path_for_default,
-                               self.action_package)
-            if isinstance(output, list):
-                logging.info('Обнаружены ошибки данных')
-                self.on_message_changed(output[0], output[1])
-                return
-            # Если всё прошло запускаем поток
-            logging.info('Запуск на выполнение')
-            output['logging'] = logging
-            logging.info('Входные данные:')
-            logging.info(output)
-            self.thread = PrintDoc(output)
-            # self.thread.progress.connect(self.progressBar.setValue)
-            self.thread.status.connect(self.show_mess)
-            self.thread.messageChanged.connect(self.on_message_changed)
-            self.thread.start()
-            self.thread.finished.connect(self.stop_thread)
-        except BaseException as exception:
-            logging.error('Ошибка printing')
-            logging.error(exception)
-            logging.error(traceback.format_exc())
-            self.on_message_changed('УПС!', 'Неизвестная ошибка при проверке данных для печати')
+    def print_main(self):
+        queue_main_print = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['print_main']['mode_name']
+        name_dir = self.lineEdit_main_start_path_print_dir.text().strip()
+        out_dict = {
+            'package': True if self.action_package.isChecked() else False,
+            'start_path': self.lineEdit_main_start_path_print_dir.text().strip(),
+            'path_account_num': self.lineEdit_main_file_account_numbers_path.text().strip(),
+            'check_box_add_account_num': True if self.checkBox_main_add_account_numbers.isChecked() else False,
+            'add_path_account_num': self.lineEdit_main_add_account_numbers_path_file.text().strip(),
+            'name_printer': self.lineEdit_main_printer.text().strip(),
+            'check_box_from_27': True if self.checkBox_main_file_form27.isChecked() else False,
+            'path_form_27': self.lineEdit_main_path_file_form27_print.text().strip(),
+            'print_order': True if self.checkBox_main_print_order.isChecked() else False,
+            'fsb': True if self.radioButton_main_group3_FSB_print.isChecked() else False,
+            'fstek': True if self.radioButton_main_group3_FSB_print.isChecked() else False,
+            'service': '',
+            'conclusion': True if self.checkBox_main_conclusion_print.isChecked() else False,
+            'protocol': True if self.checkBox_main_protocol_print.isChecked() else False,
+            'prescription': True if self.checkBox_main_prescription_print.isChecked() else False,
+            'duplex': True if self.radioButton_main_group4_duplex.isChecked() else False,
+            'last_duplex': True if self.radioButton_main_group4_last_duplex.isChecked() else False,
+            'one_side': True if self.radioButton_main_group4_one_side.isChecked() else False,
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_main_print, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': print_docs}
+        start_thread(data, self.logging_dict, self.thread_dict, self, doc_print, StartThreading)
 
-    def stop_thread(self):  # Завершение потока
-        os.chdir(self.path_for_default)
-
-    def show_mess(self, value):  # Вывод значения в статус бар
-        self.statusBar().showMessage(value)
+    def insert_41101(self):
+        queue_41101_insert = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['insert_41101']['mode_name']
+        name_dir = self.lineEdit_main_start_path_insert_dir.text().strip()
+        out_dict = {
+            'package': True if self.action_package.isChecked() else False,
+            'action_mo': True if self.action_report_MO.isChecked() else False,
+            'start_path': self.lineEdit_41101_start_path_insert_dir.text().strip(),
+            'finish_path': self.lineEdit_41101_finish_path_insert_dir.text().strip(),
+            'checkBox_file_num': True if self.checkBox_41101_file_num.isChecked() else False,
+            'file_num': self.lineEdit_41101_file_num_path.text().strip(),
+            'radioButton_FSB': self.radioButton_41101_group5_FSB_df.isChecked(),
+            'radioButton_FSTEK': self.radioButton_41101_group5_FSTEK_df.isChecked(),
+            'classified': self.comboBox_41101_classified.currentText().strip(),
+            'num_scroll': self.lineEdit_41101_num_scroll.text().strip(),
+            'list_item': self.lineEdit_41101_list_item.text().strip(),
+            'checkBox_add_list_item': self.checkBox_41101_add_list_item.isChecked(),
+            'add_list_item': self.lineEdit_41101_add_list_item.text().strip(),
+            'number': self.lineEdit_41101_secret_number.text().strip(),
+            'hdd_number': self.lineEdit_41101_HDD_number.text().strip(),
+            'telephone': self.lineEdit_41101_telephone.text().strip(),
+            'conclusion': self.lineEdit_41101_conclusion_executor.text().strip(),
+            'checkBox_conclusion_number': self.checkBox_41101_conclusion_number.isChecked(),
+            'conclusion_number': self.lineEdit_41101_conclusion_number.text().strip(),
+            'conclusion_number_date': self.dateEdit_41101_add_conclusion_date.date().toString('dd.MM.yyyy'),
+            'protocol': self.lineEdit_41101_protocol_executor.text().strip(),
+            'prescription': self.lineEdit_41101_prescription_executor.text().strip(),
+            'executor_acc_sheet': self.lineEdit_41101_acc_sheet_executor.text().strip(),
+            'telephone_acc_sheet': self.lineEdit_41101_telephone_acc_sheet_executor.text().strip(),
+            'add_telephone': self.lineEdit_41101_add_telephone.text().strip(),
+            'print_executor': self.lineEdit_41101_print_executor.text().strip(),
+            'date': self.dateEdit_41101_exec_date.date().toString('dd.MM.yyyy'),
+            'inventory_executor': self.lineEdit_41101_inventory_executor.text().strip(),
+            'application_executor': self.lineEdit_41101_application_executor.text().strip(),
+            'act_executor': self.lineEdit_41101_act_executor.text().strip(),
+            'statement_executor': self.lineEdit_41101_statement_executor.text().strip(),
+            'inventory_insert': self.groupBox_41101_inventory_insert.isChecked(),
+            'radioButton_40_num': self.radioButton_41101_group6_40_num.isChecked(),
+            'radioButton_all_doc': self.radioButton_41101_group6_all_doc.isChecked(),
+            'flag_inventory': False,
+            'account_position': self.lineEdit_41101_account_position.text().strip(),
+            'account_executor': self.lineEdit_41101_account_executor.text().strip(),
+            'account_path': self.lineEdit_41101_account_path_dir.text().strip(),
+            'form27_insert': self.groupBox_41101_form27_insert.isChecked(),
+            'form27_firm': self.lineEdit_41101_form27_firm.text().strip(),
+            'form27_path': self.lineEdit_41101_form27_path_dir.text().strip(),
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_41101_insert, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': format_doc}
+        start_thread(data, self.logging_dict, self.thread_dict, self, doc_format, StartThreading)
 
 
 if __name__ == '__main__':
