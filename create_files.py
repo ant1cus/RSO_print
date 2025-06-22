@@ -195,7 +195,8 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 font.name = 'TimesNewRoman'
                 font.size = Pt(12)
                 # сюда дописать все поля, подумать с надписью для описей - поместить в текст, там свободно
-                cell_write(document.styles['Normal'], [str(index + 1), *element.account_list_text.split('!')], table, index + 1)
+                cell_write(document.styles['Normal'],
+                           [str(index + 1), *element.account_list_text.split('!')], table, index + 1)
 
             # Текст внизу таблицы
             p = document.add_paragraph()
@@ -289,6 +290,9 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                     if pattern.findall(paragraph.text):
                         for name in find_name:
                             paragraph.text = re.sub(name, '\t', paragraph.text)
+                            for run in paragraph.runs:
+                                run.font.size = Pt(12 if re.findall('заключение', str(data.finish_path), re.I) else pt_num)
+                                run.font.name = 'Times New Roman'
                 document.save(data.finish_path)  # Сохраняем
                 word2pdf(str(data.finish_path), str(pdf_path))
                 doc = fitz.open(str(pdf_path))
@@ -296,7 +300,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 last_page = doc.load_page(len(doc) - 2)
                 for inst in text_instances:
                     for i in text_instances[inst]:
-                        rect = fitz.Rect(i.x0 - 25, i.y0 - 25, i.x1 + 25, i.y1 + 25)
+                        rect = fitz.Rect(i.x0 - 45, i.y0 - 45, i.x1 + 45, i.y1 + 45)
                         page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                 for inst in last_text_instances:
                     for i in last_text_instances[inst]:

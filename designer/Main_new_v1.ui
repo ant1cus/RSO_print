@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1342</width>
-    <height>1058</height>
+    <width>1263</width>
+    <height>995</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +17,11 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="font">
+       <font>
+        <pointsize>9</pointsize>
+       </font>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -25,38 +30,538 @@
         <string>Основная программа</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_17">
-        <item row="9" column="0" colspan="2">
-         <widget class="QFrame" name="frame_7">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+        <item row="8" column="1">
+         <widget class="QGroupBox" name="groupBox_main_printer">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
           </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
+          <property name="title">
+           <string>Принтер и печать</string>
           </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
-          <layout class="QGridLayout" name="gridLayout_8">
-           <item row="0" column="0">
-            <widget class="QPushButton" name="pushButton_main_print">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::LeftToRight</enum>
-             </property>
-             <property name="autoFillBackground">
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="1" column="0">
+            <widget class="QLineEdit" name="lineEdit_main_printer">
+             <property name="enabled">
               <bool>false</bool>
              </property>
-             <property name="text">
-              <string>Печать файлов</string>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
              </property>
             </widget>
+           </item>
+           <item row="2" column="0" colspan="2">
+            <widget class="QFrame" name="frame_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="0" column="0">
+               <widget class="QRadioButton" name="radioButton_main_group4_last_duplex">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Двухсторонняя последняя</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="4">
+               <widget class="QRadioButton" name="radioButton_main_group4_one_side">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Односторонняя</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <spacer name="horizontalSpacer_6">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="2">
+               <widget class="QRadioButton" name="radioButton_main_group4_duplex">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Двухсторонняя</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="3">
+               <spacer name="horizontalSpacer_7">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_main_available_printer">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Доступные принтеры:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QCheckBox" name="checkBox_main_print_order">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Печатать документы по порядку (Закл. 1, Прот. 1, Пред. 1, Закл. 2, Прот. 2, Пред. 2, и т.д. ...)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="comboBox_main_printer">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_main_selected_printer">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Выбранный принтер:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="6" column="1">
+         <widget class="QGroupBox" name="groupBox_main_instance">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="title">
+           <string>Экземпляры документов</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_number_instance">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_number_instance">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Номера экземляров</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QCheckBox" name="checkBox_main_conclusion_instance">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Заключение</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_main_protocol_instance">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Протокол</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_main_prescription_instance">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Предписание</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="2" column="1" rowspan="4">
+         <widget class="QGroupBox" name="groupBox_main_sp">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="title">
+           <string>Сортировка материалов</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_16">
+           <item row="0" column="2">
+            <widget class="QPushButton" name="pushButton_main_folder_sp_dir">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="checkBox_main_name_gk">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Имя ГК (если нет СП)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_main_file_sp_path">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Файл с номерами</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_sp_path_dir">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_file_sp_path">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_main_sp_path">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Каталог с материалами</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="2">
+            <widget class="QLineEdit" name="lineEdit_main_name_gk">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="pushButton_main_file_sp">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="3">
+            <widget class="QLabel" name="label_main_document_sp">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Тип проверяемых документов</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="3">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QCheckBox" name="checkBox_main_conclusion_sp">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Заключение</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_main_protocol_sp">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Протокол</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_main_prescription_sp">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Предписание</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBox_main_infocard_sp">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Инфокарта</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -65,7 +570,7 @@
          <widget class="QGroupBox" name="groupBox_main_form27_insert">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -87,7 +592,7 @@
             <widget class="QLineEdit" name="lineEdit_main_form27_firm">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -104,7 +609,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -118,7 +623,7 @@
             <widget class="QLineEdit" name="lineEdit_main_form27_path_dir">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -135,7 +640,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -155,7 +660,254 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="groupBox_main_catalog_insert">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="title">
+           <string>Рабочие каталоги для вставки колонтитулов</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_15">
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_start_path_insert_dir">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QPushButton" name="pushButton_main_finish_path_insert_dir">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_main_start_path_insert">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Исходные файлы</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="checkBox_main_file_num">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>Файл номеров</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QPushButton" name="pushButton_main_file_num">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_finish_path_insert_dir">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="pushButton_main_start_path_insert_dir">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_main_finish_path_insert">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Конечная папка</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_file_num_path">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="checkBox_main_signature">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>Вставить подпись</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_path_signature_dir">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="pushButton_main_path_signature_dir">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -172,7 +924,7 @@
          <widget class="QGroupBox" name="groupBox_main_inventory_insert">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -200,7 +952,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -223,7 +975,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -246,7 +998,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -269,7 +1021,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -286,7 +1038,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -304,6 +1056,13 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
@@ -313,6 +1072,13 @@
              <layout class="QGridLayout" name="gridLayout_14">
               <item row="0" column="4">
                <spacer name="horizontalSpacer_2">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -326,6 +1092,13 @@
               </item>
               <item row="0" column="0">
                <spacer name="horizontalSpacer">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -347,7 +1120,7 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -367,7 +1140,7 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -379,6 +1152,13 @@
               </item>
               <item row="0" column="2">
                <spacer name="horizontalSpacer_4">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -403,7 +1183,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -420,962 +1200,12 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
             </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QGroupBox" name="groupBox_main_catalog_print">
-          <property name="font">
-           <font>
-            <pointsize>14</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="title">
-           <string>Рабочие каталоги для печати</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_11">
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_main_file_account_number">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Учетные номера</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QPushButton" name="pushButton_main_file_account_numbers">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_start_path_print_dir">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" colspan="3">
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
-             <item>
-              <widget class="QCheckBox" name="checkBox_main_conclusion_print">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Заключение</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBox_main_protocol_print">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Протокол</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBox_main_prescription_print">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Предписание</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item row="0" column="0" colspan="3">
-            <widget class="QFrame" name="frame_12">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_13">
-              <item row="0" column="3">
-               <widget class="QRadioButton" name="radioButton_main_group3_FSTEK_print">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>ФСТЭК</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="4">
-               <spacer name="horizontalSpacer_16">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="0" column="0">
-               <spacer name="horizontalSpacer_15">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="0" column="1">
-               <widget class="QRadioButton" name="radioButton_main_group3_FSB_print">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>ФСБ</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <spacer name="horizontalSpacer_5">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_path_file_form27_print">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_file_account_numbers_path">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_main_start_path_print">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Документы для печати</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QPushButton" name="pushButton_main_start_path_print_dir">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="2">
-            <widget class="QPushButton" name="pushButton_main_file_form27_print">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QCheckBox" name="checkBox_main_file_form27">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>27 форма</string>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-             <property name="tristate">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QCheckBox" name="checkBox_main_add_account_numbers">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>Доп файл номеров</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_add_account_numbers_path_file">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="2">
-            <widget class="QPushButton" name="pushButton_main_add_account_numbers">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QGroupBox" name="groupBox_main_catalog_insert">
-          <property name="font">
-           <font>
-            <pointsize>14</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="title">
-           <string>Рабочие каталоги для вставки колонтитулов</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_15">
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_start_path_insert_dir">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="pushButton_main_finish_path_insert_dir">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_main_start_path_insert">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Исходные файлы</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QCheckBox" name="checkBox_main_file_num">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>Файл номеров</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QPushButton" name="pushButton_main_file_num">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_finish_path_insert_dir">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_main_start_path_insert_dir">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_main_finish_path_insert">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Конечная папка</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_file_num_path">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QCheckBox" name="checkBox_main_signature">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::RightToLeft</enum>
-             </property>
-             <property name="text">
-              <string>Вставить подпись</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_path_signature_dir">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QPushButton" name="pushButton_main_path_signature_dir">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="7" column="0" colspan="2">
-         <widget class="QFrame" name="frame_8">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_9">
-           <item row="2" column="0">
-            <widget class="QPushButton" name="pushButton_main_insert">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Вставка колонтитулов</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="8" column="1">
-         <widget class="QGroupBox" name="groupBox_main_printer">
-          <property name="font">
-           <font>
-            <pointsize>14</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="title">
-           <string>Принтер и печать</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_10">
-           <item row="1" column="0">
-            <widget class="QLineEdit" name="lineEdit_main_printer">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QFrame" name="frame_3">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_4">
-              <item row="0" column="0">
-               <widget class="QRadioButton" name="radioButton_main_group4_last_duplex">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Двухсторонняя последняя</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="4">
-               <widget class="QRadioButton" name="radioButton_main_group4_one_side">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Односторонняя</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <spacer name="horizontalSpacer_6">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="0" column="2">
-               <widget class="QRadioButton" name="radioButton_main_group4_duplex">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Двухсторонняя</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <spacer name="horizontalSpacer_7">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_main_available_printer">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Доступные принтеры:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QCheckBox" name="checkBox_main_print_order">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Печатать документы по порядку (Закл. 1, Прот. 1, Пред. 1, Закл. 2, Прот. 2, Пред. 2, и т.д. ...)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="comboBox_main_printer">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_main_selected_printer">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Выбранный принтер:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item row="6" column="1">
-         <widget class="QGroupBox" name="groupBox_main_instance">
-          <property name="font">
-           <font>
-            <pointsize>14</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="title">
-           <string>Экземпляры документов</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="flat">
-           <bool>false</bool>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_5">
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_number_instance">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_number_instance">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Номера экземляров</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QCheckBox" name="checkBox_main_conclusion_instance">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Заключение</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBox_main_protocol_instance">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Протокол</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBox_main_prescription_instance">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Предписание</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
            </item>
           </layout>
          </widget>
@@ -1384,7 +1214,7 @@
          <widget class="QGroupBox" name="groupBox_main_data_insert">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -1412,7 +1242,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1426,7 +1256,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1437,7 +1267,7 @@
             <widget class="QLineEdit" name="lineEdit_main_application_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1460,7 +1290,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1477,7 +1307,7 @@
             <widget class="QLineEdit" name="lineEdit_main_statement_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1500,7 +1330,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1517,7 +1347,7 @@
             <widget class="QLabel" name="label_main_application_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1532,6 +1362,13 @@
            </item>
            <item row="1" column="0" colspan="4">
             <widget class="Line" name="line_3">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1553,7 +1390,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1570,7 +1407,7 @@
             <widget class="QLineEdit" name="lineEdit_main_telephone_acc_sheet_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1593,7 +1430,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1610,7 +1447,7 @@
             <widget class="QCheckBox" name="checkBox_main_conclusion_number">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1627,7 +1464,7 @@
             <widget class="QLabel" name="label_main_statement_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1656,7 +1493,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1679,7 +1516,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1708,7 +1545,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1725,7 +1562,7 @@
             <widget class="QLineEdit" name="lineEdit_main_inventory_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1736,7 +1573,7 @@
             <widget class="QLabel" name="label_main_act_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1759,7 +1596,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1776,7 +1613,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1787,7 +1624,7 @@
             <widget class="QLabel" name="label_main_inventory_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1802,6 +1639,13 @@
            </item>
            <item row="8" column="0" colspan="4">
             <widget class="Line" name="line">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -1811,7 +1655,7 @@
             <widget class="QDateEdit" name="dateEdit_main_exec_date">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1837,7 +1681,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1854,7 +1698,7 @@
             <widget class="QLineEdit" name="lineEdit_main_add_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1877,7 +1721,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1906,7 +1750,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1935,7 +1779,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1958,7 +1802,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1981,7 +1825,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -1998,7 +1842,7 @@
             <widget class="QLineEdit" name="lineEdit_main_act_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2012,7 +1856,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2023,7 +1867,7 @@
             <widget class="QLabel" name="label_main_add_conclusion_number_date">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2055,7 +1899,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2078,7 +1922,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2089,7 +1933,7 @@
             <widget class="QLabel" name="label_main_add_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2106,7 +1950,7 @@
             <widget class="QLabel" name="label_main_telephone_acc_sheet_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2127,6 +1971,13 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
@@ -2136,6 +1987,13 @@
              <layout class="QGridLayout" name="gridLayout_12">
               <item row="1" column="0">
                <spacer name="horizontalSpacer_13">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -2151,7 +2009,7 @@
                <widget class="QRadioButton" name="radioButton_main_group1_FSTEK_df">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2163,6 +2021,13 @@
               </item>
               <item row="1" column="4">
                <spacer name="horizontalSpacer_14">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -2176,6 +2041,13 @@
               </item>
               <item row="1" column="2">
                <spacer name="horizontalSpacer_3">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -2191,7 +2063,7 @@
                <widget class="QRadioButton" name="radioButton_main_group1_FSB_df">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -2206,6 +2078,13 @@
            </item>
            <item row="17" column="0" colspan="4">
             <widget class="Line" name="line_2">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -2215,7 +2094,7 @@
             <widget class="QLabel" name="label_main_HDD_number">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2244,7 +2123,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2258,7 +2137,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2272,7 +2151,7 @@
             <widget class="QCheckBox" name="checkBox_main_add_list_item">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2295,7 +2174,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2331,7 +2210,7 @@
             <widget class="QLineEdit" name="lineEdit_main_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2342,7 +2221,7 @@
             <widget class="QLabel" name="label_main_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2358,33 +2237,132 @@
           </layout>
          </widget>
         </item>
-        <item row="2" column="1" rowspan="4">
-         <widget class="QGroupBox" name="groupBox_main_sp">
+        <item row="7" column="0" colspan="2">
+         <widget class="QFrame" name="frame_8">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_9">
+           <item row="2" column="0">
+            <widget class="QPushButton" name="pushButton_main_insert">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Вставка колонтитулов</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="9" column="0" colspan="2">
+         <widget class="QFrame" name="frame_7">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="0">
+            <widget class="QPushButton" name="pushButton_main_print">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Печать файлов</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QGroupBox" name="groupBox_main_catalog_print">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
           </property>
           <property name="title">
-           <string>Сортировка материалов</string>
+           <string>Рабочие каталоги для печати</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_16">
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_main_folder_sp_dir">
+          <layout class="QGridLayout" name="gridLayout_11">
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_main_file_account_number">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Учетные номера</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QPushButton" name="pushButton_main_file_account_numbers">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2394,119 +2372,24 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QCheckBox" name="checkBox_main_name_gk">
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_start_path_print_dir">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Имя ГК (если нет СП)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_main_file_sp_path">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Файл с номерами</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_sp_path_dir">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEdit_main_file_sp_path">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_main_sp_path">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Каталог с материалами</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1" colspan="2">
-            <widget class="QLineEdit" name="lineEdit_main_name_gk">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_main_document_sp">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Проверка документов</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="pushButton_main_file_sp">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1" colspan="2">
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item row="1" column="0" colspan="3">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
-              <widget class="QCheckBox" name="checkBox_main_conclusion_sp">
+              <widget class="QCheckBox" name="checkBox_main_conclusion_print">
                <property name="font">
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                  <weight>50</weight>
                  <bold>false</bold>
                 </font>
@@ -2517,10 +2400,10 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="checkBox_main_protocol_sp">
+              <widget class="QCheckBox" name="checkBox_main_protocol_print">
                <property name="font">
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                  <weight>50</weight>
                  <bold>false</bold>
                 </font>
@@ -2531,10 +2414,10 @@
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="checkBox_main_prescription_sp">
+              <widget class="QCheckBox" name="checkBox_main_prescription_print">
                <property name="font">
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                  <weight>50</weight>
                  <bold>false</bold>
                 </font>
@@ -2544,21 +2427,288 @@
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QCheckBox" name="checkBox_main_infocard_sp">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Инфокарта</string>
-               </property>
-              </widget>
-             </item>
             </layout>
+           </item>
+           <item row="0" column="0" colspan="3">
+            <widget class="QFrame" name="frame_12">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_13">
+              <item row="0" column="3">
+               <widget class="QRadioButton" name="radioButton_main_group3_FSTEK_print">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>ФСТЭК</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="4">
+               <spacer name="horizontalSpacer_16">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="0">
+               <spacer name="horizontalSpacer_15">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="1">
+               <widget class="QRadioButton" name="radioButton_main_group3_FSB_print">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>ФСБ</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <spacer name="horizontalSpacer_5">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_path_file_form27_print">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_file_account_numbers_path">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_main_start_path_print">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Документы для печати</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QPushButton" name="pushButton_main_start_path_print_dir">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="2">
+            <widget class="QPushButton" name="pushButton_main_file_form27_print">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="checkBox_main_file_form27">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>27 форма</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <property name="tristate">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="checkBox_main_add_account_numbers">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
+             <property name="text">
+              <string>Доп файл номеров</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="lineEdit_main_add_account_numbers_path_file">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QPushButton" name="pushButton_main_add_account_numbers">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -2574,7 +2724,7 @@
          <widget class="QGroupBox" name="groupBox_41101_catalog_insert">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -2596,7 +2746,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2613,7 +2763,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2627,7 +2777,7 @@
             <widget class="QCheckBox" name="checkBox_41101_file_num">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2650,7 +2800,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2673,7 +2823,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2693,7 +2843,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2719,7 +2869,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2739,7 +2889,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2759,7 +2909,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2770,7 +2920,7 @@
             <widget class="QCheckBox" name="checkBox_41101_signature">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2790,7 +2940,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2804,7 +2954,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2821,7 +2971,7 @@
          <widget class="QGroupBox" name="groupBox_41101_data_insert">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -2849,7 +2999,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2866,7 +3016,7 @@
             <widget class="QDateEdit" name="dateEdit_41101_exec_date">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2892,7 +3042,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2909,7 +3059,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2932,7 +3082,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2955,7 +3105,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -2984,7 +3134,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3013,7 +3163,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3036,7 +3186,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3059,7 +3209,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3079,7 +3229,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3090,7 +3240,7 @@
             <widget class="QLabel" name="label_41101_application_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3119,7 +3269,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3136,7 +3286,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_telephone_acc_sheet_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3147,7 +3297,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_inventory_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3170,7 +3320,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3193,7 +3343,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3216,7 +3366,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3231,6 +3381,13 @@
            </item>
            <item row="1" column="0" colspan="4">
             <widget class="Line" name="line_4">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -3240,7 +3397,7 @@
             <widget class="QLabel" name="label_41101_add_conclusion_number_date">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3263,7 +3420,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3280,7 +3437,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3316,7 +3473,7 @@
             <widget class="QCheckBox" name="checkBox_41101_conclusion_number">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3331,6 +3488,13 @@
            </item>
            <item row="8" column="0" colspan="4">
             <widget class="Line" name="line_5">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -3343,7 +3507,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3354,7 +3518,7 @@
             <widget class="QCheckBox" name="checkBox_41101_add_list_item">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3383,7 +3547,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3403,7 +3567,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3414,7 +3578,7 @@
             <widget class="QLabel" name="label_41101_act_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3434,7 +3598,7 @@
             <widget class="QLabel" name="label_41101_inventory_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3463,7 +3627,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3480,7 +3644,7 @@
             <widget class="QLabel" name="label_41101_statement_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3495,6 +3659,13 @@
            </item>
            <item row="15" column="0" colspan="4">
             <widget class="Line" name="line_6">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
@@ -3516,7 +3687,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3531,6 +3702,13 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
@@ -3540,6 +3718,13 @@
              <layout class="QGridLayout" name="gridLayout_28">
               <item row="1" column="4">
                <spacer name="horizontalSpacer_20">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -3555,7 +3740,7 @@
                <widget class="QRadioButton" name="radioButton_41101_group5_FSTEK_df">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3567,6 +3752,13 @@
               </item>
               <item row="1" column="0">
                <spacer name="horizontalSpacer_21">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -3582,7 +3774,7 @@
                <widget class="QRadioButton" name="radioButton_41101_group5_FSB_df">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3594,6 +3786,13 @@
               </item>
               <item row="1" column="2">
                <spacer name="horizontalSpacer_22">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -3624,7 +3823,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3641,7 +3840,7 @@
             <widget class="QLabel" name="label_41101_add_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3658,7 +3857,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_add_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3669,7 +3868,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_application_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3692,7 +3891,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3709,7 +3908,7 @@
             <widget class="QLabel" name="label_41101_telephone_acc_sheet_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3726,7 +3925,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_act_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3737,7 +3936,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_statement_executor">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3748,7 +3947,7 @@
             <widget class="QLabel" name="label_41101_HDD_number">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3765,7 +3964,7 @@
             <widget class="QLabel" name="label_41101_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3782,7 +3981,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_telephone">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3796,7 +3995,7 @@
          <widget class="QGroupBox" name="groupBox_41101_inventory_insert">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -3824,7 +4023,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3847,7 +4046,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3870,7 +4069,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3893,7 +4092,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3910,7 +4109,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -3928,6 +4127,13 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
@@ -3937,6 +4143,13 @@
              <layout class="QGridLayout" name="gridLayout_24">
               <item row="0" column="4">
                <spacer name="horizontalSpacer_11">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -3950,6 +4163,13 @@
               </item>
               <item row="0" column="0">
                <spacer name="horizontalSpacer_12">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -3971,7 +4191,7 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -3991,7 +4211,7 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4003,6 +4223,13 @@
               </item>
               <item row="0" column="2">
                <spacer name="horizontalSpacer_19">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -4027,7 +4254,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4044,7 +4271,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4058,7 +4285,7 @@
          <widget class="QGroupBox" name="groupBox_41101_form27_insert">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -4080,7 +4307,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_form27_firm">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4097,7 +4324,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4111,7 +4338,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_form27_path_dir">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4128,7 +4355,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4148,7 +4375,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4169,6 +4396,11 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
@@ -4180,7 +4412,7 @@
             <widget class="QPushButton" name="pushButton_41101_insert">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
               </font>
              </property>
              <property name="text">
@@ -4195,7 +4427,7 @@
          <widget class="QGroupBox" name="groupBox_41101_catalog_print">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -4211,7 +4443,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_file_account_numbers_path">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4226,6 +4458,13 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
@@ -4237,7 +4476,7 @@
                <widget class="QRadioButton" name="radioButton_41101_group7_FSTEK_print">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4249,6 +4488,13 @@
               </item>
               <item row="0" column="4">
                <spacer name="horizontalSpacer_17">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -4262,6 +4508,13 @@
               </item>
               <item row="0" column="0">
                <spacer name="horizontalSpacer_18">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -4277,7 +4530,7 @@
                <widget class="QRadioButton" name="radioButton_41101_group7_FSB_print">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4289,6 +4542,13 @@
               </item>
               <item row="0" column="2">
                <spacer name="horizontalSpacer_10">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -4309,7 +4569,7 @@
               <widget class="QCheckBox" name="checkBox_41101_conclusion_print">
                <property name="font">
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                  <weight>50</weight>
                  <bold>false</bold>
                 </font>
@@ -4323,7 +4583,7 @@
               <widget class="QCheckBox" name="checkBox_41101_protocol_print">
                <property name="font">
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                  <weight>50</weight>
                  <bold>false</bold>
                 </font>
@@ -4337,7 +4597,7 @@
               <widget class="QCheckBox" name="checkBox_41101_prescription_print">
                <property name="font">
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                  <weight>50</weight>
                  <bold>false</bold>
                 </font>
@@ -4359,7 +4619,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4379,7 +4639,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4396,7 +4656,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4407,7 +4667,7 @@
             <widget class="QLineEdit" name="lineEdit_41101_start_path_print_dir">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4424,7 +4684,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4447,7 +4707,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4464,7 +4724,7 @@
             <widget class="QCheckBox" name="checkBox_41101_add_account_numbers">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4490,7 +4750,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4510,7 +4770,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4536,7 +4796,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4550,7 +4810,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4567,7 +4827,7 @@
          <widget class="QGroupBox" name="groupBox_41101_printer">
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
@@ -4592,7 +4852,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4607,6 +4867,13 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
@@ -4618,7 +4885,7 @@
                <widget class="QRadioButton" name="radioButton_41101_group8_last_duplex">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4632,7 +4899,7 @@
                <widget class="QRadioButton" name="radioButton_41101_group8_one_side">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4644,6 +4911,13 @@
               </item>
               <item row="0" column="1">
                <spacer name="horizontalSpacer_8">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -4659,7 +4933,7 @@
                <widget class="QRadioButton" name="radioButton_41101_group8_duplex">
                 <property name="font">
                  <font>
-                  <pointsize>10</pointsize>
+                  <pointsize>9</pointsize>
                   <weight>50</weight>
                   <bold>false</bold>
                  </font>
@@ -4671,6 +4945,13 @@
               </item>
               <item row="0" column="3">
                <spacer name="horizontalSpacer_9">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -4695,7 +4976,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4718,7 +4999,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4735,7 +5016,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
                <weight>50</weight>
                <bold>false</bold>
               </font>
@@ -4759,6 +5040,11 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
@@ -4770,7 +5056,7 @@
             <widget class="QPushButton" name="pushButton_41101_print">
              <property name="font">
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
               </font>
              </property>
              <property name="layoutDirection">
@@ -4798,7 +5084,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1342</width>
+     <width>1263</width>
      <height>21</height>
     </rect>
    </property>
