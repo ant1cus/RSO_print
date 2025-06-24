@@ -205,12 +205,11 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                                                                     f"!{page}"
             # Добавляем 2 сопроводительный, если это сопроводительный :)
             if re.findall('сопроводит', doc_name.lower()):
+                documents.loc[
+                    index_doc, 'text_finish'] = f"Исполнил {executor}\nТелефон {incoming['telephone_acc_sheet']}" \
+                                                f"\nДобавочный номер {incoming['add_telephone']}"
                 documents = pd.concat([documents, documents[documents['start_path'] == doc]], ignore_index=True)
                 index_doc_acc = len(documents) - 1
-                documents.loc[index_doc_acc, 'first_header_text'] = ""
-                documents.loc[
-                    index_doc_acc, 'text_finish'] = f"Исполнил {executor}\nТелефон {incoming['telephone_acc_sheet']}" \
-                                                    f"\nДобавочный номер {incoming['add_telephone']}"
                 documents.loc[
                     index_doc_acc, 'name'] = f"{documents.loc[index_doc_acc, 'name'].rpartition('.')[0]} (2 экз.).docx"
                 documents.loc[index_doc_acc, 'finish_path'] = Path(documents.loc[index_doc_acc, 'finish_path'].parent,

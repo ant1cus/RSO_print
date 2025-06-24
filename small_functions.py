@@ -6,11 +6,14 @@ import traceback
 import itertools
 import zipfile
 
+import docx
 import pythoncom
 import fitz
 import os
 import pandas as pd
 import numpy as np
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+
 from word2pdf import word2pdf
 from zipfile import ZipFile
 from pathlib import Path
@@ -186,7 +189,7 @@ def pages_count(file: Path) -> dict:
         name_pdf = name + '.pdf'
         word2pdf(str(Path(parent_path, name)), str(Path(parent_path, name_pdf)))
         input_file_pdf = fitz.open(str(Path(parent_path, name_pdf)))  # Открываем пдф
-        count_page = input_file_pdf.page_count + 1  # Получаем кол-во страниц
+        count_page = input_file_pdf.page_count  # Получаем кол-во страниц
         input_file_pdf.close()  # Закрываем
         os.remove(str(Path(parent_path, name_pdf)))  # Удаляем пдф документ
         temp_docx = os.path.join(parent_path, name)
@@ -331,6 +334,100 @@ def list_doc(dp):
             ns = int(pages_[0])
             # ns = list_count(dp)  # Для проверки, вдруг изменилось количество страниц
     return ns
+
+
+def delete_header_footer_second_acc(path: Path, text_first_header: str, secret_num: str, text_for_foot: str,
+                                    para: bool) -> dict:
+    try:
+        doc = docx.Document(str(path))  # Открываем
+
+        def paragraph_del(par):
+            par.text = None
+            paragraph_ = par._element
+            paragraph_.getparent().remove(paragraph_)
+            paragraph_._p = paragraph_._element = None
+
+        list_paragraph = []
+        for enum, paragraph in enumerate(doc.sections[0].first_page_header.paragraphs):
+            if 'экз.' in paragraph.text.lower():
+                list_paragraph = [i for i in range(enum + 1)]
+                break
+        for paragraph in list_paragraph:
+            doc.sections[0].first_page_header.paragraphs[paragraph].text = None
+        for paragraph in range(len(list_paragraph) - 1):
+            p = doc.sections[0].first_page_header.paragraphs[paragraph]._element
+            p.getparent().remove(p)
+            p._p = p._element = None
+        p = doc.sections[0].first_page_header.paragraphs[0]._element
+        p.getparent().remove(p)
+        p._p = p._element = None
+        doc.sections[0].first_page_footer.paragraphs[0].text = None
+        if len(doc.sections) == 1:
+            for paragraph in doc.sections[len(doc.sections) - 1].footer.paragraphs:
+                if 'Б/ч' in paragraph.text:
+                    paragraph_del(paragraph)
+                    break
+                paragraph_del(paragraph)
+        else:
+            doc.sections[0].footer.paragraphs[0].text = None
+            if doc.sections[len(doc.sections) - 1].different_first_page_header_footer:
+                for paragraph in doc.sections[len(doc.sections) - 1].first_page_footer.paragraphs:
+                    if 'Б/ч' in paragraph.text:
+                        paragraph_del(paragraph)
+                        break
+                    paragraph_del(paragraph)
+                doc.sections[
+                    len(doc.sections) - 1].first_page_header.is_linked_to_previous = False  # header
+                doc.sections[len(doc.sections) - 1].first_page_footer.is_linked_to_previous = False  # Футер
+            else:
+                for paragraph in doc.sections[len(doc.sections) - 1].footer.paragraphs:
+                    if 'Б/ч' in paragraph.text:
+                        paragraph_del(paragraph)
+                        break
+                    paragraph_del(paragraph)
+        while True:
+            flag_for_exit = 0
+            if flag_for_exit == 3:
+                break
+            try:
+                doc.save(str(path))
+                break
+            except PermissionError:
+                flag_for_exit += 1
+                time.sleep(3)
+        doc = docx.Document(str(path))
+        sectPrs = doc._element.xpath(".//w:pPr/w:sectPr")
+        for sectPr in sectPrs:
+            sectPr.getparent().remove(sectPr)
+        doc.add_section()  # Добавляем последнюю страницу
+        if para:
+            last = doc.sections[
+                len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
+            last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
+            foot = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
+            foot.is_linked_to_previous = False  # Отвязываем
+        else:
+            last = doc.sections[len(doc.sections) - 1].header  # Колонтитул для последней страницы
+            last.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
+            foot = doc.sections[len(doc.sections) - 1].footer  # Нижний колонтитул
+            foot.is_linked_to_previous = False  # Отвязываем
+        if doc.sections[0].different_first_page_header_footer:
+            header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
+            doc.sections[0].footer.paragraphs[0].text = secret_num
+        else:
+            header = doc.sections[0].header
+        head = header.paragraphs[0]  # Параграф
+        head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+        head = header.paragraphs[0]  # Выбираем новый первый параграф
+        head_format = head.paragraph_format  # Настройки параграфа
+        head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
+        # Текст для фонарика
+        foot.paragraphs[0].text = text_for_foot
+        doc.save(str(path))
+        return {'status': 'success', 'trace': '', 'text': f"Документ {path.name} успешно сохранён"}
+    except BaseException as es:
+        return {'status': 'error', 'trace': traceback.format_exc(),
+                'text': f'Ошибка при удалении шапки в сопроводе - {es}'}
 
 
 def return_error(log: logging, warning: str, status, status_text: str, default_path: Path, status_finish: list,

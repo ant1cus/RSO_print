@@ -10,23 +10,26 @@ from docx.shared import Pt, Cm
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.section import WD_ORIENTATION
 
-from small_functions import pages_count
+from small_functions import pages_count, delete_header_footer_second_acc
 from word2pdf import word2pdf
 
 
-def insert_header(doc, pt_count, text_first_header, text_for_foot, fso_, text_finish: str = ''):
+def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str = ''):
     header_1 = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
     head_1 = header_1.paragraphs[0]  # Параграф
     head_1.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
     head_1 = header_1.paragraphs[0]  # Выбираем новый первый параграф
     for header_styles in head_1.runs:
-        header_styles.font.size = Pt(pt_count)
+        header_styles.font.size = Pt(11)
         header_styles.font.name = 'Times New Roman'
     head_1_format = head_1.paragraph_format  # Настройки параграфа
     head_1_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
     footer_ = doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
     foot_ = footer_.paragraphs[0]  # Параграф
     foot_.text = text_for_foot  # Текст
+    for foot_run in foot_.runs:
+        foot_run.font.size = Pt(11)
+        foot_run.font.name = 'Times New Roman'
     foot_format_ = foot_.paragraph_format  # Настройки параграфа
     foot_format_.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
     doc.sections[0].footer.paragraphs[0].text = text_for_foot  # Номера для страниц
@@ -46,7 +49,7 @@ def insert_header(doc, pt_count, text_first_header, text_for_foot, fso_, text_fi
     #                                "\nИсп. " + executor + "\nПеч. " + print_people + "\n" + \
     #                                date + "\nб/ч"
     for footer_style in foot_.paragraphs[0].runs:
-        footer_style.font.size = Pt(pt_count)
+        footer_style.font.size = Pt(11)
         footer_style.font.name = 'Times New Roman'
     # if fso_:
     #     if 'заключение' in name_file_.lower() or 'акт' in name_file_.lower():
@@ -106,6 +109,7 @@ def change_text(paragraphs, pattern: str, text: str, pt: int, string_date: bool 
 def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
     try:
         # Вероятно можно будет вынести создание колонтитула, изменение даты и сохранение документов из if
+        para = False
         service = True if incoming_data['radioButton_FSB'] else False
         errors = []
         if data.action == 'copy':
@@ -215,12 +219,11 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                     if account_docs.empty:
                         numbering = 1
                         if service:
-                            ness_df = documents.loc[documents['name'].str.contains('заключение', case=False) &
-                                                    documents['name'].str.contains('предписание', case=False)]
+                            ness_df = documents.loc[documents['name'].str.contains('заключение|предписание',
+                                                                                   case=False)]
                         else:
-                            ness_df = documents.loc[documents['name'].str.contains('заключение', case=False) &
-                                                    documents['name'].str.contains('протокол', case=False) &
-                                                    documents['name'].str.contains('предписание', case=False)]
+                            ness_df = documents.loc[documents['name'].str.contains('заключение|протокол|предписание',
+                                                                                   case=False)]
                         for file in ness_df.itertuples():
                             number_page = file.pages
                             page = 'листе' if int(number_page) == 1 else 'листах'
@@ -269,10 +272,15 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 foot = document.sections[len(document.sections) - 1].footer  # Нижний колонтитул
                 foot.is_linked_to_previous = False  # Отвязываем
         if len(re.findall(r'приложение а', data.name.lower())) == 0:
-            insert_header(document, 11, data.first_header_text, data.footer_text, 'fso', data.text_finish)
+            insert_header(document, data.first_header_text, data.footer_text, 'fso', data.text_finish)
         if Path(data.finish_path.parent).exists() is False:
             Path(data.finish_path.parent).mkdir(parents=True, exist_ok=True)
         document.save(data.finish_path)  # Сохраняем
+        if re.findall(r'сопроводит', data.name.lower()) and re.findall(r'2 экз', data.name.lower()):
+            answer = delete_header_footer_second_acc(data.finish_path, data.first_header_text, data.footer_text,
+                                                     data.text_finish, para)
+            if answer['status'] == 'error':
+                errors.append(answer['text'])
         if incoming_data['checkBox_signature']:
             pattern = re.compile(r'\{\{\s[A-z]*\s}}')
             find_name = [pattern.findall(p.text)[0] for p in document.paragraphs if pattern.findall(p.text)]
@@ -286,14 +294,14 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 last_text_instances = {name[3: len(name) - 3]: last_page.search_for(name) for name in find_name}
                 doc.close()
                 os.remove(pdf_path)
-                for paragraph in document.paragraphs:
-                    if pattern.findall(paragraph.text):
-                        for name in find_name:
-                            paragraph.text = re.sub(name, '\t', paragraph.text)
-                            for run in paragraph.runs:
-                                run.font.size = Pt(12 if re.findall('заключение', str(data.finish_path), re.I) else pt_num)
-                                run.font.name = 'Times New Roman'
-                document.save(data.finish_path)  # Сохраняем
+                # for paragraph in document.paragraphs:
+                #     if pattern.findall(paragraph.text):
+                #         for name in find_name:
+                #             paragraph.text = re.sub(name, '\t', paragraph.text)
+                #             for run in paragraph.runs:
+                #                 run.font.size = Pt(12 if re.findall('заключение', str(data.finish_path), re.I) else pt_num)
+                #                 run.font.name = 'Times New Roman'
+                # document.save(data.finish_path)  # Сохраняем
                 word2pdf(str(data.finish_path), str(pdf_path))
                 doc = fitz.open(str(pdf_path))
                 page = doc.load_page(0)
@@ -304,7 +312,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                         page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                 for inst in last_text_instances:
                     for i in last_text_instances[inst]:
-                        rect = fitz.Rect(i.x0 - 25, i.y0 - 25, i.x1 + 25, i.y1 + 25)
+                        rect = fitz.Rect(i.x0 - 7, i.y0 - 7, i.x1 + 7, i.y1 + 7)
                         last_page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                 doc.save(str(Path(data.finish_path.parent, data.finish_path.stem + '.pdf')))
                 doc.close()
@@ -316,6 +324,8 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
             index_doc = documents.loc[documents['name'] == data.name].index[0]
             documents.loc[index_doc, 'pages'] = page
+        if errors:
+            return {'status': 'warning', 'text': errors, 'documents': documents}
         return {'status': 'success', 'text': f'Документ {data.name} заполнен и сохранён', 'documents': documents}
         # не забыть посмотреть запрос
     except BaseException as ex:

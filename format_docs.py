@@ -138,7 +138,7 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
                 start_path_acc = documents.loc[doc, 'start_path']
                 name_acc = documents.loc[doc, 'name']
                 line_doing.emit(f'Генерируем колонтитулы для {name_acc}')
-                index_doc = documents.loc[documents['start_path'] == start_path_acc].index[0]
+                index_doc = documents.loc[documents['name'] == name_acc].index[0]
                 if dict_file and doc['name'].rpartition('.')[0] in dict_file:  # Если есть файл номеров
                     if re.findall(r'запрос', name_acc, re.I):
                         documents.loc[index_doc, 'footer_text'] = dict_file[name_acc.rpartition('.')[0]][0]
@@ -154,12 +154,13 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
                         index_acc = documents.loc[documents['name'].str.contains('сопроводит', case=False)].index[0]
                         documents.loc[index_doc, 'footer_text'] = documents.loc[index_acc, 'footer_text']
                     documents.loc[index_doc, 'date'] = incoming_data['date']
-                documents.loc[index_doc, 'text_finish'] = "Уч. № " + documents.loc[index_doc, 'footer_text'] + \
-                                                          "\nОтп. 2 экз.\n№ 1 - в адрес\n№ 2 - в дело \n" \
-                                                          + incoming_data['hdd_number'] + "\nИсп. " \
-                                                          + incoming_data['executor_acc_sheet'] + "\nПеч. " \
-                                                          + incoming_data['print_executor'] + \
-                                                          "\n" + incoming_data['date'] + "\nБ/ч"
+                if re.findall('сопроводит', name_acc, re.I) and re.findall('2 экз', name_acc, re.I):
+                    documents.loc[index_doc, 'text_finish'] = "Уч. № " + documents.loc[index_doc, 'footer_text'] + \
+                                                              "\nОтп. 2 экз.\n№ 1 - в адрес\n№ 2 - в дело \n" \
+                                                              + incoming_data['hdd_number'] + "\nИсп. " \
+                                                              + incoming_data['executor_acc_sheet'] + "\nПеч. " \
+                                                              + incoming_data['print_executor'] + \
+                                                              "\n" + incoming_data['date'] + "\nБ/ч"
                 pages = pages_count(start_path_acc)
                 page = pages['pages']
                 if page == 0:
