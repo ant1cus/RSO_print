@@ -313,7 +313,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                         page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                 for inst in last_text_instances:
                     for i in last_text_instances[inst]:
-                        rect = fitz.Rect(i.x0 - 7, i.y0 - 7, i.x1 + 7, i.y1 + 7)
+                        rect = fitz.Rect(i.x0 - 25, i.y0 - 25, i.x1 + 25, i.y1 + 25)
                         last_page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                 doc.save(str(Path(data.finish_path.parent, data.finish_path.stem + '.pdf')))
                 doc.close()
