@@ -103,6 +103,7 @@ def change_text(paragraphs, pattern: str, text: str, pt: int, string_date: bool 
             for runs_ in paragraph.runs:
                 runs_.font.size = Pt(pt)
                 runs_.font.name = 'Times New Roman'
+                runs_.font.bold = False
             break
 
 
