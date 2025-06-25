@@ -214,6 +214,8 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                     index_doc_acc, 'name'] = f"{documents.loc[index_doc_acc, 'name'].rpartition('.')[0]} (2 экз.).docx"
                 documents.loc[index_doc_acc, 'finish_path'] = Path(documents.loc[index_doc_acc, 'finish_path'].parent,
                                                                    documents.loc[index_doc_acc, 'name'])
+                documents.loc[index_doc_acc, 'first_header_text'] = f"{incoming['classified']}" \
+                                                                    f"\n{incoming['list_item']}\nЭкз.№2"
                 reindex_list.append(index_doc_acc)
             if 'second_copy' in incoming and incoming['second_copy']:
                 for number_folder in incoming['number_instance']:

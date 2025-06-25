@@ -232,7 +232,6 @@ def doc_format(incoming: dict) -> dict:
             return {'error': True, 'data': 'Нет пути для 27 формы'}
         if os.path.isfile(incoming['form27_path']):
             return {'error': True, 'data': 'Указанный путь для 27 формы не является директорией'}
-    incoming['number_instance'] = 0
     incoming['second_copy'] = []
     if 'main_instance' in incoming and incoming['main_instance']:
         if not incoming['number_instance']:

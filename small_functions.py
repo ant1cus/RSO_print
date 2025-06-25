@@ -229,7 +229,7 @@ def pages_count(file: Path) -> dict:
         rm(Path(parent_path, 'zip'))
         return {'error': False, 'text': '', 'pages': count_page}
     except BaseException as exception:
-        return {'error': True, 'text': exception, 'pages': 0}
+        return {'error': True, 'text': exception, 'pages': 0, 'trace': traceback.format_exc()}
 
 
 def rm(folder_path):

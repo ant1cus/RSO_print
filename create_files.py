@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import traceback
 
 import fitz
 import pythoncom
@@ -154,18 +155,18 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 change_text(document.paragraphs, r'\[АКТНОМ]', data.text, 12)
             change_text(document.paragraphs, r'date', data.date, 12)
         if re.findall(r'заключение', data.name.lower()):
-            change_text(document.paragraphs, r'date', data.date, 12)
+            change_text(document.paragraphs, r'date', data.date, 12, True)
         if re.findall(r'протокол', data.name.lower()):
             change_text(document.paragraphs, r'\[ЗАКЛНОМ]', data.text_conclusion, pt_num)
-            change_text(document.paragraphs, r'date', data.date, pt_num)
+            change_text(document.paragraphs, r'date', data.date, pt_num, True)
         if re.findall(r'предписание', data.name.lower()):
             change_text(document.paragraphs, r'\[ЗАКЛНОМ]', data.text_conclusion, pt_num)
             change_text(document.paragraphs, r'\[ПРОТНОМ]', data.text_protocol, pt_num)
-            change_text(document.paragraphs, r'date', data.date, pt_num)
+            change_text(document.paragraphs, r'date', data.date, pt_num, True)
         if re.findall(r'акт', data.name.lower()):
-            change_text(document.paragraphs, r'date', data.date, pt_num)
+            change_text(document.paragraphs, r'date', data.date, pt_num, True)
         if re.findall(r'утверждение', data.name.lower()):
-            change_text(document.paragraphs, r'date', data.date, pt_num)
+            change_text(document.paragraphs, r'date', data.date, pt_num, True)
         if re.findall(r'опись', data.name.lower()):
             style = document.styles['Normal']
             font = style.font
@@ -232,7 +233,8 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                             if 'протокол' in file.name.lower():
                                 account_doc = documents.loc[documents['name'].str.contains('приложение а', case=False) &
                                                             documents['number'].str.contains(file.number, case=False)]
-                                if account_docs.empty is False:
+                                if account_doc.empty is False:
+                                    account_doc = account_doc.reset_index(drop=True)
                                     number_page = str(int(number_page) + int(account_doc.loc[0, 'pages']))
                                     page = 'листе' if int(number_page) == 1 else 'листах'
                                     page_app = 'листа' if int(account_doc.loc[0, 'pages']) > 1 else 'лист'
@@ -309,7 +311,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 last_page = doc.load_page(len(doc) - 2)
                 for inst in text_instances:
                     for i in text_instances[inst]:
-                        rect = fitz.Rect(i.x0 - 45, i.y0 - 45, i.x1 + 45, i.y1 + 45)
+                        rect = fitz.Rect(i.x0 - 60, i.y0 - 60, i.x1 + 60, i.y1 + 60)
                         page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                 for inst in last_text_instances:
                     for i in last_text_instances[inst]:
@@ -320,7 +322,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 os.remove(pdf_path)
         if re.findall(r'сопроводит', data.name.lower()) or re.findall(r'опись', data.name.lower()):
             pages = pages_count(data.finish_path)
-            page = pages['pages']
+            page = pages['pages'] - 1
             if page == 0:
                 errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
             index_doc = documents.loc[documents['name'] == data.name].index[0]
@@ -330,5 +332,6 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
         return {'status': 'success', 'text': f'Документ {data.name} заполнен и сохранён', 'documents': documents}
         # не забыть посмотреть запрос
     except BaseException as ex:
-        return {'status': 'error', 'text': f'Ошибка при создании документа {data.name}', 'trace': ex,
+        return {'status': 'error', 'text': f'Ошибка при создании документа {data.name}: {ex}',
+                'trace': traceback.format_exc(),
                 'documents': documents}

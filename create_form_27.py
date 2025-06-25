@@ -1,4 +1,5 @@
 import re
+import traceback
 
 import numpy
 import openpyxl
@@ -92,7 +93,7 @@ def create_form_27(documents: pd.DataFrame, finish_path: Path, firm: str):
                 ws.merge_cells(start_row=1, end_row=2, start_column=el, end_column=el)
                 ws.cell(1, el).alignment = openpyxl.styles.Alignment(horizontal="center",
                                                                      vertical="center", wrap_text=True)
-        wb.save(filename=str(Path(finish_path.parent, 'Форма 27.xlsx')))
+        wb.save(filename=str(Path(finish_path, 'Форма 27.xlsx')))
         for el in range(1, ws.max_column + 1):
             ws.column_dimensions[get_column_letter(el)].width = column_width[el - 1]
         flag = 0
@@ -118,4 +119,4 @@ def create_form_27(documents: pd.DataFrame, finish_path: Path, firm: str):
     except PermissionError as ex:
         return {'status': 'permission denied', 'text': f'Ошибка доступа при создании 27 формы', 'trace': ex}
     except BaseException as ex:
-        return {'status': 'error', 'text': f'Ошибка при создании 27 формы', 'trace': ex}
+        return {'status': 'error', 'text': f'Ошибка при создании 27 формы - {ex}', 'trace': traceback.format_exc()}
