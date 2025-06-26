@@ -85,7 +85,7 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
                 win32print.SetPrinter(handle, level, attributes, 0)
             except:  # Пропускаем ошибку
                 pass
-        win32api.ShellExecute(0, "print", start_path, name_printer, ".", 0)
+        win32api.ShellExecute(0, "print", str(start_path), name_printer, ".", 0)
         jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
         log.info(f"Ждем очередь")
         while jobs < 3:
