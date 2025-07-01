@@ -105,7 +105,7 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
             except:
                 pass
         win32print.ClosePrinter(handle)  # Закрываем принтер
-        if form_27:
+        if form_27 and form_27['check_form_27']:
             log.info(f"Заносим номера в 27 форму")
             answer = add_num_in_form_27(form_27)
             if answer['status'] == 'error':
