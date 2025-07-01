@@ -297,14 +297,6 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 last_text_instances = {name[3: len(name) - 3]: last_page.search_for(name) for name in find_name}
                 doc.close()
                 os.remove(pdf_path)
-                # for paragraph in document.paragraphs:
-                #     if pattern.findall(paragraph.text):
-                #         for name in find_name:
-                #             paragraph.text = re.sub(name, '\t', paragraph.text)
-                #             for run in paragraph.runs:
-                #                 run.font.size = Pt(12 if re.findall('заключение', str(data.finish_path), re.I) else pt_num)
-                #                 run.font.name = 'Times New Roman'
-                # document.save(data.finish_path)  # Сохраняем
                 word2pdf(str(data.finish_path), str(pdf_path))
                 doc = fitz.open(str(pdf_path))
                 page = doc.load_page(0)

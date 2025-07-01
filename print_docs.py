@@ -33,7 +33,8 @@ def add_num_in_form_27(form27_data: dict) -> dict:
         else:
             path_form27 = Path(form27_data['path_form_27'])
         path_form27_dir = path_form27.parent
-        path_form27_file = [i for i in os.listdir(path_form27_dir) if 'форма 27' in i.lower()]
+        path_form27_file = [i for i in os.listdir(path_form27_dir)
+                            if re.findall(r'форма', i, re.I) and re.findall(r'27', i, re.I)]
         wb = openpyxl.open(str(Path(path_form27_dir, path_form27_file[0])))
         ws = wb.active
         for row in range(1, ws.max_row):
@@ -240,212 +241,186 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                 pass
         # после каждой успешной печати удалять номера или записать все успешные печати и потом почистить файл
         for doc in documents.itertuples():
-            if doc.print is False:
-                continue
-            line_doing.emit(f'Печатаем {doc.name} ({now_doc} из {all_doc})')
-            printing_date = [computer_name, user_name, str(doc.start_path), str(datetime.date.today()), printer]
-            print_nums = doc.print_num.split('|')
-            pythoncom.CoInitializeEx(0)
-            logging.info(f"Форматируем документ {doc.name}")
-            if re.findall(r'приложение а', doc.name.lower()):
-                logging.info(f"Запускаем в печать {doc.name}")
-                answer = print_doc(doc.start_path, name_printer, 1, logging, del_numbers)
-                if answer['status'] != 'success':
-                    errors.append(answer['text'])
-                    logging.error(answer['text'])
-                if answer['status'] == 'error':
-                    logging.error(answer['trace'])
-                del_numbers = answer['data']
-            else:
-                num_start = print_nums[0]
-                num_second_page = '' if len(print_nums) == 1 else print_nums[1]
-                num_stop = print_nums[-1]
-                logging.info(f"Вставляем номера листов {doc.name}")
-                form_27_data = {
-                    'check_form_27': incoming_data['check_box_from_27'], 'package': incoming_data['package'],
-                    'start_path': start_path, 'path_form_27': incoming_data['path_form_27'],
-                    'doc_name': doc.name.lower(), 'num_start': num_start, 'num_stop': num_stop
-                }
-
-                def create_element(attrib_name):
-                    return OxmlElement(attrib_name)
-
-                def create_attribute(attrib, attrib_name, attrib_value):
-                    attrib.set(ns.qn(attrib_name), attrib_value)
-
-                def add_page_number(paragraph, value_num, number_page=''):
-                    page_run = paragraph.add_run()
-                    t1 = create_element('w:t')
-                    create_attribute(t1, 'xml:space', 'preserve')
-                    t1.text = '\t\t' + value_num
-                    page_run._r.append(t1)
-
-                    page_num_run = paragraph.add_run()
-
-                    fld_char1 = create_element('w:fldChar')
-                    create_attribute(fld_char1, 'w:fldCharType', 'begin')
-
-                    instr_text_or1 = create_element('w:instrText')
-                    create_attribute(instr_text_or1, 'xml:space', 'preserve')
-                    instr_text_or1.text = "="
-
-                    fld_char2 = create_element('w:fldChar')
-                    create_attribute(fld_char2, 'w:fldCharType', 'begin')
-
-                    instrText = create_element('w:instrText')
-                    create_attribute(instrText, 'xml:space', 'preserve')
-                    instrText.text = "PAGE"
-
-                    fld_char3 = create_element('w:fldChar')
-                    create_attribute(fld_char3, 'w:fldCharType', 'end')
-
-                    instr_text_or2 = create_element('w:instrText')
-                    create_attribute(instr_text_or2, 'xml:space', 'preserve')
-                    instr_text_or2.text = " - 2 +" + number_page
-
-                    fld_char4 = create_element('w:fldChar')
-                    create_attribute(fld_char4, 'w:fldCharType', 'end')
-
-                    page_num_run._r.append(fld_char1)
-                    page_num_run._r.append(instr_text_or1)
-                    page_num_run._r.append(fld_char2)
-                    page_num_run._r.append(instrText)
-                    page_num_run._r.append(fld_char3)
-                    page_num_run._r.append(instr_text_or2)
-                    page_num_run._r.append(fld_char4)
-
-                word_doc = docx.Document(doc.start_path)  # Открываем
-                footer_1 = word_doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-                foot_1 = footer_1.paragraphs[0]  # Параграф
-                if len(footer_1.paragraphs[0].text) > 0:
-                    foot_1.text = footer_1.paragraphs[0].text + '\t\t' + num_start  # Текст
-                else:
-                    foot_1.text = '\t\t' + num_start  # Текст
-                foot_format = foot_1.paragraph_format  # Настройки параграфа
-                foot_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
-                if num_second_page:
-                    footer_2 = word_doc.sections[1].footer.paragraphs[0]  # Нижний колонтитул страницы
-                    mask_page = num_second_page.rpartition('/')[0] + '/'
-                    start_number = num_second_page.rpartition('/')[2]
-                    add_page_number(footer_2, mask_page, start_number)
-                word_doc.save(doc.start_path)  # Сохраняем
-                try:
-                    word2pdf(str(doc.start_path), str(doc.pdf_name))
-                except BaseException:
-                    word = win32com.client.Dispatch("Word.Application")
-                    word.Quit()
-                doc_old = docx.Document(doc.start_path)  # Открываем
-                last = doc_old.sections[len(doc_old.sections) - 1].first_page_footer  # Колонтитул
-                number = last.paragraphs[0].text.partition('\n')[0].rpartition(' ')[2]
-                form_27_data['number'] = number
-                # if incoming_data['check_box_from_27']:
-                #     logging.info('Вставляем номера в 27 форму')
-                #     # Если файл уже был преобразован и название отличается от «Форма 27»
-                #     if incoming_data['package']:
-                #         path_form27 = Path(start_path, 'Форма 27.xlsx')
-                #     else:
-                #         path_form27 = Path(incoming_data['path_form_27'])
-                #     path_form27_dir = path_form27.parent
-                #     path_form27_file = [i for i in os.listdir(path_form27_dir) if 'форма 27' in i.lower()]
-                #     wb = openpyxl.open(path_form27_file[0])
-                #     ws = wb.active
-                #     for row in range(1, ws.max_row):
-                #         if ws.cell(row, 1).value == number:
-                #             if re.findall('сопровод', doc.name.lower()):
-                #                 if re.findall(' (2 экз.)', doc.name.lower()):
-                #                     ws.cell(row + 3, 11).value = num_start
-                #                     if num_start != num_stop:
-                #                         ws.cell(row + 4, 11).value = num_stop
-                #                     break
-                #                 else:
-                #                     ws.cell(row, 11).value = num_start
-                #                     if num_start != num_stop:
-                #                         ws.cell(row + 1, 11).value = num_stop
-                #                     break
-                #             else:
-                #                 ws.cell(row, 11).value = num_start
-                #                 if num_start != num_stop:
-                #                     ws.cell(row + 1, 11).value = num_stop
-                #                 break
-                #     if re.findall('сопровод', doc.name.lower()):
-                #         for row in range(2, ws.max_row):
-                #             if ws.cell(row, 1).value:
-                #                 if ws.cell(row, 1).value == number:
-                #                     break
-                #                 else:
-                #                     ws.cell(row, 17).value = 'Уч. ном. ' + number
-                #     wb.save(filename=str(Path(path_form27_dir, path_form27_file[0])))
-                #     wb.close()
-                if incoming_data['one_side']:  # Если печать односторонняя - печатаем
-                    logging.info(f"Печатаем документ {doc.name}")
-                    answer = print_doc(doc.pdf_name, name_printer, 1, logging, del_numbers, print_nums, form_27_data)
+            try:
+                if doc.print is False:
+                    continue
+                line_doing.emit(f'Печатаем {doc.name} ({now_doc} из {all_doc})')
+                printing_date = [computer_name, user_name, str(doc.start_path), str(datetime.date.today()), printer]
+                print_nums = doc.print_num.split('|')
+                pythoncom.CoInitializeEx(0)
+                logging.info(f"Форматируем документ {doc.name}")
+                if re.findall(r'приложение а', doc.name.lower()):
+                    logging.info(f"Запускаем в печать {doc.name}")
+                    answer = print_doc(doc.start_path, name_printer, 1, logging, del_numbers)
                     if answer['status'] != 'success':
                         errors.append(answer['text'])
                         logging.error(answer['text'])
                     if answer['status'] == 'error':
                         logging.error(answer['trace'])
                     del_numbers = answer['data']
-                elif incoming_data['last_duplex']:  # Если последняя страница дуплекс
-                    # Дефолтный принтер
-                    logging.info(f"Преобразуем документ {doc.name}")
-                    input_file = fitz.open(doc.pdf_name)  # Открываем пдф
-                    pages = input_file.page_count  # Получаем кол-во страниц
-                    if pages == 2:
-                        answer = print_doc(doc.pdf_name, name_printer, 2, logging, del_numbers, print_nums, form_27_data)
-                        if answer['status'] != 'success':
-                            errors.append(answer['text'])
-                            logging.error(answer['text'])
-                        if answer['status'] == 'error':
-                            logging.error(answer['trace'])
-                        del_numbers = answer['data']
+                else:
+                    num_start = print_nums[0]
+                    num_second_page = '' if len(print_nums) == 1 else print_nums[1]
+                    num_stop = print_nums[-1]
+                    logging.info(f"Вставляем номера листов {doc.name}")
+                    form_27_data = {
+                        'check_form_27': incoming_data['check_box_from_27'], 'package': incoming_data['package'],
+                        'start_path': start_path, 'path_form_27': incoming_data['path_form_27'],
+                        'doc_name': doc.name.lower(), 'num_start': num_start, 'num_stop': num_stop
+                    }
+
+                    def create_element(attrib_name):
+                        return OxmlElement(attrib_name)
+
+                    def create_attribute(attrib, attrib_name, attrib_value):
+                        attrib.set(ns.qn(attrib_name), attrib_value)
+
+                    def add_page_number(paragraph, value_num, number_page=''):
+                        page_run = paragraph.add_run()
+                        t1 = create_element('w:t')
+                        create_attribute(t1, 'xml:space', 'preserve')
+                        t1.text = '\t\t' + value_num
+                        page_run._r.append(t1)
+
+                        page_num_run = paragraph.add_run()
+
+                        fld_char1 = create_element('w:fldChar')
+                        create_attribute(fld_char1, 'w:fldCharType', 'begin')
+
+                        instr_text_or1 = create_element('w:instrText')
+                        create_attribute(instr_text_or1, 'xml:space', 'preserve')
+                        instr_text_or1.text = "="
+
+                        fld_char2 = create_element('w:fldChar')
+                        create_attribute(fld_char2, 'w:fldCharType', 'begin')
+
+                        instrText = create_element('w:instrText')
+                        create_attribute(instrText, 'xml:space', 'preserve')
+                        instrText.text = "PAGE"
+
+                        fld_char3 = create_element('w:fldChar')
+                        create_attribute(fld_char3, 'w:fldCharType', 'end')
+
+                        instr_text_or2 = create_element('w:instrText')
+                        create_attribute(instr_text_or2, 'xml:space', 'preserve')
+                        instr_text_or2.text = " - 2 +" + number_page
+
+                        fld_char4 = create_element('w:fldChar')
+                        create_attribute(fld_char4, 'w:fldCharType', 'end')
+
+                        page_num_run._r.append(fld_char1)
+                        page_num_run._r.append(instr_text_or1)
+                        page_num_run._r.append(fld_char2)
+                        page_num_run._r.append(instrText)
+                        page_num_run._r.append(fld_char3)
+                        page_num_run._r.append(instr_text_or2)
+                        page_num_run._r.append(fld_char4)
+
+                    word_doc = docx.Document(doc.start_path)  # Открываем
+                    if word_doc.sections[0].different_first_page_header_footer:
+                        footer_1 = word_doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
                     else:
-                        logging.info(f"Преобразуем документ {doc.pdf_name}")
-                        output_1_side = Path(doc.pdf_name.parent, '1_' + doc.pdf_name.name)
-                        output_2_side = Path(doc.pdf_name.parent, '2_' + doc.pdf_name.name)
-                        # Страницы для односторонней печати
-                        selected_page = [page for page in range(0, pages - 2)]
-                        input_file.select(selected_page)  # Выбираем страницы
-                        input_file.save(output_1_side)  # Сохраняем файл
-                        # Печатаем
-                        answer = print_doc(output_1_side, name_printer, 1, logging, del_numbers)
+                        footer_1 = word_doc.sections[0].footer  # Нижний колонтитул первой страницы
+                    # footer_1 = word_doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
+                    foot_1 = footer_1.paragraphs[0]  # Параграф
+                    if len(footer_1.paragraphs[0].text) > 0:
+                        foot_1.text = footer_1.paragraphs[0].text + '\t\t' + num_start  # Текст
+                    else:
+                        foot_1.text = '\t\t' + num_start  # Текст
+                    foot_format = foot_1.paragraph_format  # Настройки параграфа
+                    foot_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
+                    if num_second_page:
+                        footer_2 = word_doc.sections[1].footer.paragraphs[0]  # Нижний колонтитул страницы
+                        mask_page = num_second_page.rpartition('/')[0] + '/'
+                        start_number = num_second_page.rpartition('/')[2]
+                        add_page_number(footer_2, mask_page, start_number)
+                    word_doc.save(doc.start_path)  # Сохраняем
+                    try:
+                        word2pdf(str(doc.start_path), str(doc.pdf_name))
+                    except BaseException:
+                        word = win32com.client.Dispatch("Word.Application")
+                        word.Quit()
+                    doc_old = docx.Document(doc.start_path)  # Открываем
+                    last = doc_old.sections[len(doc_old.sections) - 1].first_page_footer  # Колонтитул
+                    number = last.paragraphs[0].text.partition('\n')[0].rpartition(' ')[2]
+                    form_27_data['number'] = number
+                    if incoming_data['one_side']:  # Если печать односторонняя - печатаем
+                        logging.info(f"Печатаем документ {doc.name}")
+                        answer = print_doc(doc.pdf_name, name_printer, 1, logging,
+                                           del_numbers, print_nums, form_27_data)
                         if answer['status'] != 'success':
                             errors.append(answer['text'])
                             logging.error(answer['text'])
                         if answer['status'] == 'error':
                             logging.error(answer['trace'])
                         del_numbers = answer['data']
-                        os.remove(output_1_side)
+                    elif incoming_data['last_duplex']:  # Если последняя страница дуплекс
+                        # Дефолтный принтер
+                        logging.info(f"Преобразуем документ {doc.name}")
                         input_file = fitz.open(doc.pdf_name)  # Открываем пдф
-                        selected_page = [pages - 2, pages - 1]  # Страницы для двухсторонней печати
-                        input_file.select(selected_page)  # Выбираем страницы
-                        input_file.save(output_2_side)  # Сохраняем
-                        answer = print_doc(output_2_side, name_printer, 2, logging, del_numbers, print_nums, form_27_data)
+                        pages = input_file.page_count  # Получаем кол-во страниц
+                        if pages == 2:
+                            answer = print_doc(doc.pdf_name, name_printer, 2, logging,
+                                               del_numbers, print_nums, form_27_data)
+                            if answer['status'] != 'success':
+                                errors.append(answer['text'])
+                                logging.error(answer['text'])
+                            if answer['status'] == 'error':
+                                logging.error(answer['trace'])
+                            del_numbers = answer['data']
+                        else:
+                            logging.info(f"Преобразуем документ {doc.pdf_name}")
+                            output_1_side = Path(doc.pdf_name.parent, '1_' + doc.pdf_name.name)
+                            output_2_side = Path(doc.pdf_name.parent, '2_' + doc.pdf_name.name)
+                            # Страницы для односторонней печати
+                            selected_page = [page for page in range(0, pages - 2)]
+                            input_file.select(selected_page)  # Выбираем страницы
+                            input_file.save(output_1_side)  # Сохраняем файл
+                            # Печатаем
+                            answer = print_doc(output_1_side, name_printer, 1, logging, del_numbers)
+                            if answer['status'] != 'success':
+                                errors.append(answer['text'])
+                                logging.error(answer['text'])
+                            if answer['status'] == 'error':
+                                logging.error(answer['trace'])
+                            del_numbers = answer['data']
+                            os.remove(output_1_side)
+                            input_file = fitz.open(doc.pdf_name)  # Открываем пдф
+                            selected_page = [pages - 2, pages - 1]  # Страницы для двухсторонней печати
+                            input_file.select(selected_page)  # Выбираем страницы
+                            input_file.save(output_2_side)  # Сохраняем
+                            answer = print_doc(output_2_side, name_printer, 2, logging,
+                                               del_numbers, print_nums, form_27_data)
+                            if answer['status'] != 'success':
+                                errors.append(answer['text'])
+                                logging.error(answer['text'])
+                            if answer['status'] == 'error':
+                                logging.error(answer['trace'])
+                            del_numbers = answer['data']
+                            os.remove(output_2_side)
+                        input_file.close()
+                    else:
+                        answer = print_doc(doc.pdf_name, name_printer, 2, logging,
+                                           del_numbers, print_nums, form_27_data)
                         if answer['status'] != 'success':
                             errors.append(answer['text'])
                             logging.error(answer['text'])
                         if answer['status'] == 'error':
                             logging.error(answer['trace'])
                         del_numbers = answer['data']
-                        os.remove(output_2_side)
-                    input_file.close()
-                else:
-                    answer = print_doc(doc.pdf_name, name_printer, 2, logging, del_numbers, print_nums, form_27_data)
-                    if answer['status'] != 'success':
-                        errors.append(answer['text'])
-                        logging.error(answer['text'])
-                    if answer['status'] == 'error':
-                        logging.error(answer['trace'])
-                    del_numbers = answer['data']
-                logging.info('Записываем данные с печати')
-                with open(save_printing_data_file, 'a') as f:
-                    f.write(';'.join(printing_date) + '\n')
-                if os.path.exists(doc.pdf_name):
-                    logging.info(f"Удаляем пдф {doc.pdf_name.name}")
-                    os.remove(doc.pdf_name)
-            current_progress += percent
-            line_progress.emit(f'Выполнено {int(current_progress)} %')
-            progress_value.emit(int(current_progress))
-            now_doc += 1
+                    logging.info('Записываем данные с печати')
+                    with open(save_printing_data_file, 'a') as f:
+                        f.write(';'.join(printing_date) + '\n')
+                    if os.path.exists(doc.pdf_name):
+                        logging.info(f"Удаляем пдф {doc.pdf_name.name}")
+                        os.remove(doc.pdf_name)
+                current_progress += percent
+                line_progress.emit(f'Выполнено {int(current_progress)} %')
+                progress_value.emit(int(current_progress))
+                now_doc += 1
+            except Exception as ex:
+                logging.error("Упс, сорвалась печать файла!")
+                logging.error("Ошибка:\n " + str(ex) + '\n' + traceback.format_exc())
         logging.info(f"Удаляем напечатанные номера")
         line_doing.emit(f"Удаляем напечатанные номера")
         print_numbers_df = pd.read_excel(incoming_data['path_account_num'])
