@@ -75,36 +75,36 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
               form_27: dict = None) -> dict:
     try:
         errors = []
-        # printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
-        # handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
-        # attributes = win32print.GetPrinter(handle, level)
-        # if level == 2:
-        #     attributes = win32print.GetPrinter(handle, level)
-        #     attributes['pDevMode'].Duplex = 2  # flip up  Для двухсторонней печати
-        #     try:
-        #         # Устанавливаем настройки
-        #         win32print.SetPrinter(handle, level, attributes, 0)
-        #     except:  # Пропускаем ошибку
-        #         pass
-        # win32api.ShellExecute(0, "print", str(start_path), name_printer, ".", 0)
-        # jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
-        # log.info(f"Ждем очередь")
-        # while jobs < 3:
-        #     print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
-        #     if not print_jobs and jobs == 0:  # Пока не запустилось в печать
-        #         pass
-        #     elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
-        #         jobs = 3
-        #         log.info('Очередь очистилась')
-        #     elif print_jobs:  # Если в очереди что-то есть
-        #         jobs = 2
-        # if level == 2:
-        #     attributes['pDevMode'].Duplex = 1  # Настройки по умолчанию (односторонняя печать)
-        #     try:
-        #         win32print.SetPrinter(handle, level, attributes, 0)  # Выставляем настройки
-        #     except:
-        #         pass
-        # win32print.ClosePrinter(handle)  # Закрываем принтер
+        printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
+        handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
+        attributes = win32print.GetPrinter(handle, level)
+        if level == 2:
+            attributes = win32print.GetPrinter(handle, level)
+            attributes['pDevMode'].Duplex = 2  # flip up  Для двухсторонней печати
+            try:
+                # Устанавливаем настройки
+                win32print.SetPrinter(handle, level, attributes, 0)
+            except:  # Пропускаем ошибку
+                pass
+        win32api.ShellExecute(0, "print", str(start_path), name_printer, ".", 0)
+        jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
+        log.info(f"Ждем очередь")
+        while jobs < 3:
+            print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
+            if not print_jobs and jobs == 0:  # Пока не запустилось в печать
+                pass
+            elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
+                jobs = 3
+                log.info('Очередь очистилась')
+            elif print_jobs:  # Если в очереди что-то есть
+                jobs = 2
+        if level == 2:
+            attributes['pDevMode'].Duplex = 1  # Настройки по умолчанию (односторонняя печать)
+            try:
+                win32print.SetPrinter(handle, level, attributes, 0)  # Выставляем настройки
+            except:
+                pass
+        win32print.ClosePrinter(handle)  # Закрываем принтер
         if form_27 and form_27['check_form_27']:
             log.info(f"Заносим номера в 27 форму")
             answer = add_num_in_form_27(form_27)
