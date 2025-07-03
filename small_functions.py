@@ -178,10 +178,10 @@ def sp_sorting(name_gk: str, finish_path: Path, sp_path_dir: Path, sp_path_file:
                 'data': ''}
 
 
-def pages_count(file: Path) -> dict:
-    """Функция для подсчёта количества страниц в документе. Принимает путь к файлу"""
-    # Конвертируем
-    # while True:
+def pages_count(file: Path, minus: bool = False) -> dict:
+    """Функция для подсчёта количества страниц в документе. Принимает путь к файлу. Переменная minus служить для
+    вычитания одной страницы (фонаря), если он уже присутствует в документе. Такое бывает, когда листы считаются в
+    динамически заполняемом документе (сопровод или опись, например)"""
     try:
         name = file.name
         parent_path = file.parent
@@ -191,6 +191,7 @@ def pages_count(file: Path) -> dict:
         input_file_pdf = fitz.open(str(Path(parent_path, name_pdf)))  # Открываем пдф
         count_page = input_file_pdf.page_count  # Получаем кол-во страниц
         input_file_pdf.close()  # Закрываем
+        count_page = count_page - 1 if minus else count_page
         os.remove(str(Path(parent_path, name_pdf)))  # Удаляем пдф документ
         temp_docx = os.path.join(parent_path, name)
         temp_zip = os.path.join(parent_path, name + ".zip")
@@ -227,7 +228,7 @@ def pages_count(file: Path) -> dict:
         os.rename(temp_zip, temp_docx)  # rename zip file to docx
         rm(temp_folder)
         rm(Path(parent_path, 'zip'))
-        return {'error': False, 'text': '', 'pages': count_page}
+        return {'error': False, 'text': '', 'pages': count_page, 'trace': ''}
     except BaseException as exception:
         return {'error': True, 'text': exception, 'pages': 0, 'trace': traceback.format_exc()}
 
@@ -328,11 +329,7 @@ def list_doc(dp):
     with zipfile.ZipFile(dp) as my_doc:
         xml_content = my_doc.read('docProps/app.xml')  # Общие свойства
         pages_ = re.findall(r'<Pages>(\w*)</Pages>', xml_content.decode())  # Ищем кол-во страниц
-        if int(pages_[0]) > 1:
-            ns = int(pages_[0]) - 1
-        else:
-            ns = int(pages_[0])
-            # ns = list_count(dp)  # Для проверки, вдруг изменилось количество страниц
+        ns = int(pages_[0])
     return ns
 
 

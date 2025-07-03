@@ -473,7 +473,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             'path_form_27': self.lineEdit_main_path_file_form27_print.text().strip(),
             'print_order': True if self.checkBox_main_print_order.isChecked() else False,
             'fsb': True if self.radioButton_main_group3_FSB_print.isChecked() else False,
-            'fstek': True if self.radioButton_main_group3_FSB_print.isChecked() else False,
+            'fstek': True if self.radioButton_main_group3_FSTEK_print.isChecked() else False,
             'service': '',
             'conclusion': True if self.checkBox_main_conclusion_print.isChecked() else False,
             'protocol': True if self.checkBox_main_protocol_print.isChecked() else False,

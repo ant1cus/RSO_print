@@ -313,10 +313,11 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 doc.close()
                 os.remove(pdf_path)
         if re.findall(r'сопроводит', data.name.lower()) or re.findall(r'опись', data.name.lower()):
-            pages = pages_count(data.finish_path)
-            page = pages['pages'] - 1
+            pages = pages_count(data.finish_path, True)
+            page = pages['pages']
             if page == 0:
                 errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
+                errors.append(pages['trace'])
             index_doc = documents.loc[documents['name'] == data.name].index[0]
             documents.loc[index_doc, 'pages'] = page
         if errors:
