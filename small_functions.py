@@ -410,9 +410,13 @@ def delete_header_footer_second_acc(path: Path, text_first_header: str, secret_n
             foot.is_linked_to_previous = False  # Отвязываем
         if doc.sections[0].different_first_page_header_footer:
             header = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
-            doc.sections[0].footer.paragraphs[0].text = secret_num
+            footer = doc.sections[0].first_page_footer
         else:
             header = doc.sections[0].header
+            footer = doc.sections[0].footer
+        if len(footer.paragraphs) == 0:
+            footer.add_paragraph()
+        footer.paragraphs[0].text = secret_num
         head = header.paragraphs[0]  # Параграф
         head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
         head = header.paragraphs[0]  # Выбираем новый первый параграф

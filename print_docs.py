@@ -174,7 +174,7 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
         docs_not = [i for i in docs if i not in docs_]
         docs = docs_not + docs_
         # Берем все подряд номера, потом вернём и удалим
-        print_numbers_df = pd.read_excel(incoming_data['path_account_num'])
+        print_numbers_df = pd.read_excel(incoming_data['path_account_num'], header=None)
         print_numbers_df.fillna(False, inplace=True)
         print_nums = [print_numbers_df[col].to_numpy().tolist() for col in print_numbers_df.columns]
         print_nums = [x for y in print_nums for x in y if x is not False]
@@ -199,7 +199,6 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
             documents.loc[index_doc, 'pages'] = pages
         documents = documents.sort_values('print_order')
         documents.reset_index(drop=True, inplace=True)
-        print(documents['pages'].to_numpy().tolist())
         for index, pages in enumerate(documents['pages'].to_numpy().tolist()):
             if np.isnan(pages):
                 continue

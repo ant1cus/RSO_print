@@ -184,7 +184,6 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
     logging = incoming_data['logging']
     try:
         pt_num = 14 if incoming_data['service'] else 12
-        documents = pd.DataFrame()
         if incoming_data['package']:
             folders = [item for item in Path(incoming_data['start_path']).glob('*') if os.path.isdir(item)]
             start_folders = [Path(incoming_data['start_path'], item) for item in folders]
@@ -193,6 +192,7 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
             start_folders = [Path(incoming_data['start_path'])]
             finish_folders = [Path(incoming_data['finish_path'])]
         for start_folder, finish_folder in zip(start_folders, finish_folders):
+            documents = pd.DataFrame()
             logging.info(f'Бежим по папке {start_folder.name}')
             answer = add_documents(incoming_data, start_folder, finish_folder, line_doing, line_progress,
                                    progress_value, event, window_check, info_value)
