@@ -261,7 +261,7 @@ def rm(folder_path):
     shutil.rmtree(folder_path)
 
 
-def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path) -> dict:
+def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path, line_doing) -> dict:
     """Добавление номеров и текстовок для описей"""
 
     def df_add_inventory(number, finish_path, docs, ind):
@@ -273,14 +273,17 @@ def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path) ->
         docs.loc[ind, 'classified'] = incoming_data['classified']
         docs.loc[ind, 'executor'] = incoming_data['inventory_executor']
         docs.loc[ind, 'first_header_text'] = f'{incoming_data["classified"]}\n(без приложения не секретно)\nЭкз.№ 1'
-        docs.loc[ind, 'text'] = '\n\n' + incoming_data["account_position"] + '\t\t\t\t\t\t\t\t' + incoming_data["account_executor"]
+        docs.loc[ind, 'text'] = '\n\n' + incoming_data["account_position"] +\
+                                '\t\t\t\t\t\t\t\t' + incoming_data["account_executor"]
         docs.loc[ind, 'date'] = incoming_data['date']
         return docs
 
     try:
         number_inventory = 1
         if incoming_data['flag_inventory'] == 1:
-            index = documents.loc[documents['name'].str.contains(f'Опись №{number_inventory}.docx', case=False)].index[0]
+            line_doing(f"Генерируем колонтитулы для описи №{number_inventory}")
+            index = documents.loc[documents['name'].str.contains(f'Опись №{number_inventory}.docx',
+                                                                 case=False)].index[0]
             documents = df_add_inventory(number_inventory, incoming_path, documents, index)
             documents.loc[documents['account_list'] == 1, 'account_list'] = f'Опись №{number_inventory}.docx'
         else:
@@ -290,9 +293,11 @@ def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path) ->
             # conclusion_num = len(documents[(documents['name'].str.contains(r'заключение', case=False)
             # 								& (documents['parent_path'] == incoming_path))])
             while True:
-                index = documents.loc[documents['name'].str.contains(f'Опись №{number_inventory}.docx', case=False)].index[0]
+                index = documents.loc[documents['name'].str.contains(f'Опись №{number_inventory}.docx',
+                                                                     case=False)].index[0]
                 documents = df_add_inventory(number_inventory, incoming_path, documents, index)
                 docs_40 = []
+                line_doing(f"Генерируем колонтитулы для описи №{number_inventory}")
                 for doc in [conclusions, prescriptions]:
                     slice_docs = doc.iloc[1:41, 'index'].tolist()
                     documents.loc[slice_docs, 'account_list'] = f'Опись №{number_inventory}.docx'

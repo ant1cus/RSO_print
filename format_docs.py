@@ -77,7 +77,7 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
                 return {'status': 'warning', 'text': files_order['text'], 'trace': ''}
         order = files_order['data']['docs']
         answer = create_text_for_docs(logging, order, documents, line_doing, all_doc, now_doc, progress_value,
-                                      line_progress, percent, current_progress, incoming_data)
+                                      line_progress, percent, current_progress, incoming_data, window_check, event)
 
         if answer['status'] != 'success':
             return answer
@@ -89,6 +89,9 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
         documents.reset_index(drop=True, inplace=True)
         # Форма 3
         if incoming_data['flag_inventory'] == 40 and documents["name"].isin(['Форма 3.docx']).any():
+            event.wait()
+            if window_check.stop_threading:
+                return {'status': 'cancel', 'trace': '', 'text': ''}
             line_doing.emit(f'Генерируем колонтитулы для формы 3')
             logging.info("Генерируем колонтитулы для форму 3")
             index_doc = documents.loc[documents['name'] == 'Форма 3.docx'].index[0]
@@ -112,6 +115,9 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
         line_progress.emit(f'Выполнено {int(62)} %')
         progress_value.emit(int(62))
         if incoming_data['inventory_insert']:
+            event.wait()
+            if window_check.stop_threading:
+                return {'status': 'cancel', 'trace': '', 'text': ''}
             line_doing.emit(f'Генерируем колонтитулы для описи(ей)')
             # Новое для преобразования текста для описей.
             a_prescription = documents.loc[documents['a_prescription'].isin([True])]
@@ -125,7 +131,7 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
                     documents.loc[index_doc, 'account_list_text'] = '!'.join(a_text)
 
             logging.info("Добавляем опись")
-            answer = inventory_insert(documents, incoming_data, finish_path)
+            answer = inventory_insert(documents, incoming_data, finish_path, line_doing)
             if answer['status'] != 'success':
                 return answer
             documents = answer['data']
@@ -135,6 +141,9 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
             logging.info("Добавляем сопроводительный или запрос")
             dict_file = incoming_data['file_num'] if incoming_data['checkBox_file_num'] else None
             for doc in documents[(documents['action'] == 'acc_doc')].index:
+                event.wait()
+                if window_check.stop_threading:
+                    return {'status': 'cancel', 'trace': '', 'text': ''}
                 start_path_acc = documents.loc[doc, 'start_path']
                 name_acc = documents.loc[doc, 'name']
                 line_doing.emit(f'Генерируем колонтитулы для {name_acc}')
@@ -192,6 +201,9 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
             start_folders = [Path(incoming_data['start_path'])]
             finish_folders = [Path(incoming_data['finish_path'])]
         for start_folder, finish_folder in zip(start_folders, finish_folders):
+            event.wait()
+            if window_check.stop_threading:
+                return {'status': 'cancel', 'trace': '', 'text': ''}
             documents = pd.DataFrame()
             logging.info(f'Бежим по папке {start_folder.name}')
             answer = add_documents(incoming_data, start_folder, finish_folder, line_doing, line_progress,
@@ -205,6 +217,9 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
             current_progress = 70
             percent = 10 / all_doc
             for document in documents.itertuples():
+                event.wait()
+                if window_check.stop_threading:
+                    return {'status': 'cancel', 'trace': '', 'text': ''}
                 line_doing.emit(f'Создаём {document.name} ({now_doc} из {all_doc})')
                 logging.info(f'Создаём файл {document.name}')
                 # для описи
@@ -224,6 +239,9 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
                 progress_value.emit(int(current_progress))
                 now_doc += 1
             if incoming_data['form27_insert']:
+                event.wait()
+                if window_check.stop_threading:
+                    return {'status': 'cancel', 'trace': '', 'text': ''}
                 line_doing.emit(f'Создаём 27 форму')
                 logging.info(f'Создаём 27 форму')
                 form_27 = documents.loc[documents['form_27'] == 1]
@@ -233,6 +251,9 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
             line_progress.emit(f'Выполнено {int(90)} %')
             progress_value.emit(int(90))
             if incoming_data['main_sp']:
+                event.wait()
+                if window_check.stop_threading:
+                    return {'status': 'cancel', 'trace': '', 'text': ''}
                 line_doing.emit(f'Сортируем СП')
                 logging.info(f'Сортируем СП')
                 name_gk = incoming_data['name_gk'] if incoming_data['checkBox_gk'] else ''
@@ -248,7 +269,7 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
             for txt_file in docs_txt:
                 line_doing.emit(f'Копируем txt файлы')
                 logging.info(f'Копируем txt файлы')
-                shutil.copy(txt_file, finish_folder)
+                shutil.copy(str(Path(start_folder, txt_file)), finish_folder)
         return {'status': 'success', 'text': '', 'trace': ''}
     except BaseException as error:
         return {'status': 'error', 'text': error, 'trace': traceback.format_exc()}

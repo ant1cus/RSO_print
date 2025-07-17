@@ -7,7 +7,8 @@ from small_functions import pages_count
 
 
 def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line_doing, all_doc, now_doc,
-                         progress_value, line_progress, percent, current_progress, incoming: dict) -> dict:
+                         progress_value, line_progress, percent, current_progress,
+                         incoming: dict, window_check, event) -> dict:
     """Вставка в основную таблицу номеров, текстовок, дат, исполнителей. Возвращает части секретного номера,
      чтобы продолжить, если включен пакетный режим, а так же список для реиндексации фрейма данных"""
     add_list_item = incoming['add_list_item'] if incoming['checkBox_add_list_item'] else ''
@@ -19,6 +20,9 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
     try:
         errors = []
         for doc in docs:  # Для файлов в папке
+            event.wait()
+            if window_check.stop_threading:
+                return {'status': 'cancel', 'trace': '', 'text': ''}
             doc_name = doc.name
             parent_path = doc.parent
             line_doing.emit(f'Генерируем колонтитулы для {doc_name} ({now_doc} из {all_doc})')
