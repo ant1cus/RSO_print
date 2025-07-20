@@ -124,11 +124,13 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
             if len(a_prescription):
                 for item in a_prescription.itertuples():
                     index_doc = documents.loc[documents['name'].str.contains('протокол', case=False)
-                                              & documents['number'].str.contains(item.number, case=False)].index[0]
-                    a_text = documents.loc[index_doc, 'account_list_text'].split('!')
-                    a_text[2] = a_text[2] + '/Приложение несекретно'
-                    a_text[3] = a_text[3] + '/' + str(item.pages)
-                    documents.loc[index_doc, 'account_list_text'] = '!'.join(a_text)
+                                              &
+                                              documents['number'].str.contains(item.number, case=False)].index.to_list()
+                    for ind in index_doc:
+                        a_text = documents.loc[ind, 'account_list_text'].split('!')
+                        a_text[2] = a_text[2] + '/Приложение несекретно'
+                        a_text[3] = a_text[3] + '/' + str(item.pages)
+                        documents.loc[ind, 'account_list_text'] = '!'.join(a_text)
 
             logging.info("Добавляем опись")
             answer = inventory_insert(documents, incoming_data, finish_path, line_doing)

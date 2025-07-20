@@ -235,7 +235,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                            [self.radioButton_main_group2_40_num,
                                                             self.radioButton_main_group2_all_doc]],
                       'addInsertMain-account_position': ['Должность', self.lineEdit_main_account_position],
-                      'addInsertMain-account_executor': ['ФИО подпись', self.lineEdit_main_account_executor],
+                      'addInsertMain-account_executor': ['ФИО опись', self.lineEdit_main_account_executor],
                       'addInsertMain-account_path_folder': ['Путь к описи', self.lineEdit_main_account_path_dir],
                       'addInsertMain-groupBox_form27_insert': ['Включить 27 форму', self.groupBox_main_form27_insert],
                       'addInsertMain-form27_firm': ['Организация', self.lineEdit_main_form27_firm],

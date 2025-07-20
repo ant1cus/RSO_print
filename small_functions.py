@@ -281,7 +281,7 @@ def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path, li
     try:
         number_inventory = 1
         if incoming_data['flag_inventory'] == 1:
-            line_doing(f"Генерируем колонтитулы для описи №{number_inventory}")
+            line_doing.emit(f"Генерируем колонтитулы для описи №{number_inventory}")
             index = documents.loc[documents['name'].str.contains(f'Опись №{number_inventory}.docx',
                                                                  case=False)].index[0]
             documents = df_add_inventory(number_inventory, incoming_path, documents, index)
@@ -297,7 +297,7 @@ def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path, li
                                                                      case=False)].index[0]
                 documents = df_add_inventory(number_inventory, incoming_path, documents, index)
                 docs_40 = []
-                line_doing(f"Генерируем колонтитулы для описи №{number_inventory}")
+                line_doing.emit(f"Генерируем колонтитулы для описи №{number_inventory}")
                 for doc in [conclusions, prescriptions]:
                     slice_docs = doc.iloc[1:41, 'index'].tolist()
                     documents.loc[slice_docs, 'account_list'] = f'Опись №{number_inventory}.docx'
