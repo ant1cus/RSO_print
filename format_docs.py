@@ -252,7 +252,7 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
                     return answer
             line_progress.emit(f'Выполнено {int(90)} %')
             progress_value.emit(int(90))
-            if incoming_data['main_sp']:
+            if 'main_sp' in incoming_data.keys() and incoming_data['main_sp']:
                 event.wait()
                 if window_check.stop_threading:
                     return {'status': 'cancel', 'trace': '', 'text': ''}

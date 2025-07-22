@@ -498,6 +498,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             'finish_path': self.lineEdit_41101_finish_path_insert_dir.text().strip(),
             'checkBox_file_num': True if self.checkBox_41101_file_num.isChecked() else False,
             'file_num': self.lineEdit_41101_file_num_path.text().strip(),
+            'checkBox_signature': True if self.checkBox_41101_signature.isChecked() else False,
+            'path_signature': self.lineEdit_41101_path_signature_dir.text().strip(),
             'radioButton_FSB': self.radioButton_41101_group5_FSB_df.isChecked(),
             'radioButton_FSTEK': self.radioButton_41101_group5_FSTEK_df.isChecked(),
             'classified': self.comboBox_41101_classified.currentText().strip(),
