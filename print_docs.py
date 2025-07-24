@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import time
 import traceback
 from pathlib import Path
 import docx
@@ -15,7 +16,6 @@ import getpass
 import socket
 
 from PyQt5 import QtPrintSupport
-from small_functions import list_doc
 from natsort import natsorted
 from openpyxl import load_workbook
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -127,6 +127,7 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
 def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progress, progress_value, event, window_check,
                  info_value) -> dict:
     logging = incoming_data['logging']
+    current_progress = 0
     try:
         line_doing.emit(f'Готовим печать документов в «{start_path.name}»')
         errors = []
@@ -180,7 +181,14 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
         print_nums = [x for y in print_nums for x in y if x is not False]
         print_num = 0
         one_time_load = True
+        try:
+            percent = 20 / len(docs)
+        except ZeroDivisionError:
+            return {'status': 'warning', 'text': 'Деление на 0, ни одного документа для печати', 'trace': ''}
+        now_doc = 1
+        all_doc = len(docs)
         for index, file in enumerate(docs):
+            pythoncom.CoInitializeEx(0)
             index_doc = documents.loc[documents['name'] == file].index[0]
             if re.findall(r'заключение', file.lower(), re.I) and incoming_data['conclusion'] is False:
                 documents.loc[index_doc, 'print'] = False
@@ -194,9 +202,24 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                 documents.loc[index_doc, 'print'] = True
             documents.loc[index_doc, 'print_order'] = index
             if documents.loc[index_doc, 'print'] is False:
+                current_progress += percent
+                line_progress.emit(f'Выполнено {int(current_progress)} %')
+                progress_value.emit(int(current_progress))
+                now_doc += 1
                 continue
-            pages = list_doc(documents.loc[index_doc, 'start_path'])
-            documents.loc[index_doc, 'pages'] = pages
+            line_doing.emit(f'Считаем листы для печати {file} ({now_doc} из {all_doc})')
+            try:
+                word2pdf(str(documents.loc[index_doc, 'start_path']), str(documents.loc[index_doc, 'pdf_name']))
+            except BaseException:
+                word = win32com.client.Dispatch("Word.Application")
+                word.Quit()
+            input_file = fitz.open(str(documents.loc[index_doc, 'pdf_name']))  # Открываем пдф
+            documents.loc[index_doc, 'pages'] = input_file.page_count
+            input_file.close()
+            current_progress += percent
+            line_progress.emit(f'Выполнено {int(current_progress)} %')
+            progress_value.emit(int(current_progress))
+            now_doc += 1
         documents = documents.sort_values('print_order')
         documents.reset_index(drop=True, inplace=True)
         for index, pages in enumerate(documents['pages'].to_numpy().tolist()):
@@ -223,13 +246,12 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                 break
             documents.loc[index, 'print_num'] = '|'.join(print_nums[print_num: print_num + pages])
             print_num = print_num + pages
-        current_progress = 0
         now_doc = 1
         all_doc = documents['print'].sum()
         if errors:
             return {'status': 'warning', 'text': errors, 'trace': ''}
         try:
-            percent = 100 / all_doc
+            percent = 80 / all_doc
         except ZeroDivisionError:
             return {'status': 'warning', 'text': 'Деление на 0, ни одного документа для печати', 'trace': ''}
         win32print.SetDefaultPrinter(incoming_data['name_printer'])
@@ -239,7 +261,9 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
         name_printer = incoming_data['name_printer']
         del_numbers = []
         date_for_saving = datetime.date.today()
-        save_printing_data_file = Path(incoming_data['default_path'], str(date_for_saving) + '.txt')
+        if not Path.exists(Path(incoming_data['default_path'], 'printing_data')):
+            os.makedirs(Path(incoming_data['default_path'], 'printing_data'))
+        save_printing_data_file = Path(incoming_data['default_path'], 'printing_data', str(date_for_saving) + '.txt')
         if os.path.exists(save_printing_data_file) is False:
             with open(save_printing_data_file, 'w'):
                 pass
@@ -247,6 +271,9 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
         for doc in documents.itertuples():
             try:
                 if doc.print is False:
+                    current_progress += percent
+                    line_progress.emit(f'Выполнено {int(current_progress)} %')
+                    progress_value.emit(int(current_progress))
                     continue
                 line_doing.emit(f'Печатаем {doc.name} ({now_doc} из {all_doc})')
                 printing_date = [computer_name, user_name, str(doc.start_path), str(datetime.date.today()), printer]
@@ -349,11 +376,6 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                         start_number = num_second_page.rpartition('/')[2]
                         add_page_number(footer_2, mask_page, start_number)
                     word_doc.save(doc.start_path)  # Сохраняем
-                    try:
-                        word2pdf(str(doc.start_path), str(doc.pdf_name))
-                    except BaseException:
-                        word = win32com.client.Dispatch("Word.Application")
-                        word.Quit()
                     doc_old = docx.Document(doc.start_path)  # Открываем
                     last = doc_old.sections[len(doc_old.sections) - 1].first_page_footer  # Колонтитул
                     number = last.paragraphs[0].text.partition('\n')[0].rpartition(' ')[2]
@@ -425,9 +447,6 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                     logging.info('Записываем данные с печати')
                     with open(save_printing_data_file, 'a') as f:
                         f.write(';'.join(printing_date) + '\n')
-                    if os.path.exists(doc.pdf_name):
-                        logging.info(f"Удаляем пдф {doc.pdf_name.name}")
-                        os.remove(doc.pdf_name)
                 current_progress += percent
                 line_progress.emit(f'Выполнено {int(current_progress)} %')
                 progress_value.emit(int(current_progress))
@@ -435,6 +454,12 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
             except Exception as ex:
                 logging.error("Упс, сорвалась печать файла!")
                 logging.error("Ошибка:\n " + str(ex) + '\n' + traceback.format_exc())
+            pdf_files = [i for i in os.listdir(doc.parent_path) if doc.name.rpartition('.')[0] in i
+                         and i.endswith('.pdf')]
+            if pdf_files:
+                logging.info(f"Удаляем пдф после печати")
+                for pdf_file in pdf_files:
+                    os.remove(str(Path(doc.parent_path, pdf_file)))
         logging.info(f"Удаляем напечатанные номера")
         line_doing.emit(f"Удаляем напечатанные номера")
         print_numbers_df = pd.read_excel(incoming_data['path_account_num'], header=None)
@@ -451,7 +476,23 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
         write_df.to_excel(incoming_data['path_account_num'], header=False, index=False)
         return {'status': 'success', 'text': f'Документы в папке {start_path.name} напечатаны'}
     except Exception as ex:  # Если ошибка
-        logging.error("Ошибка:\n " + str(ex) + '\n' + traceback.format_exc())
+        logging.error(f"Ошибка:\n {ex}'\n'{traceback.format_exc()}")
+        logging.error("Удаляем все созданные pdf из папки")
+        pdf_files = [i for i in os.listdir(start_path) if i.endswith('.pdf')]
+        if pdf_files:
+            logging.info(f"Удаляем пдф после ошибки")
+            for pdf_file in pdf_files:
+                try:
+                    os.remove(str(Path(start_path, pdf_file)))
+                except Exception:
+                    time.sleep(3)
+                    input_file = fitz.open(str(Path(start_path, pdf_file)))
+                    input_file.close()
+                    try:
+                        os.remove(str(Path(start_path, pdf_file)))
+                    except Exception as e:
+                        logging.error(f"Не удалось удалить файл {Path(start_path, pdf_file)}")
+                        logging.error(f"Ошибка:\n {e}'\n'{traceback.format_exc()}")
         return {'status': 'error', 'text': f'Ошибка при печати документов в папке {start_path.name}', 'trace': ex}
 
 

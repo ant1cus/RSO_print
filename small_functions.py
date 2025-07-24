@@ -190,8 +190,9 @@ def pages_count(file: Path, minus: bool = False) -> dict:
         word2pdf(str(Path(parent_path, name)), str(Path(parent_path, name_pdf)))
         input_file_pdf = fitz.open(str(Path(parent_path, name_pdf)))  # Открываем пдф
         count_page = input_file_pdf.page_count  # Получаем кол-во страниц
+        pages = count_page - 1 if minus else count_page
         input_file_pdf.close()  # Закрываем
-        count_page = count_page - 1 if minus else count_page
+        # count_page = count_page - 1 if minus else count_page
         os.remove(str(Path(parent_path, name_pdf)))  # Удаляем пдф документ
         temp_docx = os.path.join(parent_path, name)
         temp_zip = os.path.join(parent_path, name + ".zip")
@@ -209,7 +210,7 @@ def pages_count(file: Path, minus: bool = False) -> dict:
             my_document.extractall(temp_folder)
         pages_xml = os.path.join(temp_folder, "docProps", "app.xml")
         string = open(pages_xml, 'r', encoding='utf-8').read()
-        string = re.sub(r"<Pages>(\w*)</Pages>", "<Pages>" + str(count_page) + "</Pages>", string)
+        string = re.sub(r"<Pages>(\w*)</Pages>", "<Pages>" + str(pages) + "</Pages>", string)
         with open(pages_xml, "wb") as file_wb:
             file_wb.write(string.encode("UTF-8"))
         try_number = 0
@@ -228,7 +229,7 @@ def pages_count(file: Path, minus: bool = False) -> dict:
         os.rename(temp_zip, temp_docx)  # rename zip file to docx
         rm(temp_folder)
         rm(Path(parent_path, 'zip'))
-        return {'error': False, 'text': '', 'pages': count_page, 'trace': ''}
+        return {'error': False, 'text': '', 'pages': pages, 'trace': ''}
     except BaseException as exception:
         return {'error': True, 'text': exception, 'pages': 0, 'trace': traceback.format_exc()}
 

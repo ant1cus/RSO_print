@@ -312,7 +312,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                             self.lineEdit_41101_prescription_executor],
                       'insert41101-acc_sheet_executor': ['Исп. сопровод', self.lineEdit_41101_acc_sheet_executor],
                       'insert41101-telephone_acc_sheet_executor': ['Тел. исп. сопровода',
-                                                                   self.lineEdit_main_telephone_acc_sheet_executor],
+                                                                   self.lineEdit_41101_telephone_acc_sheet_executor],
                       'insert41101-add_telephone': ['Доб. номер', self.lineEdit_41101_add_telephone],
                       'insert41101-print_executor': ['Исп. печать', self.lineEdit_41101_print_executor],
                       'insert41101-dateEdit_exec_date': ['Дата', self.dateEdit_41101_exec_date],
