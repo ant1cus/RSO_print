@@ -15,7 +15,7 @@ from small_functions import pages_count, delete_header_footer_second_acc
 from word2pdf import word2pdf
 
 
-def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str = ''):
+def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str = '', is_not_acc: bool = True):
     header_1 = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
     head_1 = header_1.paragraphs[0]  # Параграф
     head_1.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
@@ -25,14 +25,15 @@ def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str 
         header_styles.font.name = 'Times New Roman'
     head_1_format = head_1.paragraph_format  # Настройки параграфа
     head_1_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
-    footer_ = doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-    foot_ = footer_.paragraphs[0]  # Параграф
-    foot_.text = text_for_foot  # Текст
-    for foot_run in foot_.runs:
-        foot_run.font.size = Pt(11)
-        foot_run.font.name = 'Times New Roman'
-    foot_format_ = foot_.paragraph_format  # Настройки параграфа
-    foot_format_.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
+    if is_not_acc:
+        footer_ = doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
+        foot_ = footer_.paragraphs[0]  # Параграф
+        foot_.text = text_for_foot  # Текст
+        for foot_run in foot_.runs:
+            foot_run.font.size = Pt(11)
+            foot_run.font.name = 'Times New Roman'
+        foot_format_ = foot_.paragraph_format  # Настройки параграфа
+        foot_format_.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
     doc.sections[0].footer.paragraphs[0].text = text_for_foot  # Номера для страниц
     # Выравниваем по левому краю
     doc.sections[0].footer.paragraphs[0].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
@@ -275,8 +276,8 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 foot = document.sections[len(document.sections) - 1].footer  # Нижний колонтитул
                 foot.is_linked_to_previous = False  # Отвязываем
         if len(re.findall(r'приложение а', data.name.lower())) == 0:
-            insert_header(document, data.first_header_text, data.footer_text, 'fso', data.text_finish)
-        if Path(data.finish_path.parent).exists() is False:
+            insert_header(document, data.first_header_text, data.footer_text, 'fso', data.text_finish, False)
+        if not Path(data.finish_path.parent).exists():
             Path(data.finish_path.parent).mkdir(parents=True, exist_ok=True)
         document.save(data.finish_path)  # Сохраняем
         if re.findall(r'сопроводит', data.name.lower()) and re.findall(r'2 экз', data.name.lower()):

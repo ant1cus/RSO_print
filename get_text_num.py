@@ -34,7 +34,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
             reindex_list.append(index_doc)
             # Определяем есть ли номер. Сначала отсекаем, потом ищем структуру.
             number_doc = doc_name.rpartition('.')[0].rpartition(' ')[2]
-            if re.findall(r'\d\.\d', number_doc) is False:
+            if not re.findall(r'\d\.\d', number_doc):
                 number_doc = False
             text_first_header = f"{incoming['classified']}\n{incoming['list_item']}\nЭкз. №{incoming['num_scroll']}"
             footer_text = False

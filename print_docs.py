@@ -285,7 +285,7 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                 word = win32com.client.Dispatch("Word.Application")
                 word.Quit()
             input_file = fitz.open(str(documents.loc[index_doc, 'pdf_path']))  # Открываем пдф
-            documents.loc[index_doc, 'pages'] = input_file.page_count
+            documents.loc[index_doc, 'pages'] = input_file.page_count - 1 if input_file.page_count > 1 else 1
             input_file.close()
             os.remove(str(documents.loc[index_doc, 'pdf_path']))
             current_progress += percent
