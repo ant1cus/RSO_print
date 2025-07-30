@@ -50,7 +50,7 @@ def create_form_27(documents: pd.DataFrame, finish_path: Path, firm: str):
                 table_df.loc[index, 'экземпляров и их номера'] = '№' + str(document.num_scroll)
                 table_df.loc[index, 'листов в экземпляре'] = document.pages
                 index += 1
-                table_df.loc[index] = pd.Series([numpy.NaN for _ in range(0, len(table_name))], index=table_name)
+                table_df.loc[index] = pd.Series([numpy.nan for _ in range(0, len(table_name))], index=table_name)
                 continue
             table_df.loc[index, 'Порядковый номер'] = document.footer_text
             table_df.loc[index, 'Дата регистрации'] = document.date
@@ -64,12 +64,12 @@ def create_form_27(documents: pd.DataFrame, finish_path: Path, firm: str):
             table_df.loc[index, 'листов в экземпляре'] = document.pages
             index += 1
             if re.findall(r'сопроводит', document.name.lower()):
-                table_df.loc[index] = pd.Series([numpy.NaN for _ in range(0, len(table_name))], index=table_name)
+                table_df.loc[index] = pd.Series([numpy.nan for _ in range(0, len(table_name))], index=table_name)
                 index += 1
                 table_df.loc[index, table_name[6]] = '№2'
                 table_df.loc[index, table_name[7]] = document.pages
                 index += 1
-            table_df.loc[index] = pd.Series([numpy.NaN for _ in range(0, len(table_name))], index=table_name)
+            table_df.loc[index] = pd.Series([numpy.nan for _ in range(0, len(table_name))], index=table_name)
         table_df.index = pd.RangeIndex(1, 1 + len(table_df))
         table_df.to_excel(Path(finish_path, 'Форма 27.xlsx'), sheet_name='27', index=False)
         column_width = [13, 11, 10, 24, 27, 13.5, 7, 7, 7, 7, 15.1, 13, 13.1, 11.4, 16, 18.3, 23.85,
