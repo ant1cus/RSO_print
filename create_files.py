@@ -115,6 +115,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
         para = False
         service = True if incoming_data['radioButton_FSB'] else False
         errors = []
+        first_header_acc = True
         if data.action == 'copy':
             shutil.copy(str(Path(data.start_path)), str(Path(data.finish_path)))
             return {'status': 'success', 'text': f'Документ {data.name} скопирован', 'documents': documents}
@@ -212,6 +213,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
             p.paragraph_format.keep_together = True  # Чтобы подпись не убегала одна
             # теперь подумать над новыми несекретными колонтитулами
         if re.findall(r'сопроводит', data.name.lower()):
+            first_header_acc = False
             para = True if document.sections[0].different_first_page_header_footer else False
             for p in document.paragraphs:  # Для каждого параграфа
                 if re.findall(r'registration_number', p.text):  # Ищем метку
@@ -276,7 +278,8 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 foot = document.sections[len(document.sections) - 1].footer  # Нижний колонтитул
                 foot.is_linked_to_previous = False  # Отвязываем
         if len(re.findall(r'приложение а', data.name.lower())) == 0:
-            insert_header(document, data.first_header_text, data.footer_text, 'fso', data.text_finish, False)
+            insert_header(document, data.first_header_text, data.footer_text, 'fso', data.text_finish,
+                          first_header_acc)
         if not Path(data.finish_path.parent).exists():
             Path(data.finish_path.parent).mkdir(parents=True, exist_ok=True)
         document.save(data.finish_path)  # Сохраняем
