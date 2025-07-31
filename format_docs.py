@@ -124,9 +124,9 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
             a_prescription = documents.loc[documents['a_prescription'].isin([True])]
             if len(a_prescription):
                 for item in a_prescription.itertuples():
-                    index_doc = documents.loc[documents['name'].str.contains('протокол', case=False)
+                    index_doc = documents.loc[(documents['name'].str.contains('протокол', case=False))
                                               &
-                                              documents['number'].str.contains(item.number, case=False)].index.to_list()
+                                              (documents['number'] == item.number)].index.to_list()
                     for ind in index_doc:
                         a_text = documents.loc[ind, 'account_list_text'].split('!')
                         a_text[2] = a_text[2] + '/Приложение несекретно'
