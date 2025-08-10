@@ -3,14 +3,15 @@ import queue
 import sys
 import pathlib
 import logging
+
 import Main
 import about
 
 from general_function import browse, default_settings, default_data, rewrite_settings, start_thread
-from AccountNum import AccountNumWindow
-from NumberInstance import NumberInstance
+from create_number_instance import create_number_instance
+from create_account_number import create_account_number
 from SortingFile import SortingFile
-from Check import doc_format, doc_print
+from Check import check_doc_format, check_doc_print, check_create_instance_number, check_create_account_number
 from StartThread import StartThreading
 from format_docs import format_doc
 from print_docs import print_docs
@@ -29,16 +30,6 @@ class AboutWindow(QDialog, about.Ui_Dialog):  # Для отображения и
 
 def about():  # Открываем окно с описанием
     window_add = AboutWindow()
-    window_add.exec_()
-
-
-def account_number():  # Запускаем окно для создания файла учетных номеров.
-    window_add = AccountNumWindow()
-    window_add.exec_()
-
-
-def create_instance():  # Запускаем окно для создания экземпляров.
-    window_add = NumberInstance()
     window_add.exec_()
 
 
@@ -92,7 +83,36 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                  'error': 'Печать документов (программа для 41101) в папке «name_dir»'
                                                           ' завершена с ошибками'
                                                  },
+                                 'create_instance_number': {'mode_name': 'create_instance_number',
+                                                            'title': 'Создание номеров экземпляра в папке',
+                                                            'cancel': 'Создание номеров экземпляра в папке'
+                                                                      ' «name_dir» отменено пользователем',
+                                                            'exception': 'Создание номеров экземпляра в папке'
+                                                                         ' «name_dir» не завершено из-за ошибки',
+                                                            'success': 'Создание номеров экземпляра в папке'
+                                                                       ' «name_dir» успешно завершено',
+                                                            'error': 'Создание номеров экземпляра в папке'
+                                                                     ' «name_dir» завершено с ошибками'
+                                                            },
+                                 'create_account_number':  {'mode_name': 'create_account_number',
+                                                            'title': 'Создание файла учетных номеров в папке',
+                                                            'cancel': 'Создание файла учетных номеров в папке'
+                                                                      ' «name_dir» отменено пользователем',
+                                                            'exception': 'Создание файла учетных номеров в папке'
+                                                                         ' «name_dir» не завершено из-за ошибки',
+                                                            'success': 'Создание файла учетных номеров в папке'
+                                                                       ' «name_dir» успешно завершено',
+                                                            'error': 'Создание файла учетных номеров в папке'
+                                                                     ' «name_dir» завершено с ошибками'
+                                                            },
                                  }
+        self.grid_frame = {'insertMain': {'grid': 'gridLayout_insertMain', 'frame': 'groupBox_insertMain'},
+                           'addInsertMain': {'grid': 'gridLayout_addInsertMain', 'frame': 'groupBox_addInsertMain'},
+                           'printMain': {'grid': 'gridLayout_printMain', 'frame': 'groupBox_printMain'},
+                           'insert41101': {'grid': 'gridLayout_insert41101', 'frame': 'groupBox_insert41101'},
+                           'addInsert41101': {'grid': 'gridLayout_addInsert41101', 'frame': 'groupBox_addInsert41101'},
+                           'print41101': {'grid': 'gridLayout_print41101', 'frame': 'groupBox_print41101'},
+                           'module': {'grid': 'gridLayout_module', 'frame': 'groupBox_module'}}
         self.pushButton_main_start_path_insert_dir.clicked.connect(lambda:
                                                                    browse(self,
                                                                           self.pushButton_main_start_path_insert_dir,
@@ -146,11 +166,9 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                                            self.pushButton_41101_start_path_insert_dir,
                                                                            self.lineEdit_41101_start_path_insert_dir,
                                                                            self.default_path))
-        self.pushButton_41101_finish_path_insert_dir.clicked.connect(lambda:
-                                                                     browse(self,
-                                                                            self.pushButton_41101_finish_path_insert_dir,
-                                                                            self.lineEdit_41101_finish_path_insert_dir,
-                                                                            self.default_path))
+        self.pushButton_41101_finish_path_insert_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_finish_path_insert_dir,
+                           self.lineEdit_41101_finish_path_insert_dir, self.default_path))
         self.pushButton_41101_file_num.clicked.connect(lambda: browse(self, self.pushButton_41101_file_num,
                                                                       self.lineEdit_41101_file_num_path,
                                                                       self.default_path))
@@ -181,10 +199,26 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                                          self.pushButton_41101_add_account_numbers,
                                                                          self.lineEdit_41101_add_account_numbers_path,
                                                                          self.default_path))
+        self.pushButton_module_path_account_dir.clicked.connect(lambda:
+                                                                browse(self,
+                                                                         self.pushButton_module_path_account_dir,
+                                                                         self.lineEdit_module_path_account_finish_dir,
+                                                                         self.default_path))
+        self.pushButton_module_path_start_instance_dir.clicked.connect(lambda:
+                                                                browse(self,
+                                                                         self.pushButton_module_path_start_instance_dir,
+                                                                         self.lineEdit_module_path_instance_start_dir,
+                                                                         self.default_path))
+        self.pushButton_module_path_finish_instance_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_path_finish_instance_dir,
+                           self.lineEdit_module_path_account_finish_dir, self.default_path))
         # Для выбора принтера по умолчанию
         self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_main_printer.currentTextChanged.connect(self.text_changed)
         self.lineEdit_main_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
+        self.comboBox_41101_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
+        self.comboBox_41101_printer.currentTextChanged.connect(self.text_changed)
+        self.lineEdit_41101_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
         # Группа для кнопок принтера
         self.button_gr = [self.radioButton_main_group4_last_duplex, self.radioButton_main_group4_duplex,
                           self.radioButton_main_group4_one_side]
@@ -353,16 +387,26 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                       'print41101-radioButton_group8': ['Метод печати', [self.radioButton_41101_group8_duplex,
                                                                          self.radioButton_41101_group8_last_duplex,
                                                                          self.radioButton_41101_group8_one_side]],
+                      'module-path_instance_start_dir': ['Путь к начальным экземплярам',
+                                                         self.lineEdit_module_path_instance_start_dir],
+                      'module-path_instance_finish_dir': ['Путь к конечным экземплярам',
+                                                          self.lineEdit_module_path_instance_finish_dir],
+                      'module-path_instance_number': ['Номера экземпляров', self.lineEdit_module_number_instance],
+                      'module-path_account_finish_dir': ['Путь к новому файлу номеров',
+                                                         self.lineEdit_module_path_account_finish_dir],
+                      'module-account_number': ['Уч. номер, с', self.lineEdit_module_account_number],
                       }
         # Кнопки запуска
         self.pushButton_main_insert.clicked.connect(self.insert_main)
         self.pushButton_41101_insert.clicked.connect(self.insert_41101)
         self.pushButton_main_print.clicked.connect(self.print_main)
+        self.pushButton_41101_print.clicked.connect(self.print_41101)
+        self.pushButton_module_create_number_instance.clicked.connect(self.start_create_instance_number)
+        self.pushButton_module_create_account_number.clicked.connect(self.start_create_account_number)
         # Кнопки в меню
-        self.action_default.triggered.connect((lambda: default_settings(self, self.default_path, self.lines)))
-        self.action_instance.triggered.connect(create_instance)
+        self.action_default.triggered.connect((lambda: default_settings(self, self.default_path,
+                                                                        self.lines, self.grid_frame)))
         self.action_about.triggered.connect(about)
-        self.action_account_number.triggered.connect(account_number)
         self.action_sorting.triggered.connect(self.sorting)
         self.action_instruction.triggered.connect(lambda: self.start_document('documents/Инструкция.docx'))
         self.action_registration.triggered.connect(lambda: self.start_document('documents/Номера для регистрации.xlsx'))
@@ -388,6 +432,33 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def text_changed(self):  # Если изменился выбор принтера
         self.lineEdit_printer.setText(self.comboBox_printer.currentText())
+
+    def start_create_instance_number(self):
+        queue_create_instance_number = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['create_instance_number']['mode_name']
+        name_dir = self.lineEdit_module_path_instance_start_dir.text().strip()
+        out_dict = {
+            'start_path': self.lineEdit_module_path_instance_start_dir.text().strip(),
+            'finish_path': self.lineEdit_module_path_instance_finish_dir.text().strip(),
+            'number_instance': self.lineEdit_module_number_instance.text().strip()
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_create_instance_number, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': create_number_instance}
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_create_instance_number, StartThreading)
+
+    def start_create_account_number(self):
+        queue_create_account_number = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['create_account_number']['mode_name']
+        name_dir = self.lineEdit_module_path_account_finish_dir.text().strip()
+        out_dict = {
+            'start_path': self.lineEdit_module_path_account_finish_dir.text().strip(),
+            'account_number': self.lineEdit_module_account_number.text().strip()
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_create_account_number, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': create_account_number}
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_create_account_number, StartThreading)
 
     def insert_main(self):
         queue_main_insert = queue.Queue(maxsize=1)
@@ -456,7 +527,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         data = {**self.default_dict, **out_dict,
                 'queue': queue_main_insert, 'mode_name': mode_name, 'name_dir': name_dir,
                 'start_function': format_doc}
-        start_thread(data, self.logging_dict, self.thread_dict, self, doc_format, StartThreading)
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_doc_format, StartThreading)
 
     def print_main(self):
         queue_main_print = queue.Queue(maxsize=1)
@@ -468,9 +539,9 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             'path_account_num': self.lineEdit_main_file_account_numbers_path.text().strip(),
             'check_box_add_account_num': True if self.checkBox_main_add_account_numbers.isChecked() else False,
             'add_path_account_num': self.lineEdit_main_add_account_numbers_path_file.text().strip(),
-            'name_printer': self.lineEdit_main_printer.text().strip(),
             'check_box_from_27': True if self.checkBox_main_file_form27.isChecked() else False,
             'path_form_27': self.lineEdit_main_path_file_form27_print.text().strip(),
+            'name_printer': self.lineEdit_main_printer.text().strip(),
             'print_order': True if self.checkBox_main_print_order.isChecked() else False,
             'fsb': True if self.radioButton_main_group3_FSB_print.isChecked() else False,
             'fstek': True if self.radioButton_main_group3_FSTEK_print.isChecked() else False,
@@ -485,7 +556,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         data = {**self.default_dict, **out_dict,
                 'queue': queue_main_print, 'mode_name': mode_name, 'name_dir': name_dir,
                 'start_function': print_docs}
-        start_thread(data, self.logging_dict, self.thread_dict, self, doc_print, StartThreading)
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_doc_print, StartThreading)
 
     def insert_41101(self):
         queue_41101_insert = queue.Queue(maxsize=1)
@@ -539,7 +610,37 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         data = {**self.default_dict, **out_dict,
                 'queue': queue_41101_insert, 'mode_name': mode_name, 'name_dir': name_dir,
                 'start_function': format_doc}
-        start_thread(data, self.logging_dict, self.thread_dict, self, doc_format, StartThreading)
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_doc_format, StartThreading)
+
+
+    def print_41101(self):
+        queue_41101_print = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['print_41101']['mode_name']
+        name_dir = self.lineEdit_41101_start_path_print_dir.text().strip()
+        out_dict = {
+            'package': True if self.action_package.isChecked() else False,
+            'start_path': self.lineEdit_41101_start_path_print_dir.text().strip(),
+            'path_account_num': self.lineEdit_41101_file_account_numbers_path.text().strip(),
+            'check_box_add_account_num': True if self.checkBox_41101_add_account_numbers.isChecked() else False,
+            'add_path_account_num': self.lineEdit_41101_add_account_numbers_path_file.text().strip(),
+            'check_box_from_27': True if self.checkBox_41101_file_form27.isChecked() else False,
+            'path_form_27': self.lineEdit_41101_path_file_form27_print.text().strip(),
+            'name_printer': self.lineEdit_41101_printer.text().strip(),
+            'print_order': True,
+            'fsb': True if self.radioButton_41101_group7_FSB_print.isChecked() else False,
+            'fstek': True if self.radioButton_41101_group7_FSTEK_print.isChecked() else False,
+            'service': '',
+            'conclusion': True if self.checkBox_41101_conclusion_print.isChecked() else False,
+            'protocol': True if self.checkBox_41101_protocol_print.isChecked() else False,
+            'prescription': True if self.checkBox_41101_prescription_print.isChecked() else False,
+            'duplex': True if self.radioButton_41101_group8_duplex.isChecked() else False,
+            'last_duplex': True if self.radioButton_41101_group8_last_duplex.isChecked() else False,
+            'one_side': True if self.radioButton_41101_group8_one_side.isChecked() else False,
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_41101_print, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': print_docs}
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_doc_print, StartThreading)
 
 
 if __name__ == '__main__':

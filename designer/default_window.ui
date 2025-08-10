@@ -95,6 +95,28 @@
          <layout class="QGridLayout" name="gridLayout_10">
           <item row="0" column="0">
            <layout class="QGridLayout" name="gridLayout_8">
+            <item row="0" column="0">
+             <widget class="QGroupBox" name="groupBox_insertMain">
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string>Основные данные для вставки колонтитулов</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_3">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_insertMain"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
             <item row="4" column="0">
              <widget class="QGroupBox" name="groupBox_addInsert41101">
               <property name="font">
@@ -139,6 +161,28 @@
               </layout>
              </widget>
             </item>
+            <item row="6" column="0">
+             <widget class="QGroupBox" name="groupBox_module">
+              <property name="font">
+               <font>
+                <pointsize>12</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="title">
+               <string>Дополнительные модули</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_module"/>
+               </item>
+              </layout>
+             </widget>
+            </item>
             <item row="1" column="0">
              <widget class="QGroupBox" name="groupBox_addInsertMain">
               <property name="font">
@@ -157,28 +201,6 @@
               <layout class="QGridLayout" name="gridLayout_13">
                <item row="0" column="0">
                 <layout class="QGridLayout" name="gridLayout_addInsertMain"/>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QGroupBox" name="groupBox_print41101">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="title">
-               <string>Данные для печати 41101</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_16">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_print41101"/>
                </item>
               </layout>
              </widget>
@@ -205,8 +227,8 @@
               </layout>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QGroupBox" name="groupBox_insertMain">
+            <item row="5" column="0">
+             <widget class="QGroupBox" name="groupBox_print41101">
               <property name="font">
                <font>
                 <pointsize>12</pointsize>
@@ -215,14 +237,14 @@
                </font>
               </property>
               <property name="title">
-               <string>Основные данные для вставки колонтитулов</string>
+               <string>Данные для печати 41101</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
               </property>
-              <layout class="QGridLayout" name="gridLayout_3">
+              <layout class="QGridLayout" name="gridLayout_16">
                <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_insertMain"/>
+                <layout class="QGridLayout" name="gridLayout_print41101"/>
                </item>
               </layout>
              </widget>

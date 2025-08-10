@@ -1,15 +1,13 @@
-import json
 import os
 import pathlib
 
-from PyQt5.QtCore import QDir
+from PyQt5.QtCore import QObject
 
 import default_window
 
 from PyQt5.QtCore import QDate
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QLineEdit, QDialog, QButtonGroup, QLabel, QSizePolicy, QPushButton, QComboBox,
-                             QFileDialog, QDateEdit)
+from PyQt5.QtWidgets import (QLineEdit, QDialog, QButtonGroup, QLabel, QSizePolicy, QPushButton, QComboBox, QDateEdit)
 
 
 class Button(QLineEdit):
@@ -41,7 +39,7 @@ class Button(QLineEdit):
 
 
 class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки по умолчанию
-    def __init__(self, parent, path, lines, default_data, browse, rewrite_settings):
+    def __init__(self, parent, path, lines, grid_frame, default_data, browse, rewrite_settings):
         super().__init__()
         self.setupUi(self)
         self.parent = parent
@@ -53,10 +51,6 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         default = self.rewrite_settings(self.path_for_default)
         self.widget_settings = default['widget_settings']
         self.gui_settings = default['gui_settings']
-        self.name_box = [self.groupBox_insertMain, self.groupBox_addInsertMain, self.groupBox_printMain,
-                         self.groupBox_insert41101, self.groupBox_addInsert41101, self.groupBox_print41101]
-        self.name_grid = [self.gridLayout_insertMain, self.gridLayout_addInsertMain, self.gridLayout_printMain,
-                          self.gridLayout_insert41101, self.gridLayout_addInsert41101, self.gridLayout_print41101]
         self.buttongroup_add = QButtonGroup()
         self.buttongroup_add.buttonClicked[int].connect(self.add_button_clicked)
         self.buttongroup_clear = QButtonGroup()
@@ -74,11 +68,10 @@ class DefaultWindow(QDialog, default_window.Ui_Dialog):  # Настройки п
         self.button_open = {}  # Для кнопки «открыть»
         for i, el in enumerate(self.lines):  # Заполняем
             frame = grid = False
-            for j, n in enumerate(['insertMain', 'addInsertMain', 'printMain', 'insert41101', 'addInsert41101',
-                                   'print41101']):
+            for n in grid_frame:
                 if n in el.partition('-')[0]:
-                    frame, grid = self.name_box[j], self.name_grid[j]
-                    break
+                    frame = self.findChild(QObject, grid_frame[n]['frame'])
+                    grid = self.findChild(QObject, grid_frame[n]['grid'])
             self.line[i] = QLabel(frame)  # Помещаем в фрейм
             self.line[i].setText(self.lines[el][0])  # Название элемента
             self.line[i].setFont(QFont("Times", 12, QFont.Light))  # Шрифт, размер

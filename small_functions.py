@@ -13,6 +13,7 @@ import os
 import pandas as pd
 import numpy as np
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.shared import Pt
 
 from word2pdf import word2pdf
 from zipfile import ZipFile
@@ -173,8 +174,8 @@ def sp_sorting(name_gk: str, finish_path: Path, sp_path_dir: Path, sp_path_file:
         if errors:
             return {'status': 'warning', 'trace': '', 'text': errors}
         return {'status': 'success', 'trace': '', 'text': ''}
-    except BaseException as es:
-        return {'status': 'error', 'trace': traceback.format_exc(), 'text': f'Ошибка при сортировки СП - {es}',
+    except BaseException as exception:
+        return {'status': 'error', 'trace': traceback.format_exc(), 'text': f'Ошибка при сортировки СП - {exception}',
                 'data': ''}
 
 
@@ -310,8 +311,9 @@ def inventory_insert(documents: pd, incoming_data: dict, incoming_path: Path, li
                     conclusion_num = conclusion_num - 40
                     number_inventory += 1
         return {'status': 'success', 'trace': '', 'text': '', 'data': documents}
-    except BaseException as es:
-        return {'status': 'error', 'trace': traceback.format_exc(), 'text': f'Ошибка при добавлении описи(ей) - {es}',
+    except BaseException as exception:
+        return {'status': 'error', 'trace': traceback.format_exc(),
+                'text': f'Ошибка при добавлении описи(ей) - {exception}',
                 'data': ''}
 
 
@@ -428,10 +430,9 @@ def delete_header_footer_second_acc(path: Path, text_first_header: str, secret_n
         foot.paragraphs[0].text = text_for_foot
         doc.save(str(path))
         return {'status': 'success', 'trace': '', 'text': f"Документ {path.name} успешно сохранён"}
-    except BaseException as es:
+    except BaseException as exception:
         return {'status': 'error', 'trace': traceback.format_exc(),
-                'text': f'Ошибка при удалении шапки в сопроводе - {es}'}
-
+                'text': f'Ошибка при удалении шапки в сопроводе - {exception}'}
 
 def return_error(log: logging, warning: str, status, status_text: str, default_path: Path, status_finish: list,
                  window, event: Any = False, error: str = '', info_value=None) -> None:

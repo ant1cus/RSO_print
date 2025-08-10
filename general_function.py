@@ -95,11 +95,11 @@ def browse(self, sender, line_edit, path) -> None:
     return
 
 
-def default_settings(self, default_path: Path, lines: dict) -> None:
+def default_settings(self, default_path: Path, lines: dict, grid_frame: dict) -> None:
     """Закрывает главное окно и выводит окно с настройками по умолчанию"""
     self.close()
     # Дополнительно передаем функцию для перезаписи дефолтных значений
-    window_add = DefaultWindow(self, default_path, lines, default_data, browse, rewrite_settings)
+    window_add = DefaultWindow(self, default_path, lines, grid_frame, default_data, browse, rewrite_settings)
     window_add.show()
     return
 
@@ -108,7 +108,8 @@ def logging_file(name: str, logging_dict: dict) -> list:
     """Создает файлы для логов и возвращает названия для текущего и общего лога"""
     filename_now = str(datetime.datetime.today().timestamp()) + '_logs.log'
     filename_all = str(datetime.date.today()) + '_logs.log'
-    os.makedirs(Path('logs', name), exist_ok=True)
+    if not Path('logs', name).exists():
+        os.makedirs(Path('logs', name), exist_ok=True)
     logging_dict[filename_now] = logging.getLogger(filename_now)
     logging_dict[filename_now].setLevel(logging.DEBUG)
     name_log = logging.FileHandler(Path('logs', name, filename_now))

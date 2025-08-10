@@ -7,12 +7,13 @@ import psutil
 from pathlib import Path
 
 
-def doc_format(incoming: dict) -> dict:
-    def check(n, e):
-        for symbol in e:
-            if n == symbol:
-                return False
-        return True
+def check(n, e):
+    for symbol in e:
+        if n == symbol:
+            return False
+    return True
+
+def check_doc_format(incoming: dict) -> dict:
     for proc in psutil.process_iter():
         if proc.name() == 'WINWORD.EXE':
             return {'error': True, 'data': 'Закройте все файлы Word!'}
@@ -270,7 +271,7 @@ def doc_format(incoming: dict) -> dict:
     return {'error': False, 'data': incoming}
 
 
-def doc_print(incoming: dict) -> dict:
+def check_doc_print(incoming: dict) -> dict:
     # Ведомство
     if incoming['fsb']:
         incoming['service'] = True
@@ -352,4 +353,65 @@ def doc_print(incoming: dict) -> dict:
         return {'error': True, 'data': 'Не указан метод печати'}
     if not incoming['name_printer']:
         return {'error': True, 'data': 'Не выбран принтер'}
+    return {'error': False, 'data': incoming}
+
+def check_create_instance_number(incoming: dict) -> dict:
+    start_path = incoming['start_path']
+    if not start_path:
+        return {'error': True, 'data': 'Путь к исходным экземплярам документов пуст'}
+    if not os.path.isdir(start_path):
+        return {'error': True, 'data': 'Указанный путь к исходным экземплярам документов не является директорией'}
+    files = 0
+    for file in Path(start_path).rglob('*.*'):
+        if file.suffix != '.docx' :
+            continue
+        for f in ['заключение', 'протокол', 'предписание']:
+            if f in file.name.lower():
+                files += 1
+    finish_path = incoming['finish_path']
+    if not finish_path:
+        return {'error': True, 'data': 'Путь к конечным экземплярам документов пуст'}
+    if not os.path.isdir(finish_path):
+        return {'error': True, 'data': 'Указанный путь к конечным экземплярам документов не является директорией'}
+    number_instance = incoming['number_instance']
+    for i in number_instance:
+        if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ', '-', ',', '.')):
+            return {'error': True, 'data': 'Есть лишние символы в номерах экземпляров документов'}
+    set_num = number_instance.replace(' ', '').replace(',', '.')
+    if set_num[0] == '.' or set_num[0] == '-':
+        return {'error': True, 'data': 'Первый символ в номерах экземпляра документов введён не верно'}
+    if set_num[-1] == '.' or set_num[-1] == '-':
+        return {'error': True, 'data': 'Последний символ в номерах экземпляра документов введён не верно'}
+    for i in range(len(set_num)):
+        if set_num[i] == '.' or set_num[i] == '-':
+            if set_num[i + 1] == '.' or set_num[i + 1] == '-':
+                return {'error': True, 'data': 'Два разделителя номеров подряд в номерах экземпляра документов'}
+    set_number = []
+    for element in set_num.split('.'):
+        if '-' in element:
+            num1, num2 = int(element.partition('-')[0]), int(element.partition('-')[2])
+            if num1 >= num2:
+                return {'error': True, 'data': 'Диапазон номеров экземпляров документов указан неверно'}
+            else:
+                for el in range(num1, num2 + 1):
+                    set_number.append(el)
+        else:
+            set_number.append(element)
+    set_number.sort()
+    incoming['all_doc'] = files*len(set_number)
+    incoming['number_instance'] = set_number
+    return {'error': False, 'data': incoming}
+
+def check_create_account_number(incoming: dict) -> dict:
+    start_path = incoming['start_path']
+    if not start_path:
+        return {'error': True, 'data': 'Путь к файлу учетных номеров пуст'}
+    if not os.path.isdir(start_path):
+        return {'error': True, 'data': 'Указанный путь к файлу учетных номеров не является директорией'}
+    incoming['number_start']  = " ".join(incoming['account_number'].split())
+    if not incoming['number_start'] :
+        return {'error': True, 'data': 'Нет начального учетного номера'}
+    for el in incoming['number_start']:
+        if not re.match(r'[A-Za-z0-9\s]', el):
+            return {'error': True, 'data': 'Некорректные символы в учетном номере'}
     return {'error': False, 'data': incoming}
