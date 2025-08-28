@@ -5215,26 +5215,6 @@
            <set>Qt::AlignCenter</set>
           </property>
           <layout class="QGridLayout" name="gridLayout_7">
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_module_path_print_files_dir">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Открыть</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_print_files">
              <property name="sizePolicy">
@@ -5275,10 +5255,10 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1" colspan="2">
-            <widget class="QComboBox" name="comboBox_module_select_printer">
+           <item row="0" column="3">
+            <widget class="QPushButton" name="pushButton_module_path_print_files_dir">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -5290,9 +5270,26 @@
                <bold>false</bold>
               </font>
              </property>
+             <property name="text">
+              <string>Открыть</string>
+             </property>
             </widget>
            </item>
-           <item row="0" column="1">
+           <item row="3" column="0" colspan="4">
+            <widget class="QPushButton" name="pushButton_module_print_files">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Печать</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1" colspan="2">
             <widget class="QLineEdit" name="lineEdit_module_path_print_files_dir">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -5309,19 +5306,40 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0" colspan="3">
-            <widget class="QPushButton" name="pushButton_module_print_files">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Печать</string>
-             </property>
-            </widget>
+           <item row="2" column="1" colspan="3">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QLineEdit" name="lineEdit_module_printer">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="comboBox_module_select_printer">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>

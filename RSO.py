@@ -228,12 +228,17 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         )
         # Для выбора принтера по умолчанию
         self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
-        self.comboBox_main_printer.currentTextChanged.connect(self.text_changed)
+        self.comboBox_main_printer.currentTextChanged.connect(lambda: self.text_changed(self.lineEdit_main_printer,
+                                                                                        self.comboBox_main_printer))
         self.lineEdit_main_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
         self.comboBox_41101_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
-        self.comboBox_41101_printer.currentTextChanged.connect(self.text_changed)
+        self.comboBox_41101_printer.currentTextChanged.connect(lambda: self.text_changed(self.lineEdit_41101_printer,
+                                                                                         self.comboBox_41101_printer))
         self.lineEdit_41101_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
         self.comboBox_module_select_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
+        self.comboBox_module_select_printer.currentTextChanged.connect(
+            lambda: self.text_changed(self.lineEdit_module_printer, self.comboBox_module_select_printer))
+        self.lineEdit_module_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
         # Группа для кнопок принтера
         self.button_gr = [self.radioButton_main_group4_last_duplex, self.radioButton_main_group4_duplex,
                           self.radioButton_main_group4_one_side]
@@ -523,8 +528,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         window_add = SortingFile(self, logging)
         window_add.exec_()
 
-    def text_changed(self):  # Если изменился выбор принтера
-        self.lineEdit_printer.setText(self.comboBox_printer.currentText())
+    def text_changed(self, line_edit, combo_box):  # Если изменился выбор принтера
+        line_edit.setText(combo_box.currentText())
 
     def print_files(self):
         queue_print_files = queue.Queue(maxsize=1)
