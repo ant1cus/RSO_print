@@ -159,11 +159,14 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
         if re.findall(r'заключение', data.name.lower()):
             change_text(document.paragraphs, r'date', data.date, 12, True)
         if re.findall(r'протокол', data.name.lower()):
-            change_text(document.paragraphs, r'\[ЗАКЛНОМ]', data.text_conclusion, pt_num)
+            if len(data.text_conclusion):
+                change_text(document.paragraphs, r'\[ЗАКЛНОМ]', data.text_conclusion, pt_num)
             change_text(document.paragraphs, r'date', data.date, pt_num, True)
         if re.findall(r'предписание', data.name.lower()):
-            change_text(document.paragraphs, r'\[ЗАКЛНОМ]', data.text_conclusion, pt_num)
-            change_text(document.paragraphs, r'\[ПРОТНОМ]', data.text_protocol, pt_num)
+            if len(data.text_conclusion):
+                change_text(document.paragraphs, r'\[ЗАКЛНОМ]', data.text_conclusion, pt_num)
+            if len(data.text_protocol):
+                change_text(document.paragraphs, r'\[ПРОТНОМ]', data.text_protocol, pt_num)
             change_text(document.paragraphs, r'date', data.date, pt_num, True)
         if re.findall(r'акт', data.name.lower()):
             change_text(document.paragraphs, r'date', data.date, pt_num, True)

@@ -110,6 +110,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                     text_first_header = incoming['classified'] + '\n' + add_list_item + '\nЭкз. №' + incoming[
                         'num_scroll']
                 documents.loc[index_doc, 'number'] = number_doc
+                documents.loc[index_doc, 'text_conclusion'] = ''
                 conclusion_name = documents[(documents['name'].str.contains(r'заключение', case=False)
                                              & (documents['parent_path'] == parent_path))]
                 if len(conclusion_name) > 1:
@@ -118,9 +119,10 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                                                  & (documents['parent_path'] == parent_path))]
                 conclusion_name = conclusion_name.reset_index(drop=True)
                 if len(conclusion_name) == 0:
-                    documents.loc[
-                        index_doc, 'text_conclusion'] = f"уч. № {str(incoming['conclusion_number'])} от " \
-                                                        f"{incoming['conclusion_number_date']}"
+                    if incoming['checkBox_conclusion_number']:
+                        documents.loc[
+                            index_doc, 'text_conclusion'] = f"уч. № {str(incoming['conclusion_number'])} от " \
+                                                            f"{incoming['conclusion_number_date']}"
                 else:
                     documents.loc[
                         index_doc, 'text_conclusion'] = f"уч. № {str(conclusion_name.loc[0, 'footer_text'])} от" \
@@ -133,6 +135,8 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                     text_first_header = incoming['classified'] + '\n' + add_list_item + '\nЭкз. №' + incoming[
                         'num_scroll']
                 documents.loc[index_doc, 'number'] = number_doc
+                documents.loc[index_doc, 'text_conclusion'] = ''
+                documents.loc[index_doc, 'text_protocol'] = ''
                 conclusion_name = documents[(documents['name'].str.contains(r'заключение', case=False)
                                              & (documents['parent_path'] == parent_path))]
                 if len(conclusion_name) > 1:
@@ -149,11 +153,13 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                         index_doc, 'text_protocol'] = f"уч. № {str(protocol_name.loc[0, 'footer_text'])} от" \
                                                       f" {protocol_name.loc[0, 'date']}"
                 else:
-                    errors.append(f"Для файла {doc_name} не нашли протокол, документ не заполнен")
+                    if not incoming['dont_check']:
+                        errors.append(f"Для файла {doc_name} не нашли протокол, документ не заполнен")
                 if len(conclusion_name) == 0:
-                    documents.loc[
-                        index_doc, 'text_conclusion'] = f"уч. № {str(incoming['conclusion_number'])} от" \
-                                                        f" {incoming['conclusion_number_date']}"
+                    if incoming['checkBox_conclusion_number']:
+                        documents.loc[
+                            index_doc, 'text_conclusion'] = f"уч. № {str(incoming['conclusion_number'])} от" \
+                                                            f" {incoming['conclusion_number_date']}"
                 else:
                     documents.loc[
                         index_doc, 'text_conclusion'] = f"уч. № {str(conclusion_name.loc[0, 'footer_text'])} от" \

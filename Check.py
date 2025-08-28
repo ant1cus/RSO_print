@@ -415,3 +415,12 @@ def check_create_account_number(incoming: dict) -> dict:
         if not re.match(r'[A-Za-z0-9\s]', el):
             return {'error': True, 'data': 'Некорректные символы в учетном номере'}
     return {'error': False, 'data': incoming}
+
+def check_print_files(incoming: dict) -> dict:
+    start_path = incoming['start_path']
+    if not start_path:
+        return {'error': True, 'data': 'Путь к файлам для печати пуст'}
+    if not os.path.isdir(start_path):
+        return {'error': True, 'data': 'Указанный путь к файлам для печати не является директорией'}
+    incoming['all_doc'] = len(os.listdir(start_path))
+    return {'error': False, 'data': incoming}

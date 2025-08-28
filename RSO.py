@@ -11,14 +11,16 @@ from general_function import browse, default_settings, default_data, rewrite_set
 from create_number_instance import create_number_instance
 from create_account_number import create_account_number
 from SortingFile import SortingFile
-from Check import check_doc_format, check_doc_print, check_create_instance_number, check_create_account_number
+from Check import (check_doc_format, check_doc_print, check_create_instance_number, check_create_account_number,
+                   check_print_files)
 from StartThread import StartThreading
 from format_docs import format_doc
 from print_docs import print_docs
+from print_all_files import print_all_files
 
 from PyQt5 import QtPrintSupport
 
-from PyQt5.QtCore import (QTranslator, QLocale, QLibraryInfo)
+from PyQt5.QtCore import (QTranslator, QLocale, QLibraryInfo, QObject)
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QDialog)
 
 
@@ -105,14 +107,22 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                             'error': 'Создание файла учетных номеров в папке'
                                                                      ' «name_dir» завершено с ошибками'
                                                             },
+                                 'print_files': {'mode_name': 'print_files',
+                                                 'title': 'Печать файлов в папке',
+                                                 'cancel': 'Печать файлов в папке «name_dir» отменена пользователем',
+                                                 'exception': 'Печать файлов в папке «name_dir»'
+                                                              ' не завершена из-за ошибки',
+                                                 'success': 'Печать файлов в папке «name_dir» успешно завершена',
+                                                 'error': 'Печать файлов в папке «name_dir» завершена с ошибками'
+                                                 },
                                  }
-        self.grid_frame = {'insertMain': {'grid': 'gridLayout_insertMain', 'frame': 'groupBox_insertMain'},
-                           'addInsertMain': {'grid': 'gridLayout_addInsertMain', 'frame': 'groupBox_addInsertMain'},
-                           'printMain': {'grid': 'gridLayout_printMain', 'frame': 'groupBox_printMain'},
-                           'insert41101': {'grid': 'gridLayout_insert41101', 'frame': 'groupBox_insert41101'},
-                           'addInsert41101': {'grid': 'gridLayout_addInsert41101', 'frame': 'groupBox_addInsert41101'},
-                           'print41101': {'grid': 'gridLayout_print41101', 'frame': 'groupBox_print41101'},
-                           'module': {'grid': 'gridLayout_module', 'frame': 'groupBox_module'}}
+        self.widget_name = {'insertMain': {'grid': 'gridLayout_insertMain', 'frame': 'groupBox_insertMain', 'action': 'action_insert_main', 'tab': 'insertMain'},
+                            'addInsertMain': {'grid': 'gridLayout_addInsertMain', 'frame': 'groupBox_addInsertMain', 'action': 'action_sorting_file', 'tab': 'sorting'},
+                            'printMain': {'grid': 'gridLayout_printMain', 'frame': 'groupBox_printMain', 'action': 'action_print_main', 'tab': 'printMain'},
+                            'insert41101': {'grid': 'gridLayout_insert41101', 'frame': 'groupBox_insert41101', 'action': 'action_insert_41101', 'tab': 'insert_41101'},
+                            'addInsert41101': {'grid': 'gridLayout_addInsert41101', 'frame': 'groupBox_addInsert41101', 'action': 'action_sorting_file', 'tab': 'sorting'},
+                            'print41101': {'grid': 'gridLayout_print41101', 'frame': 'groupBox_print41101', 'action': 'action_print_41101', 'tab': 'print_41101'},
+                            'module': {'grid': 'gridLayout_module', 'frame': 'groupBox_module', 'action': 'action_module', 'tab': 'module'}}
         self.pushButton_main_start_path_insert_dir.clicked.connect(lambda:
                                                                    browse(self,
                                                                           self.pushButton_main_start_path_insert_dir,
@@ -212,6 +222,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_module_path_finish_instance_dir.clicked.connect(
             lambda: browse(self, self.pushButton_module_path_finish_instance_dir,
                            self.lineEdit_module_path_account_finish_dir, self.default_path))
+        self.pushButton_module_path_print_files_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_path_print_files_dir,
+                           self.lineEdit_module_path_print_files_dir, self.default_path)
+        )
         # Для выбора принтера по умолчанию
         self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_main_printer.currentTextChanged.connect(self.text_changed)
@@ -219,6 +233,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.comboBox_41101_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_41101_printer.currentTextChanged.connect(self.text_changed)
         self.lineEdit_41101_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
+        self.comboBox_module_select_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         # Группа для кнопок принтера
         self.button_gr = [self.radioButton_main_group4_last_duplex, self.radioButton_main_group4_duplex,
                           self.radioButton_main_group4_one_side]
@@ -244,6 +259,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                       'insertMain-secret_number': ['Секретный №', self.lineEdit_main_secret_number],
                       'insertMain-HDD_number': ['Номер НЖМД', self.lineEdit_main_HDD_number],
                       'insertMain-telephone': ['Номер телефона', self.lineEdit_main_telephone],
+                      'insertMain-checkBox_dont_check_number_files': ['Не сверять кол-во файлов',
+                                                                      self.checkBox_main_dont_check_number_files],
                       'insertMain-conclusion_executor': ['Исп. заключение', self.lineEdit_main_conclusion_executor],
                       'insertMain-checkBox_conclusion_number': ['Включить доп номер заключения',
                                                                 self.checkBox_main_conclusion_number],
@@ -335,6 +352,8 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                       'insert41101-secret_number': ['Секретный №', self.lineEdit_41101_secret_number],
                       'insert41101-HDD_number': ['Номер НЖМД', self.lineEdit_41101_HDD_number],
                       'insert41101-telephone': ['Номер телефона', self.lineEdit_41101_telephone],
+                      'insert41101-checkBox_dont_check_number_files': ['Не сверять кол-во файлов',
+                                                                       self.checkBox_41101_dont_check_number_files],
                       'insert41101-conclusion_executor': ['Исп. заключение', self.lineEdit_41101_conclusion_executor],
                       'insert41101-checkBox_conclusion_number': ['Включить доп номер заключения',
                                                                  self.checkBox_41101_conclusion_number],
@@ -395,6 +414,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                       'module-path_account_finish_dir': ['Путь к новому файлу номеров',
                                                          self.lineEdit_module_path_account_finish_dir],
                       'module-account_number': ['Уч. номер, с', self.lineEdit_module_account_number],
+                      'module-print_files': ['Исходные файлы для печати', self.lineEdit_module_path_print_files_dir],
                       }
         # Кнопки запуска
         self.pushButton_main_insert.clicked.connect(self.insert_main)
@@ -403,9 +423,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_41101_print.clicked.connect(self.print_41101)
         self.pushButton_module_create_number_instance.clicked.connect(self.start_create_instance_number)
         self.pushButton_module_create_account_number.clicked.connect(self.start_create_account_number)
+        self.pushButton_module_print_files.clicked.connect(self.print_files)
         # Кнопки в меню
         self.action_default.triggered.connect((lambda: default_settings(self, self.default_path,
-                                                                        self.lines, self.grid_frame)))
+                                                                        self.lines, self.widget_name)))
         self.action_about.triggered.connect(about)
         self.action_sorting.triggered.connect(self.sorting)
         self.action_instruction.triggered.connect(lambda: self.start_document('documents/Инструкция.docx'))
@@ -413,7 +434,44 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.action_sp.triggered.connect(lambda: self.start_document('documents/Номера СП.xlsx'))
         self.default_data = rewrite_settings(self.default_path)
         self.data = self.default_data["widget_settings"]
+        if 'tab_order' in self.default_data['gui_settings']:
+            self.tab_order = self.default_data['gui_settings']['tab_order']
+        else:
+            self.tab_order = {}
+        if 'tab_visible' in self.default_data['gui_settings']:
+            self.tab_visible = self.default_data['gui_settings']['tab_visible']
+        else:
+            self.tab_visible = {}
         default_data(self.data, self.lines)
+        # Управление табами в виджете
+        self.action_insert_main.triggered.connect(lambda: self.add_tab(self.action_insert_main))
+        self.action_print_main.triggered.connect(lambda: self.add_tab(self.action_print_main))
+        self.action_insert_41101.triggered.connect(lambda: self.add_tab(self.action_insert_41101))
+        self.action_print_41101.triggered.connect(lambda: self.add_tab(self.action_print_41101))
+        self.action_module.triggered.connect(lambda: self.add_tab(self.action_module))
+        self.start_index = False
+        self.start_name = False
+        self.tabWidget.tabBar().tabMoved.connect(self.tab_)
+        self.tabWidget.tabBarClicked.connect(self.tab_click)
+        self.tabWidget.tabCloseRequested.connect(lambda index: self.tabWidget.removeTab(index))
+        self.tab_for_paint = {}
+        for tab in range(0, self.tabWidget.tabBar().count()):
+            self.tab_for_paint[self.tabWidget.widget(tab).objectName()] = {}
+            if self.tabWidget.widget(tab).objectName() not in self.tab_order.values():
+                self.tab_order[str(len(self.tab_order))] = self.tabWidget.widget(tab).objectName()
+                rewrite_settings(self.default_path, self.tab_order, 'tab_order')
+                self.tab_visible[str(self.tabWidget.widget(tab).objectName())] = True
+                rewrite_settings(self.default_path, self.tab_visible, 'tab_visible')
+            self.tab_for_paint[self.tabWidget.widget(tab).objectName()]['widget'] = self.tabWidget.widget(tab)
+            self.tab_for_paint[self.tabWidget.widget(tab).objectName()]['name'] = self.tabWidget.tabText(tab)
+        self.tabWidget.clear()
+        for tab in self.tab_order:
+            if self.tab_visible[self.tab_order[tab]]:
+                action = self.findChild(QObject, self.widget_name[self.tab_order[tab]]['action'])
+                action.setChecked(True)
+                self.tabWidget.addTab(self.tab_for_paint[self.tab_order[tab]]['widget'],
+                                      self.tab_for_paint[self.tab_order[tab]]['name'])
+        self.tabWidget.tabBar().setCurrentIndex(0)
         # Для каждого потока свой лог. Потом сливаем в один и удаляем
         self.logging_dict = {}
         # Для сдвига окна при появлении
@@ -422,6 +480,41 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.default_dict = {'mode_description': self.mode_description, 'logging_dict': self.logging_dict,
                              'thread_dict': self.thread_dict, 'default_path': self.default_path,
                              'all_doc': 0, 'now_doc': 0}
+
+    def tab_(self, index):
+        for tab in self.tab_order.items():
+            if tab[1] == self.start_name and tab[1] == self.tabWidget.currentWidget().objectName():
+                self.tab_order[str(index)], self.tab_order[tab[0]] = self.tab_order[tab[0]], self.tab_order[str(index)]
+                break
+            elif tab[1] == self.tabWidget.currentWidget().objectName():
+                self.tab_order[str(index)], self.tab_order[tab[0]] = self.tab_order[tab[0]], self.tab_order[str(index)]
+                break
+        rewrite_settings(self.default_path, self.tab_order, 'tab_order')
+
+
+    def tab_click(self, index):
+        try:
+            self.start_name = self.tab_order[str(index)]
+        except KeyError:
+            pass
+
+    def add_tab(self, widget_action):
+        name_open_tab = {self.tabWidget.widget(ind).objectName(): ind for ind
+                         in range(0, self.tabWidget.tabBar().count())}
+        for tab in self.widget_name:
+            action = self.findChild(QObject, self.widget_name[tab]['action'])
+            if action == widget_action:
+                if action.isChecked():
+                    if tab not in name_open_tab:
+                        self.tabWidget.addTab(self.tab_for_paint[tab]['widget'],
+                                              self.tab_for_paint[tab]['name'])
+                    if self.tab_visible[tab] is False:
+                        self.tab_visible[tab] = True
+                        rewrite_settings(self.default_path, self.tab_visible, 'tab_visible')
+                else:
+                    if self.tab_visible[tab]:
+                        self.tab_visible[tab] = False
+                        rewrite_settings(self.default_path, self.tab_visible, 'tab_visible')
 
     def start_document(self, document):  # Запускаем окно с настройками по умолчанию.
         os.startfile(pathlib.Path(self.path_for_default, document))
@@ -432,6 +525,19 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def text_changed(self):  # Если изменился выбор принтера
         self.lineEdit_printer.setText(self.comboBox_printer.currentText())
+
+    def print_files(self):
+        queue_print_files = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['print_files']['mode_name']
+        name_dir = self.lineEdit_module_path_print_files_dir.text().strip()
+        out_dict = {
+            'start_path': self.lineEdit_module_path_print_files_dir.text().strip(),
+            'printer': self.comboBox_module_select_printer.currentText().strip()
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_print_files, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': print_all_files}
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_print_files, StartThreading)
 
     def start_create_instance_number(self):
         queue_create_instance_number = queue.Queue(maxsize=1)
@@ -483,6 +589,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             'number': self.lineEdit_main_secret_number.text().strip(),
             'hdd_number': self.lineEdit_main_HDD_number.text().strip(),
             'telephone': self.lineEdit_main_telephone.text().strip(),
+            'dont_check': self.checkBox_main_dont_check_number_files.isChecked(),
             'conclusion': self.lineEdit_main_conclusion_executor.text().strip(),
             'checkBox_conclusion_number': self.checkBox_main_conclusion_number.isChecked(),
             'conclusion_number': self.lineEdit_main_conclusion_number.text().strip(),
@@ -581,6 +688,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             'number': self.lineEdit_41101_secret_number.text().strip(),
             'hdd_number': self.lineEdit_41101_HDD_number.text().strip(),
             'telephone': self.lineEdit_41101_telephone.text().strip(),
+            'dont_check': self.checkBox_41101_dont_check_number_files.isChecked(),
             'conclusion': self.lineEdit_41101_conclusion_executor.text().strip(),
             'checkBox_conclusion_number': self.checkBox_41101_conclusion_number.isChecked(),
             'conclusion_number': self.lineEdit_41101_conclusion_number.text().strip(),
