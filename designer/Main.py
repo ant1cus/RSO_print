@@ -3336,6 +3336,10 @@ class Ui_MainWindow(object):
         self.radioButton_41101_group7_FSTEK_print.toggled['bool'].connect(self.checkBox_41101_conclusion_print.setChecked) # type: ignore
         self.radioButton_41101_group7_FSTEK_print.toggled['bool'].connect(self.checkBox_41101_protocol_print.setChecked) # type: ignore
         self.radioButton_41101_group7_FSTEK_print.toggled['bool'].connect(self.checkBox_41101_prescription_print.setChecked) # type: ignore
+        self.checkBox_main_file_num.toggled['bool'].connect(self.lineEdit_main_secret_number.setDisabled) # type: ignore
+        self.checkBox_main_file_num.toggled['bool'].connect(self.dateEdit_main_exec_date.setDisabled) # type: ignore
+        self.checkBox_41101_file_num.toggled['bool'].connect(self.lineEdit_41101_secret_number.setDisabled) # type: ignore
+        self.checkBox_41101_file_num.toggled['bool'].connect(self.dateEdit_41101_exec_date.setDisabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

@@ -151,7 +151,7 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
                 name_acc = documents.loc[doc, 'name']
                 line_doing.emit(f'Генерируем колонтитулы для {name_acc}')
                 index_doc = documents.loc[documents['name'] == name_acc].index[0]
-                if dict_file and doc['name'].rpartition('.')[0] in dict_file:  # Если есть файл номеров
+                if dict_file and name_acc.rpartition('.')[0] in dict_file:  # Если есть файл номеров
                     if re.findall(r'запрос', name_acc, re.I):
                         documents.loc[index_doc, 'footer_text'] = dict_file[name_acc.rpartition('.')[0]][0]
                     else:

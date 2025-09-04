@@ -6446,5 +6446,69 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>checkBox_main_file_num</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>lineEdit_main_secret_number</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>162</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>237</x>
+     <y>365</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_main_file_num</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dateEdit_main_exec_date</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>162</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>516</x>
+     <y>556</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_41101_file_num</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>lineEdit_41101_secret_number</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>763</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_41101_file_num</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dateEdit_41101_exec_date</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1042</x>
+     <y>512</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>
