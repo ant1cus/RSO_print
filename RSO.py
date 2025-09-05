@@ -471,11 +471,14 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
             self.tab_for_paint[self.tabWidget.widget(tab).objectName()]['name'] = self.tabWidget.tabText(tab)
         self.tabWidget.clear()
         for tab in self.tab_order:
+            action = self.findChild(QObject, self.widget_name[self.tab_order[tab]]['action'])
             if self.tab_visible[self.tab_order[tab]]:
-                action = self.findChild(QObject, self.widget_name[self.tab_order[tab]]['action'])
+                # action = self.findChild(QObject, self.widget_name[self.tab_order[tab]]['action'])
                 action.setChecked(True)
                 self.tabWidget.addTab(self.tab_for_paint[self.tab_order[tab]]['widget'],
                                       self.tab_for_paint[self.tab_order[tab]]['name'])
+            else:
+                action.setChecked(False)
         self.tabWidget.tabBar().setCurrentIndex(0)
         # Для каждого потока свой лог. Потом сливаем в один и удаляем
         self.logging_dict = {}

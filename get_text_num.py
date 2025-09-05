@@ -35,7 +35,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
             # Определяем есть ли номер. Сначала отсекаем, потом ищем структуру.
             number_doc = doc_name.rpartition('.')[0].rpartition(' ')[2]
             if not re.findall(r'\d\.\d', number_doc):
-                number_doc = False
+                number_doc = '0.0'
             text_first_header = f"{incoming['classified']}\n{incoming['list_item']}\nЭкз. №{incoming['num_scroll']}"
             footer_text = False
             date = incoming['date']
@@ -63,9 +63,9 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                 executor = incoming['executor_acc_sheet']
             elif re.findall('инфокарта', doc_name.lower()):
                 documents.loc[index_doc, 'action'] = 'copy'
-                documents.loc[index_doc, 'number'] = number_doc
+                # documents.loc[index_doc, 'number'] = number_doc
             elif re.findall(r'приложение а', doc_name.lower()):
-                documents.loc[index_doc, 'number'] = number_doc
+                # documents.loc[index_doc, 'number'] = number_doc
                 documents.loc[index_doc, 'a_prescription'] = True
                 protocol_name = documents[(documents['name'].str.contains(r'протокол', case=False))
                                           & (documents['name'].str.contains(number_doc, case=False)
@@ -101,7 +101,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                     text_first_header = incoming['classified'] + '\n' + add_list_item + '\nЭкз. №' + incoming[
                         'num_scroll']
             elif re.findall(r'заключение', doc_name.lower()):
-                documents.loc[index_doc, 'number'] = number_doc
+                # documents.loc[index_doc, 'number'] = number_doc
                 executor = incoming['conclusion']
                 documents.loc[index_doc, 'change_date'] = True
             elif re.findall(r'протокол', doc_name.lower()):
@@ -109,7 +109,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                 if add_list_item:
                     text_first_header = incoming['classified'] + '\n' + add_list_item + '\nЭкз. №' + incoming[
                         'num_scroll']
-                documents.loc[index_doc, 'number'] = number_doc
+                # documents.loc[index_doc, 'number'] = number_doc
                 documents.loc[index_doc, 'text_conclusion'] = ''
                 conclusion_name = documents[(documents['name'].str.contains(r'заключение', case=False)
                                              & (documents['parent_path'] == parent_path))]
@@ -134,7 +134,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                 if add_list_item:
                     text_first_header = incoming['classified'] + '\n' + add_list_item + '\nЭкз. №' + incoming[
                         'num_scroll']
-                documents.loc[index_doc, 'number'] = number_doc
+                # documents.loc[index_doc, 'number'] = number_doc
                 documents.loc[index_doc, 'text_conclusion'] = ''
                 documents.loc[index_doc, 'text_protocol'] = ''
                 conclusion_name = documents[(documents['name'].str.contains(r'заключение', case=False)
@@ -183,6 +183,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                 continue
             text_finish = f"Уч. № {footer_text}\nОтп. 1 экз. в адрес\n{incoming['hdd_number']}\nИсп. {executor}\n" \
                           f"Тел. {incoming['telephone']}\nПеч. {incoming['print_executor']}\n{date}\nб/ч"
+            documents.loc[index_doc, 'number'] = number_doc
             documents.loc[index_doc, 'date'] = date
             documents.loc[index_doc, 'first_header_text'] = text_first_header
             documents.loc[index_doc, 'footer_text'] = footer_text

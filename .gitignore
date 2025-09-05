@@ -5,4 +5,4 @@
 /logs/
 /.vscode/
 /printing_data/
-__pycache__/
+/__pycache__/

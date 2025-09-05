@@ -90,24 +90,24 @@ def check_doc_format(incoming: dict) -> dict:
                 dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c',
                                                   ws.cell(i, 3).value.strftime("%d.%m.%Y")]  # Делаем список
         error_for_file_num = []
-        for file in file_in_directory:
-            accepted_file = [False if name_file in file.lower() else True for name_file in ['акт', 'заключение', 'протокол', 'предписание', 'сопроводит', 'опись']]
-            if all(accepted_file):
-                continue
-            num_date = dict_file.pop(file.rpartition('.')[0], 'File not found')
-            if num_date == 'File not found':
-                error_for_file_num.append(f'Документ {file} не найден в файле номеров')
-            else:
-                if num_date[0] is False:
-                    error_for_file_num.append(f'Для записи {file} в файле номеров не указан секретный номер')
-                elif num_date[1] is False:
-                    error_for_file_num.append(f'Для записи {file} в файле номеров не указана дата')
-        if dict_file:
-            for file in dict_file:
-                if dict_file[file][0] is False:
-                    error_for_file_num.append(f'Для записи {file} в файле номеров не указан секретный номер')
-                elif dict_file[file] is False:
-                    error_for_file_num.append(f'Для записи {file} в файле номеров не указана дата')
+        # for file in file_in_directory:
+        #     accepted_file = [False if name_file in file.lower() else True for name_file in ['акт', 'заключение', 'протокол', 'предписание', 'сопроводит', 'опись']]
+        #     if all(accepted_file):
+        #         continue
+        #     num_date = dict_file.pop(file.rpartition('.')[0], 'File not found')
+        #     if num_date == 'File not found':
+        #         error_for_file_num.append(f'Документ {file} не найден в файле номеров')
+        #     else:
+        #         if num_date[0] is False:
+        #             error_for_file_num.append(f'Для записи {file} в файле номеров не указан секретный номер')
+        #         elif num_date[1] is False:
+        #             error_for_file_num.append(f'Для записи {file} в файле номеров не указана дата')
+        # if dict_file:
+        for file in dict_file:
+            if dict_file[file][0] is False:
+                error_for_file_num.append(f'Для записи {file} в файле номеров не указан секретный номер')
+            elif dict_file[file] is False:
+                error_for_file_num.append(f'Для записи {file} в файле номеров не указана дата')
         if error_for_file_num:
             return {'error': True, 'data': '\n'.join(error_for_file_num)}
         incoming['file_num'] = dict_file
