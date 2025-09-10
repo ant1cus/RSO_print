@@ -115,7 +115,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                                              & (documents['parent_path'] == parent_path))]
                 if len(conclusion_name) > 1:
                     conclusion_name = documents[(documents['name'].str.contains(r'заключение', case=False)
-                                                 & (documents['number'].str.contains(number_doc, case=False))
+                                                 & (documents['number'] == number_doc)
                                                  & (documents['parent_path'] == parent_path))]
                 conclusion_name = conclusion_name.reset_index(drop=True)
                 if len(conclusion_name) == 0:
@@ -141,10 +141,10 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                                              & (documents['parent_path'] == parent_path))]
                 if len(conclusion_name) > 1:
                     conclusion_name = documents[(documents['name'].str.contains(r'заключение', case=False)
-                                                 & (documents['number'].str.contains(number_doc, case=False))
+                                                 & (documents['number'] == number_doc)
                                                  & (documents['parent_path'] == parent_path))]
                 protocol_name = documents[(documents['name'].str.contains(r'протокол', case=False)
-                                           & (documents['number'].str.contains(number_doc, case=False))
+                                           & (documents['number'] == number_doc)
                                            & (documents['parent_path'] == parent_path))]
                 conclusion_name = conclusion_name.reset_index(drop=True)
                 protocol_name = protocol_name.reset_index(drop=True)
