@@ -1,4 +1,5 @@
 import os
+import time
 import traceback
 import win32api
 import win32print
@@ -6,7 +7,7 @@ from pathlib import Path
 
 
 def print_all_files(incoming_data: dict, current_progress, now_doc, all_doc, line_doing, line_progress, progress_value,
-                   event, window_check, info_value) -> dict:
+                    event, window_check, info_value) -> dict:
     """Печать всех файлов из указанной папки."""
     try:
         errors = []
@@ -29,18 +30,20 @@ def print_all_files(incoming_data: dict, current_progress, now_doc, all_doc, lin
                 printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
                 handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
                 attributes = win32print.GetPrinter(handle, 2)
-                attributes['pDevMode'].Duplex = 1  # flip up  Для двухсторонней печати
+                attributes['pDevMode'].Duplex = 1
                 try:
                     # Устанавливаем настройки
-                    win32print.SetPrinter(handle, 1, attributes, 0)
+                    win32print.SetPrinter(handle, 2, attributes, 0)
                 except:  # Пропускаем ошибку
                     pass
-                win32api.ShellExecute(0, "print",
-                                      str(Path(incoming_data['start_path'], file)), name_printer, ".", 0)
+                win32api.ShellExecute(0, "print", str(Path(incoming_data['start_path'], file)), name_printer, ".", 0)
+                print_jobs = win32print.EnumJobs(handle, 0, -1, 2)  # Очередь печати
+                # print(print_jobs)
                 jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
                 logging.info(f"Ждем очередь")
+                # anton = 0
                 while jobs < 3:
-                    print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
+                    # print(print_jobs)
                     if not print_jobs and jobs == 0:  # Пока не запустилось в печать
                         pass
                     elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
@@ -48,6 +51,13 @@ def print_all_files(incoming_data: dict, current_progress, now_doc, all_doc, lin
                         logging.info('Очередь очистилась')
                     elif print_jobs:  # Если в очереди что-то есть
                         jobs = 2
+                    print_jobs = win32print.EnumJobs(handle, 0, -1, 2)  # Очередь печати
+                    time.sleep(1)
+                    # print(print_jobs)
+                    # anton += 1
+                    # print(anton)
+                    # if anton > 50:
+                    #     pass
                 win32print.ClosePrinter(handle)  # Закрываем принтер
                 current_progress += percent
                 line_progress.emit(f'Выполнено {int(current_progress)} %')

@@ -216,6 +216,18 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
             p.paragraph_format.keep_together = True  # Чтобы подпись не убегала одна
             # теперь подумать над новыми несекретными колонтитулами
         if re.findall(r'сопроводит', data.name.lower()):
+            page_text = {
+                'all':
+                    {'листе': [1, 21, 31, 41, 51, 61, 71, 81, 91, 101, 121, 131, 141, 151, 161, 171, 181, 191, 201],
+                     'листах': []
+                     },
+                'part':
+                    {'лист': [1, 21, 31, 41, 51, 61, 71, 81, 91, 101, 121, 131, 141, 151, 161, 171, 181, 191, 201],
+                     'листа': [2, 3, 4, 22, 23, 24, 32, 33, 34, 42, 43, 44, 52, 53, 54, 62, 63, 64, 72, 73, 74, 82, 83,
+                               84, 92, 93, 94, 102, 103, 104, 122, 123, 124, 132, 133, 134, 142, 143, 144, 152, 153,
+                               154, 162, 163, 164, 172, 173, 174, 182, 183, 184, 192, 193, 194, 202, 203, 204],
+                     'листов': []}
+            }
             first_header_acc = False
             para = True if document.sections[0].different_first_page_header_footer else False
             for p in document.paragraphs:  # Для каждого параграфа
@@ -234,19 +246,31 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                                                                                    case=False)]
                         for file in ness_df.itertuples():
                             number_page = file.pages
-                            page = 'листе' if int(number_page) == 1 else 'листах'
+                            page = 'листе' if int(number_page) in page_text['all']['листе'] else 'листах'
                             text = ''
                             if 'протокол' in file.name.lower():
                                 account_doc = documents.loc[documents['name'].str.contains('приложение а', case=False) &
                                                             documents['number'].str.contains(file.number, case=False)]
                                 if account_doc.empty is False:
                                     account_doc = account_doc.reset_index(drop=True)
-                                    number_page = str(int(number_page) + int(account_doc.loc[0, 'pages']))
-                                    page = 'листе' if int(number_page) == 1 else 'листах'
-                                    page_app = 'листа' if int(account_doc.loc[0, 'pages']) > 1 else 'лист'
+                                    if int(number_page) in page_text['part']['лист']:
+                                        secret_page = 'лист'
+                                    elif int(number_page) in page_text['part']['листа']:
+                                        secret_page = 'листа'
+                                    else:
+                                        secret_page = 'листов'
+                                    if int(account_doc.loc[0, 'pages']) in page_text['part']['лист']:
+                                        app_page = 'лист'
+                                    elif int(account_doc.loc[0, 'pages']) in page_text['part']['листа']:
+                                        app_page = 'листа'
+                                    else:
+                                        app_page = 'листов'
+                                    all_num_page = str(int(number_page) + int(account_doc.loc[0, 'pages']))
+                                    all_page = 'листе' if int(all_num_page) in page_text['all']['листе'] else 'листах'
                                     text = f"{file.name.partition(' ')[0]}, уч. № {file.footer_text}," \
-                                           f" экз.{file.num_scroll}, на {number_page} {page}, секретно," \
-                                           f" {account_doc.loc[0, 'pages']} {page_app} - несекретно, только в адрес."
+                                           f" экз.{file.num_scroll}, на {all_num_page} {all_page}," \
+                                           f" {number_page} {secret_page} секретно," \
+                                           f" {account_doc.loc[0, 'pages']} {app_page} - несекретно, только в адрес."
                             if len(text) == 0:
                                 text = f"{file.name.partition(' ')[0]}, уч. № {file.footer_text}," \
                                        f" экз.{file.num_scroll}, на {number_page} {page}, секретно, только в адрес."
@@ -261,7 +285,7 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                         for index, file in enumerate(ness_df.itertuples()):
                             number = file.number
                             pages = file.pages
-                            page = 'листе' if pages == 1 else 'листах'  # Для правильной формулировки
+                            page = 'листе' if int(pages) in page_text['all']['листе'] else 'листах'
                             footer_text = file.footer_text
                             text = f"Приложение согласно описи №{number} на {pages} {page}, уч. № {footer_text}," \
                                    f" экз. № 1, секретно, только в адрес."

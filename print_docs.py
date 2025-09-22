@@ -491,7 +491,17 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
             if pdf_files:
                 logging.info(f"Удаляем пдф после печати")
                 for pdf_file in pdf_files:
-                    os.remove(str(Path(doc.parent_path, pdf_file)))
+                    while True:
+                        permis = 0
+                        try:
+                            permis += 1
+                            os.remove(str(Path(doc.parent_path, pdf_file)))
+                            break
+                        except PermissionError as per:
+                            time.sleep(3)
+                            logging.warning(f"Ошибка удаления файла {pdf_file} после печати - {per}")
+                            if permis == 3:
+                                break
         logging.info(f"Удаляем напечатанные номера")
         line_doing.emit(f"Удаляем напечатанные номера")
         print_numbers_df = pd.read_excel(incoming_data['path_account_num'], header=None)

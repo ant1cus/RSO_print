@@ -13,6 +13,7 @@ def check(n, e):
             return False
     return True
 
+
 def check_doc_format(incoming: dict) -> dict:
     for proc in psutil.process_iter():
         if proc.name() == 'WINWORD.EXE':
@@ -20,10 +21,10 @@ def check_doc_format(incoming: dict) -> dict:
     # Путь к исходным документам и проверки
     if not incoming['start_path']:
         return {'error': True, 'data': 'Путь к исходным документам пуст'}
-    # if os.path.exists(incoming['start_path']) is False:
-    #     return {'error': True, 'data': 'Папка с исходными документами отсутствует или переименована'}
-    if os.path.isfile(incoming['start_path']):
+    if os.path.exists(incoming['start_path']) is False:
         return {'error': True, 'data': 'Папка с исходными документами отсутствует или переименована'}
+    if os.path.isfile(incoming['start_path']):
+        return {'error': True, 'data': 'В исходных документах указан файл, а не папка'}
     if len(os.listdir(incoming['start_path'])) == 0:
         return {'error': True, 'data': 'Папка с исходными документами пуста'}
     if incoming['package']:
@@ -60,6 +61,8 @@ def check_doc_format(incoming: dict) -> dict:
     # Путь к конечным документам и проверки
     if not incoming['finish_path']:
         return {'error': True, 'data': 'Путь к конечной папке пуст'}
+    if os.path.exists(incoming['finish_path']) is False:
+        return {'error': True, 'data': 'Конечная папка отсутствует или переименована'}
     if os.path.isfile(incoming['finish_path']):
         return {'error': True, 'data': 'Указанный путь к конечной папке не является директорией'}
     if len(os.listdir(incoming['finish_path'])) != 0:
@@ -87,8 +90,11 @@ def check_doc_format(incoming: dict) -> dict:
         ws = wb.active  # Делаем активным первый лист.
         for i in range(1, ws.max_row + 1):  # Пока есть значения
             if ws.cell(i, 1).value:
-                dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c',
-                                                  ws.cell(i, 3).value.strftime("%d.%m.%Y")]  # Делаем список
+                try:
+                    check_date = ws.cell(i, 3).value.strftime("%d.%m.%Y")
+                except AttributeError:
+                    check_date = ''
+                dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c', check_date]  # Делаем список
         error_for_file_num = []
         # for file in file_in_directory:
         #     accepted_file = [False if name_file in file.lower() else True for name_file in ['акт', 'заключение', 'протокол', 'предписание', 'сопроводит', 'опись']]
@@ -114,6 +120,8 @@ def check_doc_format(incoming: dict) -> dict:
     if incoming['checkBox_signature']:
         if not incoming['path_signature']:
             return {'error': True, 'data': 'Путь к папке с подписями пуст'}
+        if os.path.exists(incoming['path_signature']) is False:
+            return {'error': True, 'data': 'Папка с подписями отсутствует или переименована'}
         if os.path.isfile(incoming['path_signature']):
             return {'error': True, 'data': 'Указанный путь к папке с подписями не является директорией'}
         # if os.listdir(incoming['path_signature']) is False:
@@ -355,6 +363,7 @@ def check_doc_print(incoming: dict) -> dict:
         return {'error': True, 'data': 'Не выбран принтер'}
     return {'error': False, 'data': incoming}
 
+
 def check_create_instance_number(incoming: dict) -> dict:
     start_path = incoming['start_path']
     if not start_path:
@@ -402,6 +411,7 @@ def check_create_instance_number(incoming: dict) -> dict:
     incoming['number_instance'] = set_number
     return {'error': False, 'data': incoming}
 
+
 def check_create_account_number(incoming: dict) -> dict:
     start_path = incoming['start_path']
     if not start_path:
@@ -415,6 +425,7 @@ def check_create_account_number(incoming: dict) -> dict:
         if not re.match(r'[A-Za-z0-9\s]', el):
             return {'error': True, 'data': 'Некорректные символы в учетном номере'}
     return {'error': False, 'data': incoming}
+
 
 def check_print_files(incoming: dict) -> dict:
     start_path = incoming['start_path']
