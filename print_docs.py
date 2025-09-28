@@ -7,9 +7,7 @@ from pathlib import Path
 import docx
 import fitz
 import numpy as np
-import openpyxl
 import pythoncom
-import win32api
 import win32com
 import win32print
 import getpass
@@ -20,6 +18,7 @@ from natsort import natsorted
 from openpyxl import load_workbook
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement, ns
+from small_functions import print_doc
 
 import pandas as pd
 
@@ -93,104 +92,6 @@ def add_page_number(paragraph, value_num, number_page=''):
     page_num_run._r.append(fld_char3)
     page_num_run._r.append(instr_text_or2)
     page_num_run._r.append(fld_char4)
-
-
-def add_num_in_form_27(form27_data: dict) -> dict:
-    try:
-        if form27_data['package']:
-            path_form27 = Path(form27_data['start_path'], 'Форма 27.xlsx')
-        else:
-            path_form27 = Path(form27_data['path_form_27'])
-        path_form27_dir = path_form27.parent
-        path_form27_file = [i for i in os.listdir(path_form27_dir)
-                            if re.findall(r'форма', i, re.I) and re.findall(r'27', i, re.I)]
-        wb = openpyxl.open(str(Path(path_form27_dir, path_form27_file[0])))
-        ws = wb.active
-        for row in range(1, ws.max_row):
-            if ws.cell(row, 1).value == form27_data['number']:
-                if re.findall('сопровод', form27_data['doc_name']):
-                    if re.findall(' (2 экз.)', form27_data['doc_name']):
-                        ws.cell(row + 3, 11).value = form27_data['num_start']
-                        if form27_data['num_start'] != form27_data['num_stop']:
-                            ws.cell(row + 4, 11).value = form27_data['num_stop']
-                        break
-                    else:
-                        ws.cell(row, 11).value = form27_data['num_start']
-                        if form27_data['num_start'] != form27_data['num_stop']:
-                            ws.cell(row + 1, 11).value = form27_data['num_stop']
-                        break
-                else:
-                    ws.cell(row, 11).value = form27_data['num_start']
-                    if form27_data['num_start'] != form27_data['num_stop']:
-                        ws.cell(row + 1, 11).value = form27_data['num_stop']
-                    break
-        if re.findall('сопровод', form27_data['doc_name']):
-            for row in range(2, ws.max_row):
-                if ws.cell(row, 1).value:
-                    if ws.cell(row, 1).value == form27_data['number']:
-                        break
-                    else:
-                        ws.cell(row, 17).value = 'Уч. ном. ' + form27_data['number']
-        wb.save(filename=str(Path(path_form27_dir, path_form27_file[0])))
-        wb.close()
-        return {'status': 'success', 'text': '', 'trace': ''}
-    except BaseException as ex:
-        return {'status': 'error',
-                'text': f"Ошибка при занесении данных в 27 форму в документе {form27_data['doc_name']} - {ex}",
-                'trace': traceback.format_exc()}
-
-
-def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: list, print_num: list = None,
-              form_27: dict = None) -> dict:
-    try:
-        errors = []
-        printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
-        handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
-        attributes = win32print.GetPrinter(handle, level)
-        if level == 2:
-            attributes = win32print.GetPrinter(handle, level)
-            attributes['pDevMode'].Duplex = 2  # flip up  Для двухсторонней печати
-            try:
-                # Устанавливаем настройки
-                win32print.SetPrinter(handle, level, attributes, 0)
-            except:  # Пропускаем ошибку
-                pass
-        win32api.ShellExecute(0, "print", str(start_path), name_printer, ".", 0)
-        jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
-        log.info(f"Ждем очередь")
-        while jobs < 3:
-            print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
-            if not print_jobs and jobs == 0:  # Пока не запустилось в печать
-                pass
-            elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
-                jobs = 3
-                log.info('Очередь очистилась')
-            elif print_jobs:  # Если в очереди что-то есть
-                jobs = 2
-        if level == 2:
-            attributes['pDevMode'].Duplex = 1  # Настройки по умолчанию (односторонняя печать)
-            try:
-                win32print.SetPrinter(handle, level, attributes, 0)  # Выставляем настройки
-            except:
-                pass
-        win32print.ClosePrinter(handle)  # Закрываем принтер
-        if form_27 and form_27['check_form_27']:
-            log.info(f"Заносим номера в 27 форму")
-            answer = add_num_in_form_27(form_27)
-            if answer['status'] == 'error':
-                log.error(answer['text'])
-                log.error(answer['trace'])
-                errors.append(answer['text'])
-        if print_num:
-            del_num = [*del_num, *print_num]
-        if errors:
-            return {'status': 'warning', 'text': errors, 'trace': '', 'data': del_num}
-        return {'status': 'success', 'text': '', 'trace': '', 'data': del_num}
-    except BaseException as ex:
-        return {'status': 'error',
-                'text': f"Ошибка при печати документов - {ex}",
-                'trace': traceback.format_exc(),
-                'data': del_num}
 
 
 def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progress, progress_value, event, window_check,
@@ -479,10 +380,6 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                     logging.info('Записываем данные с печати')
                     with open(save_printing_data_file, 'a') as f:
                         f.write(';'.join(printing_date) + '\n')
-                current_progress += percent
-                line_progress.emit(f'Выполнено {int(current_progress)} %')
-                progress_value.emit(int(current_progress))
-                now_doc += 1
             except Exception as ex:
                 logging.error("Упс, сорвалась печать файла!")
                 logging.error("Ошибка:\n " + str(ex) + '\n' + traceback.format_exc())
@@ -492,16 +389,20 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                 logging.info(f"Удаляем пдф после печати")
                 for pdf_file in pdf_files:
                     while True:
-                        permis = 0
+                        permission = 0
                         try:
-                            permis += 1
+                            permission += 1
                             os.remove(str(Path(doc.parent_path, pdf_file)))
                             break
                         except PermissionError as per:
                             time.sleep(3)
                             logging.warning(f"Ошибка удаления файла {pdf_file} после печати - {per}")
-                            if permis == 3:
+                            if permission == 3:
                                 break
+            current_progress += percent
+            line_progress.emit(f'Выполнено {int(current_progress)} %')
+            progress_value.emit(int(current_progress))
+            now_doc += 1
         logging.info(f"Удаляем напечатанные номера")
         line_doing.emit(f"Удаляем напечатанные номера")
         print_numbers_df = pd.read_excel(incoming_data['path_account_num'], header=None)
@@ -513,7 +414,8 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
         final_nums = {enum: final_nums[i:i + shape_df] for enum, i in enumerate(range(0, len(final_nums), shape_df))}
         dict_keys = list(final_nums.keys())
         if len(dict_keys) > 1 and len(final_nums[dict_keys[0]]) != len(final_nums[dict_keys[-1]]):
-            final_nums[dict_keys[-1]] = [final_nums[dict_keys[-1]][i] if i < len(final_nums[dict_keys[-1]]) else np.nan for i in range(0, len(final_nums[dict_keys[0]]))]
+            final_nums[dict_keys[-1]] = [final_nums[dict_keys[-1]][i] if i < len(final_nums[dict_keys[-1]]) else np.nan
+                                         for i in range(0, len(final_nums[dict_keys[0]]))]
         write_df = pd.DataFrame(final_nums)
         write_df.to_excel(incoming_data['path_account_num'], header=False, index=False)
         del_pdf_files(logging, start_path)

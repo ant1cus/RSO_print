@@ -12,11 +12,12 @@ from create_number_instance import create_number_instance
 from create_account_number import create_account_number
 from SortingFile import SortingFile
 from Check import (check_doc_format, check_doc_print, check_create_instance_number, check_create_account_number,
-                   check_print_files)
+                   check_print_files, check_print_certification)
 from StartThread import StartThreading
 from format_docs import format_doc
 from print_docs import print_docs
 from print_all_files import print_all_files
+from print_certification import print_certification
 
 from PyQt5 import QtPrintSupport
 
@@ -115,117 +116,112 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                  'success': 'Печать файлов в папке «name_dir» успешно завершена',
                                                  'error': 'Печать файлов в папке «name_dir» завершена с ошибками'
                                                  },
+                                 'print_certification': {'mode_name': 'print_certification',
+                                                         'title': 'Печать лаборатории сертификации в папке',
+                                                         'cancel': 'Печать лаборатории сертификации в папке «name_dir»'
+                                                                   ' отменена пользователем',
+                                                         'exception': 'Печать лаборатории сертификации в папке '
+                                                                      '«name_dir» не завершена из-за ошибки',
+                                                         'success': 'Печать лаборатории сертификации в папке «name_dir»'
+                                                                    ' успешно завершена',
+                                                         'error': 'Печать лаборатории сертификации в папке «name_dir» '
+                                                                  'завершена с ошибками'
+                                                         },
                                  }
-        self.widget_name = {'insertMain': {'grid': 'gridLayout_insertMain', 'frame': 'groupBox_insertMain', 'action': 'action_insert_main', 'tab': 'insertMain'},
-                            'addInsertMain': {'grid': 'gridLayout_addInsertMain', 'frame': 'groupBox_addInsertMain', 'action': 'action_sorting_file', 'tab': 'sorting'},
-                            'printMain': {'grid': 'gridLayout_printMain', 'frame': 'groupBox_printMain', 'action': 'action_print_main', 'tab': 'printMain'},
-                            'insert41101': {'grid': 'gridLayout_insert41101', 'frame': 'groupBox_insert41101', 'action': 'action_insert_41101', 'tab': 'insert_41101'},
-                            'addInsert41101': {'grid': 'gridLayout_addInsert41101', 'frame': 'groupBox_addInsert41101', 'action': 'action_sorting_file', 'tab': 'sorting'},
-                            'print41101': {'grid': 'gridLayout_print41101', 'frame': 'groupBox_print41101', 'action': 'action_print_41101', 'tab': 'print_41101'},
-                            'module': {'grid': 'gridLayout_module', 'frame': 'groupBox_module', 'action': 'action_module', 'tab': 'module'}}
-        self.pushButton_main_start_path_insert_dir.clicked.connect(lambda:
-                                                                   browse(self,
-                                                                          self.pushButton_main_start_path_insert_dir,
-                                                                          self.lineEdit_main_start_path_insert_dir,
-                                                                          self.default_path))
-        self.pushButton_main_finish_path_insert_dir.clicked.connect(lambda:
-                                                                    browse(self,
-                                                                           self.pushButton_main_finish_path_insert_dir,
-                                                                           self.lineEdit_main_finish_path_insert_dir,
-                                                                           self.default_path))
-        self.pushButton_main_file_num.clicked.connect(lambda: browse(self, self.pushButton_main_file_num,
-                                                                     self.lineEdit_main_file_num_path,
-                                                                     self.default_path))
-        self.pushButton_main_path_signature_dir.clicked.connect(lambda: browse(self,
-                                                                               self.pushButton_main_path_signature_dir,
-                                                                               self.lineEdit_main_path_signature_dir,
-                                                                               self.default_path))
-        self.pushButton_main_account_path_dir.clicked.connect(lambda: browse(self,
-                                                                             self.pushButton_main_account_path_dir,
-                                                                             self.lineEdit_main_account_path_dir,
-                                                                             self.default_path))
-        self.pushButton_main_form27_path_dir.clicked.connect(lambda:
-                                                             browse(self, self.pushButton_main_form27_path_dir,
-                                                                    self.lineEdit_main_form27_path_dir,
-                                                                    self.default_path))
-        self.pushButton_main_folder_sp_dir.clicked.connect(lambda: browse(self, self.pushButton_main_folder_sp_dir,
-                                                                          self.lineEdit_main_sp_path_dir,
-                                                                          self.default_path))
-        self.pushButton_main_file_sp.clicked.connect(lambda: browse(self, self.pushButton_main_file_sp,
-                                                                    self.lineEdit_main_file_sp_path, self.default_path))
-        self.pushButton_main_start_path_print_dir.clicked.connect(lambda:
-                                                                  browse(self,
-                                                                         self.pushButton_main_start_path_print_dir,
-                                                                         self.lineEdit_main_start_path_print_dir,
-                                                                         self.default_path))
-        self.pushButton_main_file_form27_print.clicked.connect(lambda:
-                                                               browse(self, self.pushButton_main_file_form27_print,
-                                                                      self.lineEdit_main_path_file_form27_print,
-                                                                      self.default_path))
-        self.pushButton_main_file_account_numbers.clicked.connect(lambda:
-                                                                  browse(self,
-                                                                         self.pushButton_main_file_account_numbers,
-                                                                         self.lineEdit_main_file_account_numbers_path,
-                                                                         self.default_path))
-        self.pushButton_main_add_account_numbers.clicked.connect(lambda:
-                                                                 browse(self, self.pushButton_main_add_account_numbers,
-                                                                        self.lineEdit_main_add_account_numbers_path,
-                                                                        self.default_path))
-        self.pushButton_41101_start_path_insert_dir.clicked.connect(lambda:
-                                                                    browse(self,
-                                                                           self.pushButton_41101_start_path_insert_dir,
-                                                                           self.lineEdit_41101_start_path_insert_dir,
-                                                                           self.default_path))
+        self.widget_name = {
+            'insertMain': {'grid': 'gridLayout_insertMain', 'frame': 'groupBox_insertMain',
+                           'action': 'action_insert_main', 'tab': 'insertMain'},
+            'addInsertMain': {'grid': 'gridLayout_addInsertMain', 'frame': 'groupBox_addInsertMain',
+                              'action': 'action_sorting_file', 'tab': 'sorting'},
+            'printMain': {'grid': 'gridLayout_printMain', 'frame': 'groupBox_printMain',
+                          'action': 'action_print_main', 'tab': 'printMain'},
+            'insert41101': {'grid': 'gridLayout_insert41101', 'frame': 'groupBox_insert41101',
+                            'action': 'action_insert_41101', 'tab': 'insert_41101'},
+            'addInsert41101': {'grid': 'gridLayout_addInsert41101', 'frame': 'groupBox_addInsert41101',
+                               'action': 'action_sorting_file', 'tab': 'sorting'},
+            'print41101': {'grid': 'gridLayout_print41101', 'frame': 'groupBox_print41101',
+                           'action': 'action_print_41101', 'tab': 'print_41101'},
+            'module': {'grid': 'gridLayout_module', 'frame': 'groupBox_module',
+                       'action': 'action_module', 'tab': 'module'}
+        }
+        self.pushButton_main_start_path_insert_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_main_start_path_insert_dir,
+                           self.lineEdit_main_start_path_insert_dir, self.default_path))
+        self.pushButton_main_finish_path_insert_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_main_finish_path_insert_dir,
+                           self.lineEdit_main_finish_path_insert_dir, self.default_path))
+        self.pushButton_main_file_num.clicked.connect(
+            lambda: browse(self, self.pushButton_main_file_num,
+                           self.lineEdit_main_file_num_path, self.default_path))
+        self.pushButton_main_path_signature_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_main_path_signature_dir,
+                           self.lineEdit_main_path_signature_dir, self.default_path))
+        self.pushButton_main_account_path_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_main_account_path_dir,
+                           self.lineEdit_main_account_path_dir, self.default_path))
+        self.pushButton_main_form27_path_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_main_form27_path_dir,
+                           self.lineEdit_main_form27_path_dir, self.default_path))
+        self.pushButton_main_folder_sp_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_main_folder_sp_dir,
+                           self.lineEdit_main_sp_path_dir, self.default_path))
+        self.pushButton_main_file_sp.clicked.connect(
+            lambda: browse(self, self.pushButton_main_file_sp,
+                           self.lineEdit_main_file_sp_path, self.default_path))
+        self.pushButton_main_start_path_print_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_main_start_path_print_dir,
+                           self.lineEdit_main_start_path_print_dir, self.default_path))
+        self.pushButton_main_file_form27_print.clicked.connect(
+            lambda: browse(self, self.pushButton_main_file_form27_print,
+                           self.lineEdit_main_path_file_form27_print, self.default_path))
+        self.pushButton_main_file_account_numbers.clicked.connect(
+            lambda: browse(self, self.pushButton_main_file_account_numbers,
+                           self.lineEdit_main_file_account_numbers_path, self.default_path))
+        self.pushButton_main_add_account_numbers.clicked.connect(
+            lambda: browse(self, self.pushButton_main_add_account_numbers,
+                           self.lineEdit_main_add_account_numbers_path, self.default_path))
+        self.pushButton_41101_start_path_insert_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_start_path_insert_dir,
+                           self.lineEdit_41101_start_path_insert_dir, self.default_path))
         self.pushButton_41101_finish_path_insert_dir.clicked.connect(
             lambda: browse(self, self.pushButton_41101_finish_path_insert_dir,
                            self.lineEdit_41101_finish_path_insert_dir, self.default_path))
-        self.pushButton_41101_file_num.clicked.connect(lambda: browse(self, self.pushButton_41101_file_num,
-                                                                      self.lineEdit_41101_file_num_path,
-                                                                      self.default_path))
-        self.pushButton_41101_account_path_dir.clicked.connect(lambda: browse(self,
-                                                                              self.pushButton_41101_account_path_dir,
-                                                                              self.lineEdit_41101_account_path_dir,
-                                                                              self.default_path))
-        self.pushButton_41101_form27_path_dir.clicked.connect(lambda:
-                                                              browse(self, self.pushButton_41101_form27_path_dir,
-                                                                     self.lineEdit_41101_form27_path_dir,
-                                                                     self.default_path))
-        self.pushButton_41101_start_path_print_dir.clicked.connect(lambda:
-                                                                   browse(self,
-                                                                          self.pushButton_41101_start_path_print_dir,
-                                                                          self.lineEdit_41101_start_path_print_dir,
-                                                                          self.default_path))
-        self.pushButton_41101_file_form27_print.clicked.connect(lambda:
-                                                                browse(self, self.pushButton_41101_file_form27_print,
-                                                                       self.lineEdit_41101_path_file_form27_print,
-                                                                       self.default_path))
-        self.pushButton_41101_file_account_numbers.clicked.connect(lambda:
-                                                                   browse(self,
-                                                                          self.pushButton_41101_file_account_numbers,
-                                                                          self.lineEdit_41101_file_account_numbers_path,
-                                                                          self.default_path))
-        self.pushButton_41101_add_account_numbers.clicked.connect(lambda:
-                                                                  browse(self,
-                                                                         self.pushButton_41101_add_account_numbers,
-                                                                         self.lineEdit_41101_add_account_numbers_path,
-                                                                         self.default_path))
-        self.pushButton_module_path_account_dir.clicked.connect(lambda:
-                                                                browse(self,
-                                                                         self.pushButton_module_path_account_dir,
-                                                                         self.lineEdit_module_path_account_finish_dir,
-                                                                         self.default_path))
-        self.pushButton_module_path_start_instance_dir.clicked.connect(lambda:
-                                                                browse(self,
-                                                                         self.pushButton_module_path_start_instance_dir,
-                                                                         self.lineEdit_module_path_instance_start_dir,
-                                                                         self.default_path))
+        self.pushButton_41101_file_num.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_file_num,
+                           self.lineEdit_41101_file_num_path, self.default_path))
+        self.pushButton_41101_account_path_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_account_path_dir,
+                           self.lineEdit_41101_account_path_dir, self.default_path))
+        self.pushButton_41101_form27_path_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_form27_path_dir,
+                           self.lineEdit_41101_form27_path_dir, self.default_path))
+        self.pushButton_41101_start_path_print_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_start_path_print_dir,
+                           self.lineEdit_41101_start_path_print_dir, self.default_path))
+        self.pushButton_41101_file_form27_print.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_file_form27_print,
+                           self.lineEdit_41101_path_file_form27_print, self.default_path))
+        self.pushButton_41101_file_account_numbers.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_file_account_numbers,
+                           self.lineEdit_41101_file_account_numbers_path, self.default_path))
+        self.pushButton_41101_add_account_numbers.clicked.connect(
+            lambda: browse(self, self.pushButton_41101_add_account_numbers,
+                           self.lineEdit_41101_add_account_numbers_path, self.default_path))
+        self.pushButton_module_path_account_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_path_account_dir,
+                           self.lineEdit_module_path_account_finish_dir, self.default_path))
+        self.pushButton_module_path_start_instance_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_path_start_instance_dir,
+                           self.lineEdit_module_path_instance_start_dir, self.default_path))
         self.pushButton_module_path_finish_instance_dir.clicked.connect(
             lambda: browse(self, self.pushButton_module_path_finish_instance_dir,
                            self.lineEdit_module_path_account_finish_dir, self.default_path))
         self.pushButton_module_path_print_files_dir.clicked.connect(
             lambda: browse(self, self.pushButton_module_path_print_files_dir,
-                           self.lineEdit_module_path_print_files_dir, self.default_path)
-        )
+                           self.lineEdit_module_path_print_files_dir, self.default_path))
+        self.pushButton_module_print_CL_start_path_print_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_print_CL_start_path_print_dir,
+                           self.lineEdit_module_print_CL_start_path_print_dir, self.default_path))
         # Для выбора принтера по умолчанию
         self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_main_printer.currentTextChanged.connect(lambda: self.text_changed(self.lineEdit_main_printer,
@@ -239,9 +235,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.comboBox_module_select_printer.currentTextChanged.connect(
             lambda: self.text_changed(self.lineEdit_module_printer, self.comboBox_module_select_printer))
         self.lineEdit_module_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
-        # Группа для кнопок принтера
-        self.button_gr = [self.radioButton_main_group4_last_duplex, self.radioButton_main_group4_duplex,
-                          self.radioButton_main_group4_one_side]
+        self.comboBox_module_print_CL_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
+        self.comboBox_module_print_CL_printer.currentTextChanged.connect(
+            lambda: self.text_changed(self.lineEdit_module_print_CL_printer, self.comboBox_module_print_CL_printer))
+        self.lineEdit_module_print_CL_printer.setText(QtPrintSupport.QPrinterInfo.defaultPrinterName())
         # Имена в файле
         self.lines = {'insertMain-start_path_insert': ['Путь к исходным файлам',
                                                        self.lineEdit_main_start_path_insert_dir],
@@ -420,6 +417,12 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                          self.lineEdit_module_path_account_finish_dir],
                       'module-account_number': ['Уч. номер, с', self.lineEdit_module_account_number],
                       'module-print_files': ['Исходные файлы для печати', self.lineEdit_module_path_print_files_dir],
+                      'module-print_certification': ['Исходные файлы для печати сертификации',
+                                                     self.lineEdit_module_print_CL_start_path_print_dir],
+                      'module-radioButton_group1': ['Метод печати сертификации',
+                                                    [self.radioButton_module_group1_print_CL_duplex,
+                                                     self.radioButton_module_group1_print_CL_last_duplex,
+                                                     self.radioButton_module_group1_print_CL_one_side]],
                       }
         # Кнопки запуска
         self.pushButton_main_insert.clicked.connect(self.insert_main)
@@ -429,6 +432,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_module_create_number_instance.clicked.connect(self.start_create_instance_number)
         self.pushButton_module_create_account_number.clicked.connect(self.start_create_account_number)
         self.pushButton_module_print_files.clicked.connect(self.print_files)
+        self.pushButton_module_print_CL_print_files.clicked.connect(self.print_certification)
         # Кнопки в меню
         self.action_default.triggered.connect((lambda: default_settings(self, self.default_path,
                                                                         self.lines, self.widget_name)))
@@ -499,7 +503,6 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                 break
         rewrite_settings(self.default_path, self.tab_order, 'tab_order')
 
-
     def tab_click(self, index):
         try:
             self.start_name = self.tab_order[str(index)]
@@ -534,13 +537,29 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
     def text_changed(self, line_edit, combo_box):  # Если изменился выбор принтера
         line_edit.setText(combo_box.currentText())
 
+    def print_certification(self):
+        queue_print_certification = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['print_certification']['mode_name']
+        name_dir = self.lineEdit_module_print_CL_start_path_print_dir.text().strip()
+        out_dict = {
+            'start_path': self.lineEdit_module_print_CL_start_path_print_dir.text().strip(),
+            'name_printer': self.lineEdit_module_print_CL_printer.text().strip(),
+            'duplex': True if self.radioButton_module_group1_print_CL_duplex.isChecked() else False,
+            'last_duplex': True if self.radioButton_module_group1_print_CL_last_duplex.isChecked() else False,
+            'one_side': True if self.radioButton_module_group1_print_CL_one_side.isChecked() else False,
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_print_certification, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': print_certification}
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_print_certification, StartThreading)
+
     def print_files(self):
         queue_print_files = queue.Queue(maxsize=1)
         mode_name = self.mode_description['print_files']['mode_name']
         name_dir = self.lineEdit_module_path_print_files_dir.text().strip()
         out_dict = {
             'start_path': self.lineEdit_module_path_print_files_dir.text().strip(),
-            'printer': self.comboBox_module_select_printer.currentText().strip()
+            'printer': self.lineEdit_module_printer.text().strip()
         }
         data = {**self.default_dict, **out_dict,
                 'queue': queue_print_files, 'mode_name': mode_name, 'name_dir': name_dir,
@@ -727,7 +746,6 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                 'queue': queue_41101_insert, 'mode_name': mode_name, 'name_dir': name_dir,
                 'start_function': format_doc}
         start_thread(data, self.logging_dict, self.thread_dict, self, check_doc_format, StartThreading)
-
 
     def print_41101(self):
         queue_41101_print = queue.Queue(maxsize=1)

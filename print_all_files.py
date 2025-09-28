@@ -1,9 +1,7 @@
 import os
-import time
 import traceback
-import win32api
-import win32print
 from pathlib import Path
+from small_functions import print_doc
 
 
 def print_all_files(incoming_data: dict, current_progress, now_doc, all_doc, line_doing, line_progress, progress_value,
@@ -27,45 +25,18 @@ def print_all_files(incoming_data: dict, current_progress, now_doc, all_doc, lin
                     now_doc += 1
                     continue
                 line_doing.emit(f'Печатаем {file} ({now_doc} из {all_doc})')
-                printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
-                handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
-                attributes = win32print.GetPrinter(handle, 2)
-                attributes['pDevMode'].Duplex = 1
-                try:
-                    # Устанавливаем настройки
-                    win32print.SetPrinter(handle, 2, attributes, 0)
-                except:  # Пропускаем ошибку
-                    pass
-                win32api.ShellExecute(0, "print", str(Path(incoming_data['start_path'], file)), name_printer, ".", 0)
-                print_jobs = win32print.EnumJobs(handle, 0, -1, 2)  # Очередь печати
-                # print(print_jobs)
-                jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
-                logging.info(f"Ждем очередь")
-                # anton = 0
-                while jobs < 3:
-                    # print(print_jobs)
-                    if not print_jobs and jobs == 0:  # Пока не запустилось в печать
-                        pass
-                    elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
-                        jobs = 3
-                        logging.info('Очередь очистилась')
-                    elif print_jobs:  # Если в очереди что-то есть
-                        jobs = 2
-                    print_jobs = win32print.EnumJobs(handle, 0, -1, 2)  # Очередь печати
-                    time.sleep(1)
-                    # print(print_jobs)
-                    # anton += 1
-                    # print(anton)
-                    # if anton > 50:
-                    #     pass
-                win32print.ClosePrinter(handle)  # Закрываем принтер
+                answer = print_doc(Path(incoming_data['start_path'], file), name_printer, 1, logging)
+                if answer['status'] != 'success':
+                    errors.append(answer['text'])
+                    logging.error(answer['text'])
+                if answer['status'] == 'error':
+                    logging.error(answer['trace'])
                 current_progress += percent
                 line_progress.emit(f'Выполнено {int(current_progress)} %')
                 progress_value.emit(int(current_progress))
                 now_doc += 1
             except BaseException as error:
                 errors.append(f"Ошибка при печати {file}, файл не напечатан")
-
                 logging.warning(f"Ошибка при печати файла {file} - {error}\n{traceback.format_exc()}")
         line_progress.emit(f'Выполнено {int(100)} %')
         progress_value.emit(int(100))

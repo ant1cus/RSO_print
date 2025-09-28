@@ -7,11 +7,14 @@ import itertools
 import zipfile
 
 import docx
+import openpyxl
 import pythoncom
 import fitz
 import os
 import pandas as pd
 import numpy as np
+import win32api
+import win32print
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.shared import Pt
 
@@ -20,6 +23,105 @@ from zipfile import ZipFile
 from pathlib import Path
 from natsort import natsorted
 from typing import Any
+
+
+def add_num_in_form_27(form27_data: dict) -> dict:
+    try:
+        if form27_data['package']:
+            path_form27 = Path(form27_data['start_path'], 'Форма 27.xlsx')
+        else:
+            path_form27 = Path(form27_data['path_form_27'])
+        path_form27_dir = path_form27.parent
+        path_form27_file = [i for i in os.listdir(path_form27_dir)
+                            if re.findall(r'форма', i, re.I) and re.findall(r'27', i, re.I)]
+        wb = openpyxl.open(str(Path(path_form27_dir, path_form27_file[0])))
+        ws = wb.active
+        for row in range(1, ws.max_row):
+            if ws.cell(row, 1).value == form27_data['number']:
+                if re.findall('сопровод', form27_data['doc_name']):
+                    if re.findall(' (2 экз.)', form27_data['doc_name']):
+                        ws.cell(row + 3, 11).value = form27_data['num_start']
+                        if form27_data['num_start'] != form27_data['num_stop']:
+                            ws.cell(row + 4, 11).value = form27_data['num_stop']
+                        break
+                    else:
+                        ws.cell(row, 11).value = form27_data['num_start']
+                        if form27_data['num_start'] != form27_data['num_stop']:
+                            ws.cell(row + 1, 11).value = form27_data['num_stop']
+                        break
+                else:
+                    ws.cell(row, 11).value = form27_data['num_start']
+                    if form27_data['num_start'] != form27_data['num_stop']:
+                        ws.cell(row + 1, 11).value = form27_data['num_stop']
+                    break
+        if re.findall('сопровод', form27_data['doc_name']):
+            for row in range(2, ws.max_row):
+                if ws.cell(row, 1).value:
+                    if ws.cell(row, 1).value == form27_data['number']:
+                        break
+                    else:
+                        ws.cell(row, 17).value = 'Уч. ном. ' + form27_data['number']
+        wb.save(filename=str(Path(path_form27_dir, path_form27_file[0])))
+        wb.close()
+        return {'status': 'success', 'text': '', 'trace': ''}
+    except BaseException as ex:
+        return {'status': 'error',
+                'text': f"Ошибка при занесении данных в 27 форму в документе {form27_data['doc_name']} - {ex}",
+                'trace': traceback.format_exc()}
+
+
+def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: list = None, print_num: list = None,
+              form_27: dict = None) -> dict:
+    try:
+        errors = []
+        printer_defaults = {"DesiredAccess": win32print.PRINTER_ACCESS_USE}  # Дефолтный принтер
+        handle = win32print.OpenPrinter(name_printer, printer_defaults)  # Открываем
+        attributes = win32print.GetPrinter(handle, level)
+        if level == 2:
+            attributes = win32print.GetPrinter(handle, level)
+            attributes['pDevMode'].Duplex = 2  # flip up  Для двухсторонней печати
+            try:
+                # Устанавливаем настройки
+                win32print.SetPrinter(handle, level, attributes, 0)
+            except:  # Пропускаем ошибку
+                pass
+        win32api.ShellExecute(0, "print", str(start_path), name_printer, ".", 0)
+        jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
+        log.info(f"Ждем очередь")
+        while jobs < 3:
+            print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
+            if not print_jobs and jobs == 0:  # Пока не запустилось в печать
+                pass
+            elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
+                jobs = 3
+                log.info('Очередь очистилась')
+            elif print_jobs:  # Если в очереди что-то есть
+                jobs = 2
+            time.sleep(1)
+        if level == 2:
+            attributes['pDevMode'].Duplex = 1  # Настройки по умолчанию (односторонняя печать)
+            try:
+                win32print.SetPrinter(handle, level, attributes, 0)  # Выставляем настройки
+            except:
+                pass
+        win32print.ClosePrinter(handle)  # Закрываем принтер
+        if form_27 and form_27['check_form_27']:
+            log.info(f"Заносим номера в 27 форму")
+            answer = add_num_in_form_27(form_27)
+            if answer['status'] == 'error':
+                log.error(answer['text'])
+                log.error(answer['trace'])
+                errors.append(answer['text'])
+        if print_num:
+            del_num = [*del_num, *print_num]
+        if errors:
+            return {'status': 'warning', 'text': errors, 'trace': '', 'data': del_num}
+        return {'status': 'success', 'text': '', 'trace': '', 'data': del_num}
+    except BaseException as ex:
+        return {'status': 'error',
+                'text': f"Ошибка при печати документов - {ex}",
+                'trace': traceback.format_exc(),
+                'data': del_num}
 
 
 def sorting_files(path: Path, path_new: Path, fso: bool, inventory: list) -> dict:
@@ -433,6 +535,7 @@ def delete_header_footer_second_acc(path: Path, text_first_header: str, secret_n
     except BaseException as exception:
         return {'status': 'error', 'trace': traceback.format_exc(),
                 'text': f'Ошибка при удалении шапки в сопроводе - {exception}'}
+
 
 def return_error(log: logging, warning: str, status, status_text: str, default_path: Path, status_finish: list,
                  window, event: Any = False, error: str = '', info_value=None) -> None:

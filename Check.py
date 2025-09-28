@@ -435,3 +435,17 @@ def check_print_files(incoming: dict) -> dict:
         return {'error': True, 'data': 'Указанный путь к файлам для печати не является директорией'}
     incoming['all_doc'] = len(os.listdir(start_path))
     return {'error': False, 'data': incoming}
+
+
+def check_print_certification(incoming: dict) -> dict:
+    start_path = incoming['start_path']
+    if not start_path:
+        return {'error': True, 'data': 'Путь к файлам для печати пуст'}
+    if incoming['duplex'] is False and incoming['last_duplex'] is False and incoming['one_side'] is False:
+        return {'error': True, 'data': 'Не указан метод печати'}
+    if not incoming['name_printer']:
+        return {'error': True, 'data': 'Не выбран принтер'}
+    if not os.path.isdir(start_path) and not os.path.isfile(start_path):
+        return {'error': True, 'data': 'Указанная папка или файл удалена или переименована'}
+    incoming['all_doc'] = len(os.listdir(start_path)) if os.path.isdir(start_path) else 1
+    return {'error': False, 'data': incoming}
