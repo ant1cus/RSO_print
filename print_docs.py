@@ -195,10 +195,12 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
             now_doc += 1
         documents = documents.sort_values('print_order')
         documents.reset_index(drop=True, inplace=True)
+        all_pages = 0
         for index, pages in enumerate(documents['pages'].to_numpy().tolist()):
             if np.isnan(pages):
                 continue
-            if len(print_nums) < pages and one_time_load:
+            all_pages += pages
+            if len(print_nums) < all_pages and one_time_load:
                 if incoming_data['check_box_add_account_num'] is False:
                     errors.append('Не хватает учетных номеров, загрузите дополнительный файл')
                     break
@@ -214,7 +216,7 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                 add_print_nums = [x for y in add_print_nums for x in y if x is not False]
                 print_nums = [*print_nums, *add_print_nums]
                 one_time_load = False
-            if len(print_nums) < pages:
+            if len(print_nums) < all_pages:
                 errors.append('Не хватает учетных номеров, загрузите другой файл')
                 break
             documents.loc[index, 'print_num'] = '|'.join(print_nums[print_num: print_num + pages])
