@@ -4,6 +4,8 @@ import sys
 import pathlib
 import logging
 
+import win32print
+
 import Main
 import about
 
@@ -536,6 +538,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
 
     def text_changed(self, line_edit, combo_box):  # Если изменился выбор принтера
         line_edit.setText(combo_box.currentText())
+        win32print.SetDefaultPrinter(combo_box.currentText())
 
     def print_certification(self):
         queue_print_certification = queue.Queue(maxsize=1)
