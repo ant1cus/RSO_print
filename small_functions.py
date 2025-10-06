@@ -86,11 +86,11 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
             except:  # Пропускаем ошибку
                 pass
         win32api.ShellExecute(0, "print", str(start_path), name_printer, ".", 0)
-        log.info(f"default - {win32print.GetDefaultPrinter()}, print - {name_printer}")
+        print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
+        log.info(f"default - {win32print.GetDefaultPrinter()}, print - {name_printer}, jobs - {print_jobs}")
         jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
         log.info(f"Ждем очередь")
         while jobs < 3:
-            print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
             if not print_jobs and jobs == 0:  # Пока не запустилось в печать
                 pass
             elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
@@ -99,6 +99,8 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
             elif print_jobs:  # Если в очереди что-то есть
                 jobs = 2
             time.sleep(1)
+            print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
+            log.info(f"jobs in printing- {print_jobs}")
         if level == 2:
             attributes['pDevMode'].Duplex = 1  # Настройки по умолчанию (односторонняя печать)
             try:
