@@ -28,6 +28,8 @@ def print_certification(incoming_data: dict, current_progress, now_doc, all_doc,
         printer = QtPrintSupport.QPrinterInfo.defaultPrinterName()
         computer_name = socket.gethostname()
         date_for_saving = datetime.date.today()
+        if not Path.exists(Path(incoming_data['default_path'], 'printing_data')):
+            os.makedirs(Path(incoming_data['default_path'], 'printing_data'))
         save_printing_data_file = Path(incoming_data['default_path'], 'printing_data', str(date_for_saving) + '.txt')
         if not os.path.exists(save_printing_data_file):
             with open(save_printing_data_file, 'w'):
