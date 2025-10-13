@@ -221,9 +221,12 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_module_path_print_files_dir.clicked.connect(
             lambda: browse(self, self.pushButton_module_path_print_files_dir,
                            self.lineEdit_module_path_print_files_dir, self.default_path))
+        self.pushButton_module_print_CL_start_path_print_file.clicked.connect(
+            lambda: browse(self, self.pushButton_module_print_CL_start_path_print_file,
+                           self.lineEdit_module_print_CL_start_path_print_file, self.default_path))
         self.pushButton_module_print_CL_start_path_print_dir.clicked.connect(
             lambda: browse(self, self.pushButton_module_print_CL_start_path_print_dir,
-                           self.lineEdit_module_print_CL_start_path_print_dir, self.default_path))
+                           self.lineEdit_module_print_CL_start_path_print_file, self.default_path))
         # Для выбора принтера по умолчанию
         self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_main_printer.currentTextChanged.connect(lambda: self.text_changed(self.lineEdit_main_printer,
@@ -420,7 +423,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                       'module-account_number': ['Уч. номер, с', self.lineEdit_module_account_number],
                       'module-print_files': ['Исходные файлы для печати', self.lineEdit_module_path_print_files_dir],
                       'module-print_certification': ['Исходные файлы для печати сертификации',
-                                                     self.lineEdit_module_print_CL_start_path_print_dir],
+                                                     self.lineEdit_module_print_CL_start_path_print_file],
                       'module-radioButton_group1': ['Метод печати сертификации',
                                                     [self.radioButton_module_group1_print_CL_duplex,
                                                      self.radioButton_module_group1_print_CL_last_duplex,
@@ -543,9 +546,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
     def print_certification(self):
         queue_print_certification = queue.Queue(maxsize=1)
         mode_name = self.mode_description['print_certification']['mode_name']
-        name_dir = self.lineEdit_module_print_CL_start_path_print_dir.text().strip()
+        name_dir = self.lineEdit_module_print_CL_start_path_print_file.text().strip()
+        name_dir = pathlib.Path(name_dir).parent if pathlib.Path(name_dir).is_file() else name_dir
         out_dict = {
-            'start_path': self.lineEdit_module_print_CL_start_path_print_dir.text().strip(),
+            'start_path': self.lineEdit_module_print_CL_start_path_print_file.text().strip(),
             'name_printer': self.lineEdit_module_print_CL_printer.text().strip(),
             'duplex': True if self.radioButton_module_group1_print_CL_duplex.isChecked() else False,
             'last_duplex': True if self.radioButton_module_group1_print_CL_last_duplex.isChecked() else False,

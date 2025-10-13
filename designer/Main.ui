@@ -23,7 +23,7 @@
        </font>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>true</bool>
@@ -5791,7 +5791,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_module_print_CL_start_path_print_dir">
+              <widget class="QLineEdit" name="lineEdit_module_print_CL_start_path_print_file">
                <property name="font">
                 <font>
                  <pointsize>9</pointsize>
@@ -5802,7 +5802,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_module_print_CL_start_path_print_dir">
+              <widget class="QPushButton" name="pushButton_module_print_CL_start_path_print_file">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -5817,7 +5817,21 @@
                 </font>
                </property>
                <property name="text">
-                <string>Открыть</string>
+                <string>Файл</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_module_print_CL_start_path_print_dir">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Папка</string>
                </property>
               </widget>
              </item>
