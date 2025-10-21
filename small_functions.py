@@ -93,9 +93,12 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
         log.info(f"Ждем очередь")
         print_jobs_one = True
         print_jobs_two = True
+        count_print_jobs_one = 0
+        count_print_jobs_two = 0
         while jobs < 3:
             print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
             if not print_jobs and jobs == 0:  # Пока не запустилось в печать
+                count_print_jobs_one += 1
                 if print_jobs_one:
                     log.info('Попало в печать, очередь была пуста')
                     print_jobs_one = False
@@ -103,10 +106,12 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
                 jobs = 3
                 log.info('Очередь очистилась')
             elif print_jobs:  # Если в очереди что-то есть
+                count_print_jobs_two += 1
                 if print_jobs_two:
                     log.info('Попало в печать, в очереди документ')
                     print_jobs_two = False
                 jobs = 2
+        log.info(f"count_print_jobs_one - {count_print_jobs_one}, count_print_jobs_two - {count_print_jobs_two}")
         if level == 2:
             attributes['pDevMode'].Duplex = 1  # Настройки по умолчанию (односторонняя печать)
             try:
