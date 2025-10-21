@@ -15,54 +15,57 @@ from small_functions import pages_count, delete_header_footer_second_acc
 from word2pdf import word2pdf
 
 
-def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str = '', is_not_acc: bool = True):
-    header_1 = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
-    head_1 = header_1.paragraphs[0]  # Параграф
-    head_1.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
-    head_1 = header_1.paragraphs[0]  # Выбираем новый первый параграф
-    for header_styles in head_1.runs:
-        header_styles.font.size = Pt(11)
-        header_styles.font.name = 'Times New Roman'
-    head_1_format = head_1.paragraph_format  # Настройки параграфа
-    head_1_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
-    if is_not_acc:
-        footer_ = doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
-        foot_ = footer_.paragraphs[0]  # Параграф
-        foot_.text = text_for_foot  # Текст
-        for foot_run in foot_.runs:
-            foot_run.font.size = Pt(11)
-            foot_run.font.name = 'Times New Roman'
-        foot_format_ = foot_.paragraph_format  # Настройки параграфа
-        foot_format_.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
-    doc.sections[0].footer.paragraphs[0].text = text_for_foot  # Номера для страниц
-    # Выравниваем по левому краю
-    doc.sections[0].footer.paragraphs[0].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-    doc.add_section()  # Добавляем последнюю страницу
-    last_ = doc.sections[len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
-    last_.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
-    foot_ = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
-    foot_.is_linked_to_previous = False  # Отвязываем
-    # Текст для фонарика
-    # if len(text_finish) > 0:
-    foot_.paragraphs[0].text = text_finish
-    # else:
-    #     foot_.paragraphs[0].text = "Уч. № " + text_for_foot + \
-    #                                "\nОтп. 1 экз. в адрес\n" + hdd_number + \
-    #                                "\nИсп. " + executor + "\nПеч. " + print_people + "\n" + \
-    #                                date + "\nб/ч"
-    for footer_style in foot_.paragraphs[0].runs:
-        footer_style.font.size = Pt(11)
-        footer_style.font.name = 'Times New Roman'
-    # if fso_:
-    #     if 'заключение' in name_file_.lower() or 'акт' in name_file_.lower():
-    #         path_new = path_new + '\\' + 'Материалы по специальной проверке технических средств'
-    #     else:
-    #         path_new = path_new + '\\' + 'Материалы по специальным исследованиям технических средств'
-    #     try:
-    #         os.mkdir(path_new)
-    #     except FileExistsError:
-    #         pass
-    # doc.save(save_path)  # Сохраняем
+def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str = '', is_not_acc: bool = True) -> None:
+    try:
+        header_1 = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
+        head_1 = header_1.paragraphs[0]  # Параграф
+        head_1.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+        head_1 = header_1.paragraphs[0]  # Выбираем новый первый параграф
+        for header_styles in head_1.runs:
+            header_styles.font.size = Pt(11)
+            header_styles.font.name = 'Times New Roman'
+        head_1_format = head_1.paragraph_format  # Настройки параграфа
+        head_1_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
+        if is_not_acc:
+            footer_ = doc.sections[0].first_page_footer  # Нижний колонтитул первой страницы
+            foot_ = footer_.paragraphs[0]  # Параграф
+            foot_.text = text_for_foot  # Текст
+            for foot_run in foot_.runs:
+                foot_run.font.size = Pt(11)
+                foot_run.font.name = 'Times New Roman'
+            foot_format_ = foot_.paragraph_format  # Настройки параграфа
+            foot_format_.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT  # Выравнивание по левому краю
+        doc.sections[0].footer.paragraphs[0].text = text_for_foot  # Номера для страниц
+        # Выравниваем по левому краю
+        doc.sections[0].footer.paragraphs[0].paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+        doc.add_section()  # Добавляем последнюю страницу
+        last_ = doc.sections[len(doc.sections) - 1].first_page_header  # Колонтитул для последней страницы
+        last_.is_linked_to_previous = False  # Отвязываем от предыдущей секции чтобы не повторялись
+        foot_ = doc.sections[len(doc.sections) - 1].first_page_footer  # Нижний колонтитул
+        foot_.is_linked_to_previous = False  # Отвязываем
+        # Текст для фонарика
+        # if len(text_finish) > 0:
+        foot_.paragraphs[0].text = text_finish
+        # else:
+        #     foot_.paragraphs[0].text = "Уч. № " + text_for_foot + \
+        #                                "\nОтп. 1 экз. в адрес\n" + hdd_number + \
+        #                                "\nИсп. " + executor + "\nПеч. " + print_people + "\n" + \
+        #                                date + "\nб/ч"
+        for footer_style in foot_.paragraphs[0].runs:
+            footer_style.font.size = Pt(11)
+            footer_style.font.name = 'Times New Roman'
+        # if fso_:
+        #     if 'заключение' in name_file_.lower() or 'акт' in name_file_.lower():
+        #         path_new = path_new + '\\' + 'Материалы по специальной проверке технических средств'
+        #     else:
+        #         path_new = path_new + '\\' + 'Материалы по специальным исследованиям технических средств'
+        #     try:
+        #         os.mkdir(path_new)
+        #     except FileExistsError:
+        #         pass
+        # doc.save(save_path)  # Сохраняем
+    except BaseException:
+        return
 
 
 def cell_write(style_for_doc, text_for_insert, table, number_rows=0):  # Заполнение ячеек в таблице в описи
