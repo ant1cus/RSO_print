@@ -14,12 +14,13 @@ from create_number_instance import create_number_instance
 from create_account_number import create_account_number
 from SortingFile import SortingFile
 from Check import (check_doc_format, check_doc_print, check_create_instance_number, check_create_account_number,
-                   check_print_files, check_print_certification)
+                   check_print_files, check_print_certification, check_word2pdf)
 from StartThread import StartThreading
 from format_docs import format_doc
 from print_docs import print_docs
 from print_all_files import print_all_files
 from print_certification import print_certification
+from convert_word2pdf import convert_word2pdf
 
 from PyQt5 import QtPrintSupport
 
@@ -129,6 +130,17 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                          'error': 'Печать лаборатории сертификации в папке «name_dir» '
                                                                   'завершена с ошибками'
                                                          },
+                                 'word2pdf': {'mode_name': 'word2pdf',
+                                              'title': 'Преобразование Word в PDF в папке',
+                                              'cancel': 'Преобразование Word в PDF в папке «name_dir»'
+                                                        ' отменено пользователем',
+                                              'exception': 'Преобразование Word в PDF в папке «name_dir»'
+                                                           ' не завершено из-за ошибки',
+                                              'success': 'Преобразование Word в PDF в папке «name_dir»'
+                                                         ' успешно завершено',
+                                              'error': 'Преобразование Word в PDF в папке «name_dir»'
+                                                       ' завершено с ошибками'
+                                              },
                                  }
         self.widget_name = {
             'insertMain': {'grid': 'gridLayout_insertMain', 'frame': 'groupBox_insertMain',
@@ -227,6 +239,12 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_module_print_CL_start_path_print_dir.clicked.connect(
             lambda: browse(self, self.pushButton_module_print_CL_start_path_print_dir,
                            self.lineEdit_module_print_CL_start_path_print_file, self.default_path))
+        self.pushButton_module_start_path_word2pdf_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_start_path_word2pdf_dir,
+                           self.lineEdit_module_path_word2pdf_start_dir, self.default_path))
+        self.pushButton_module_finish_path_word2pdf_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_finish_path_word2pdf_dir,
+                           self.lineEdit_module_path_word2pdf_finish_dir, self.default_path))
         # Для выбора принтера по умолчанию
         self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_main_printer.currentTextChanged.connect(lambda: self.text_changed(self.lineEdit_main_printer,
@@ -428,6 +446,10 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                     [self.radioButton_module_group1_print_CL_duplex,
                                                      self.radioButton_module_group1_print_CL_last_duplex,
                                                      self.radioButton_module_group1_print_CL_one_side]],
+                      'module-word2pdf_start_path': ['Начальная папка преобразования Word в PDF',
+                                                     self.lineEdit_module_path_word2pdf_start_dir],
+                      'module-word2pdf_finish_path': ['Конечная папка преобразования Word в PDF',
+                                                      self.lineEdit_module_path_word2pdf_finish_dir],
                       }
         # Кнопки запуска
         self.pushButton_main_insert.clicked.connect(self.insert_main)
@@ -438,6 +460,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_module_create_account_number.clicked.connect(self.start_create_account_number)
         self.pushButton_module_print_files.clicked.connect(self.print_files)
         self.pushButton_module_print_CL_print_files.clicked.connect(self.print_certification)
+        self.pushButton_module_convert_word2pdf.clicked.connect(self.convert_word2pdf)
         # Кнопки в меню
         self.action_default.triggered.connect((lambda: default_settings(self, self.default_path,
                                                                         self.lines, self.widget_name)))
@@ -482,7 +505,6 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         for tab in self.tab_order:
             action = self.findChild(QObject, self.widget_name[self.tab_order[tab]]['action'])
             if self.tab_visible[self.tab_order[tab]]:
-                # action = self.findChild(QObject, self.widget_name[self.tab_order[tab]]['action'])
                 action.setChecked(True)
                 self.tabWidget.addTab(self.tab_for_paint[self.tab_order[tab]]['widget'],
                                       self.tab_for_paint[self.tab_order[tab]]['name'])
@@ -542,6 +564,19 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
     def text_changed(self, line_edit, combo_box):  # Если изменился выбор принтера
         line_edit.setText(combo_box.currentText())
         win32print.SetDefaultPrinter(combo_box.currentText())
+
+    def convert_word2pdf(self):
+        queue_convert_word2pdf = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['word2pdf']['mode_name']
+        name_dir = self.lineEdit_module_path_word2pdf_start_dir.text().strip()
+        out_dict = {
+            'start_path': self.lineEdit_module_path_word2pdf_start_dir.text().strip(),
+            'finish_path': self.lineEdit_module_path_word2pdf_finish_dir.text().strip(),
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_convert_word2pdf, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': convert_word2pdf}
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_word2pdf, StartThreading)
 
     def print_certification(self):
         queue_print_certification = queue.Queue(maxsize=1)

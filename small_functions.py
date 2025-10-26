@@ -551,6 +551,22 @@ def delete_header_footer_second_acc(path: Path, text_first_header: str, secret_n
                 'text': f'Ошибка при удалении шапки в сопроводе - {exception}'}
 
 
+def replace_object(path: Path, log, info_value, event, window_check) -> bool:
+    if path.suffix:
+        exist_file = True if path.is_file() else False
+    else:
+        exist_file = True if path.is_dir() else False
+    replace = True
+    if exist_file:
+        log.info(f"{path} существует, спрашиваем что делать")
+        text = f"{path} существует, заменить?"
+        info_value.emit("Вопрос?", text, None)
+        event.clear()
+        event.wait()
+        replace = window_check.answer
+    return replace
+
+
 def return_error(log: logging, warning: str, status, status_text: str, default_path: Path, status_finish: list,
                  window, event: Any = False, error: str = '', info_value=None) -> None:
     """Функция для возврата ошибок по всей программе и отмены оперции пользователем. """

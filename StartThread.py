@@ -54,7 +54,6 @@ class StartThreading(QThread):
         self.event.set()
         self.now_doc = 0
         self.all_doc = incoming_data['all_doc']
-        # self.percent = incoming_data['percent']
         self.current_progress = 0
         self.window_check = ProcessWindow(self.default_path, self.event, incoming_data['move'], incoming_data['title'])
         self.progress_value.connect(self.window_check.progressBar.setValue)

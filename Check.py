@@ -449,3 +449,25 @@ def check_print_certification(incoming: dict) -> dict:
         return {'error': True, 'data': 'Указанная папка или файл удалена или переименована'}
     incoming['all_doc'] = len(os.listdir(start_path)) if os.path.isdir(start_path) else 1
     return {'error': False, 'data': incoming}
+
+
+def check_word2pdf(incoming: dict) -> dict:
+    start_path = incoming['start_path']
+    if not start_path:
+        return {'error': True, 'data': 'Путь к файлам для преобразования Word в PDF пуст'}
+    if not os.path.isdir(start_path):
+        return {'error': True, 'data': 'Путь к файлам для преобразования Word в PDF удалён или переименован'}
+    finish_path = incoming['finish_path']
+    if not finish_path:
+        return {'error': True, 'data': 'Путь к конечной папке для преобразования Word в PDF пуст'}
+    if not os.path.isdir(finish_path):
+        return {'error': True, 'data': 'Путь к конечной папке для преобразования Word в PDF удален или переименован'}
+    incoming['all_doc'] = 0
+    for file in Path(start_path).rglob('*.*'):
+        if file.suffix != '.docx':
+            continue
+        incoming['all_doc'] += 1
+    if incoming['all_doc'] == 0:
+        return {'error': True, 'data': 'В указанной папке для преобразования Word в PDF'
+                                       ' нет подходящих файлов для преобразования'}
+    return {'error': False, 'data': incoming}
