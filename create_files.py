@@ -347,7 +347,8 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 doc.close()
                 os.remove(pdf_path)
         # if re.findall(r'сопроводит', data.name.lower()) or re.findall(r'опись', data.name.lower()):
-        pages = pages_count(data.finish_path, True)
+        minus = True if len(re.findall(r'приложение а', data.name.lower())) == 0 else False
+        pages = pages_count(data.finish_path, minus)
         page = pages['pages']
         if page == 0:
             errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")

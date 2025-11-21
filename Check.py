@@ -110,9 +110,9 @@ def check_doc_format(incoming: dict) -> dict:
         #             error_for_file_num.append(f'Для записи {file} в файле номеров не указана дата')
         # if dict_file:
         for file in dict_file:
-            if dict_file[file][0] is False:
+            if len(dict_file[file][0]) == 0:
                 error_for_file_num.append(f'Для записи {file} в файле номеров не указан секретный номер')
-            elif dict_file[file] is False:
+            elif len(dict_file[file][1]) == 0:
                 error_for_file_num.append(f'Для записи {file} в файле номеров не указана дата')
         if error_for_file_num:
             return {'error': True, 'data': '\n'.join(error_for_file_num)}
@@ -180,25 +180,26 @@ def check_doc_format(incoming: dict) -> dict:
         if not incoming['add_list_item']:
             return {'error': True, 'data': 'Не указан дополнительный пункт перечня'}
     # Номер
-    if incoming['number']:
-        if incoming['number'][-1] in ['С', 'с']:
-            incoming['number'] = incoming['number'].replace(incoming['number'][-1], 'c')
-        if not incoming['number']:
-            return {'error': True, 'data': 'Не указан номер'}
-        for i in incoming['number']:
-            if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/', 'c', 'с', '-', 'Н', 'С', 'с')):
-                return {'error': True, 'data': 'Есть лишние символы в номере'}
-        if (re.match(r'\w+/\w+/\w+c$', incoming['number']) is None) and (re.match(r'НС-\w+c$',
-                                                                                  incoming['number']) is None):
-            return {'error': True, 'data': 'Секретный номер указан неверно'}
-        if re.match(r'\w+/\w+/\w+c', incoming['number']):
-            incoming['secret_number_1'] = incoming['number'].rpartition('/')[0] + '/'
-            incoming['secret_number_2'] = incoming['number'].rpartition('/')[2].rpartition('c')[0]
+    if incoming['checkBox_file_num'] is False:
+        if incoming['number']:
+            if incoming['number'][-1] in ['С', 'с']:
+                incoming['number'] = incoming['number'].replace(incoming['number'][-1], 'c')
+            if not incoming['number']:
+                return {'error': True, 'data': 'Не указан номер'}
+            for i in incoming['number']:
+                if check(i, ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/', 'c', 'с', '-', 'Н', 'С', 'с')):
+                    return {'error': True, 'data': 'Есть лишние символы в номере'}
+            if (re.match(r'\w+/\w+/\w+c$', incoming['number']) is None) and (re.match(r'НС-\w+c$',
+                                                                                      incoming['number']) is None):
+                return {'error': True, 'data': 'Секретный номер указан неверно'}
+            if re.match(r'\w+/\w+/\w+c', incoming['number']):
+                incoming['secret_number_1'] = incoming['number'].rpartition('/')[0] + '/'
+                incoming['secret_number_2'] = incoming['number'].rpartition('/')[2].rpartition('c')[0]
+            else:
+                incoming['secret_number_1'] = incoming['number'].partition('-')[0] + '-'
+                incoming['secret_number_2'] = incoming['number'].partition('-')[2].rpartition('c')[0]
         else:
-            incoming['secret_number_1'] = incoming['number'].partition('-')[0] + '-'
-            incoming['secret_number_2'] = incoming['number'].partition('-')[2].rpartition('c')[0]
-    else:
-        return {'error': True, 'data': 'Не указан секретный номер'}
+            return {'error': True, 'data': 'Не указан секретный номер'}
     # Исполнитель, заключение, предписание, протокол, печать
     list_label = ['Исп. заключения', 'Исп. протокола', 'Исп. предписания', 'Исп. печать', 'Исп. сопроводит.']
     for i, element in enumerate([incoming['conclusion'], incoming['protocol'], incoming['prescription'],
