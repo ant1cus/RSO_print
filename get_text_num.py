@@ -196,7 +196,8 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                 documents.loc[index_doc, 'form_27'] = 0
             if re.findall(r'опись', doc_name.lower()):
                 documents.loc[index_doc, 'num_scroll'] = 1
-                incoming['secret_number_2'] = str(int(incoming['secret_number_2']) + 1)  # Увеличиваем учетный номер
+                if not dict_file:
+                    incoming['secret_number_2'] = str(int(incoming['secret_number_2']) + 1)  # Увеличиваем учетный номер
                 current_progress += percent
                 line_progress.emit(f'Выполнено {int(current_progress)} %')
                 progress_value.emit(int(current_progress))

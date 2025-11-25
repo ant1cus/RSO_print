@@ -180,6 +180,8 @@ def check_doc_format(incoming: dict) -> dict:
         if not incoming['add_list_item']:
             return {'error': True, 'data': 'Не указан дополнительный пункт перечня'}
     # Номер
+    incoming['secret_number_1'] = ''
+    incoming['secret_number_2'] = ''
     if incoming['checkBox_file_num'] is False:
         if incoming['number']:
             if incoming['number'][-1] in ['С', 'с']:
