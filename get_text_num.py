@@ -17,6 +17,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
     doc_name_for_continue = ['result', 'инфокарта', 'приложение а']
     doc_name_for_dict_40 = ['акт', 'заключение', 'протокол', 'предписание', 'утверждение', 'опись']
     reindex_list = []
+    doc_for_log = ''
     try:
         errors = []
         for doc in docs:  # Для файлов в папке
@@ -24,9 +25,10 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
             if window_check.stop_threading:
                 return {'status': 'cancel', 'trace': '', 'text': ''}
             doc_name = doc.name
+            doc_for_log = doc.name
             parent_path = doc.parent
             line_doing.emit(f'Генерируем колонтитулы для {doc_name} ({now_doc} из {all_doc})')
-            logging.info(f"Добавляем данные для {doc_name}")
+            # log.info(f"Добавляем данные для {doc_name}")
             if re.findall(r'опись', doc_name, re.I):
                 index_doc = documents.loc[documents['name'] == doc.name].index[0]
             else:
@@ -175,7 +177,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
             elif re.findall(r'опись', doc_name.lower()):
                 executor = incoming['account_executor']
             else:
-                logging.info('Документ не в списке необходимых, продолжаем')
+                # log.info('Документ не в списке необходимых, продолжаем')
                 current_progress += percent
                 line_progress.emit(f'Выполнено {int(current_progress)} %')
                 progress_value.emit(int(current_progress))
@@ -269,4 +271,5 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
             return {'status': 'success', 'text': reindex_list, 'trace': '',
                     'data': {'num_2': incoming['secret_number_2'], 'documents': documents}}
     except BaseException as exception:
+        log.error(f'Имя документа - {doc_for_log}')
         return {'status': 'error', 'text': str(exception), 'trace': traceback.format_exc()}
