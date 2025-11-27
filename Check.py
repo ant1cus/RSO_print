@@ -88,13 +88,19 @@ def check_doc_format(incoming: dict) -> dict:
         dict_file = {}
         wb = openpyxl.load_workbook(incoming['file_num'])  # Откроем книгу.
         ws = wb.active  # Делаем активным первый лист.
+        error = []
         for i in range(1, ws.max_row + 1):  # Пока есть значения
             if ws.cell(i, 1).value:
                 try:
                     check_date = ws.cell(i, 3).value.strftime("%d.%m.%Y")
                 except AttributeError:
                     check_date = ''
-                dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c', check_date]  # Делаем список
+                if ws.cell(i, 2).value is None or len(ws.cell(i, 2).value) == 0:
+                    error.append(f'В строке {i} файла excel нет секретного номера')
+                else:
+                    dict_file[ws.cell(i, 1).value] = [ws.cell(i, 2).value + 'c', check_date]  # Делаем список
+        if error:
+            return {'error': True, 'data': '\n'.join(error)}
         error_for_file_num = []
         # for file in file_in_directory:
         #     accepted_file = [False if name_file in file.lower() else True for name_file in ['акт', 'заключение', 'протокол', 'предписание', 'сопроводит', 'опись']]
