@@ -70,8 +70,8 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                 # documents.loc[index_doc, 'number'] = number_doc
                 documents.loc[index_doc, 'a_prescription'] = True
                 protocol_name = documents[(documents['name'].str.contains(r'протокол', case=False))
-                                          & (documents['name'].str.contains(number_doc, case=False)
-                                             & (documents['parent_path'] == parent_path))]
+                                          & (documents['number'] == number_doc)
+                                          & (documents['parent_path'] == parent_path)]
                 protocol_name = protocol_name.reset_index(drop=True)
                 if len(protocol_name) > 0:
                     documents.loc[
