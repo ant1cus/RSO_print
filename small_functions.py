@@ -86,9 +86,9 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
             except:  # Пропускаем ошибку
                 pass
         win32api.ShellExecute(0, "print", str(start_path), name_printer, ".", 0)
-        print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
-        log.info(f"default - {win32print.GetDefaultPrinter()}, print - {name_printer}, jobs - {print_jobs}")
-        log.info(f"doc - {start_path.name}")
+        # print_jobs = win32print.EnumJobs(handle, 0, -1, 1)  # Очередь печати
+        # log.info(f"default - {win32print.GetDefaultPrinter()}, print - {name_printer}, jobs - {print_jobs}")
+        # log.info(f"doc - {start_path.name}")
         jobs = 0  # Проверка для того, что бы не перескакивать на следующий документ
         log.info(f"Ждем очередь")
         print_jobs_one = True
@@ -100,18 +100,17 @@ def print_doc(start_path: Path, name_printer: str, level: int, log, del_num: lis
             if not print_jobs and jobs == 0:  # Пока не запустилось в печать
                 count_print_jobs_one += 1
                 if print_jobs_one:
-                    log.info('Попало в печать, очередь была пуста')
+                    # log.info('Попало в печать, очередь была пуста')
                     print_jobs_one = False
             elif not print_jobs and jobs == 2:  # Если запустилось и очистилась
                 jobs = 3
-                log.info('Очередь очистилась')
+                # log.info('Очередь очистилась')
             elif print_jobs:  # Если в очереди что-то есть
                 count_print_jobs_two += 1
                 if print_jobs_two:
-                    log.info('Попало в печать, в очереди документ')
+                    # log.info('Попало в печать, в очереди документ')
                     print_jobs_two = False
                 jobs = 2
-        log.info(f"count_print_jobs_one - {count_print_jobs_one}, count_print_jobs_two - {count_print_jobs_two}")
         if level == 2:
             attributes['pDevMode'].Duplex = 1  # Настройки по умолчанию (односторонняя печать)
             try:

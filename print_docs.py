@@ -398,6 +398,8 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                             break
                         except PermissionError as per:
                             time.sleep(3)
+                            input_file = fitz.open(str(Path(doc.parent_path, pdf_file)))
+                            input_file.close()
                             logging.warning(f"Ошибка удаления файла {pdf_file} после печати - {per}")
                             if permission == 3:
                                 break
@@ -412,6 +414,9 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
         print_nums = [print_numbers_df[col].to_numpy().tolist() for col in print_numbers_df.columns]
         print_nums = [x for y in print_nums for x in y if x is not False]
         final_nums = [x for x in print_nums if x not in del_numbers]
+        logging.info(f"Кол-во номеров - {len(print_nums)}")
+        logging.info(f"Кол-во удаляемых - {len(del_numbers)}")
+        logging.info(f"Разница - {len(final_nums)}")
         shape_df = print_numbers_df.shape[0]
         final_nums = {enum: final_nums[i:i + shape_df] for enum, i in enumerate(range(0, len(final_nums), shape_df))}
         dict_keys = list(final_nums.keys())

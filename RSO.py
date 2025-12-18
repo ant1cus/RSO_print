@@ -14,13 +14,14 @@ from create_number_instance import create_number_instance
 from create_account_number import create_account_number
 from SortingFile import SortingFile
 from Check import (check_doc_format, check_doc_print, check_create_instance_number, check_create_account_number,
-                   check_print_files, check_print_certification, check_word2pdf)
+                   check_print_files, check_print_certification, check_word2pdf, check_sign2pdf)
 from StartThread import StartThreading
 from format_docs import format_doc
 from print_docs import print_docs
 from print_all_files import print_all_files
 from print_certification import print_certification
 from convert_word2pdf import convert_word2pdf
+from sign2pdf import insert_sign2pdf
 
 from PyQt5 import QtPrintSupport
 
@@ -141,6 +142,17 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                               'error': 'Преобразование Word в PDF в папке «name_dir»'
                                                        ' завершено с ошибками'
                                               },
+                                 'sign2pdf': {'mode_name': 'sign2pdf',
+                                              'title': 'Вставить подпись в PDF в папке',
+                                              'cancel': 'Вставка подписи в PDF в папке «name_dir»'
+                                                        ' отменена пользователем',
+                                              'exception': 'Вставка подписи в PDF в папке «name_dir»'
+                                                           ' не завершена из-за ошибки',
+                                              'success': 'Вставка подписи в PDF в папке «name_dir»'
+                                                         ' успешно завершена',
+                                              'error': 'Вставка подписи в PDF в папке «name_dir»'
+                                                       ' завершена с ошибками'
+                                              },
                                  }
         self.widget_name = {
             'insertMain': {'grid': 'gridLayout_insertMain', 'frame': 'groupBox_insertMain',
@@ -245,6 +257,15 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_module_finish_path_word2pdf_dir.clicked.connect(
             lambda: browse(self, self.pushButton_module_finish_path_word2pdf_dir,
                            self.lineEdit_module_path_word2pdf_finish_dir, self.default_path))
+        self.pushButton_module_path_sign2pdf_start_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_path_sign2pdf_start_dir,
+                           self.lineEdit_module_path_sign2pdf_start_dir, self.default_path))
+        self.pushButton_module_path_sign2pdf_finish_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_path_sign2pdf_finish_dir,
+                           self.lineEdit_module_path_sign2pdf_finish_dir, self.default_path))
+        self.pushButton_module_path_sign2pdf_signature_dir.clicked.connect(
+            lambda: browse(self, self.pushButton_module_path_sign2pdf_signature_dir,
+                           self.lineEdit_module_path_sign2pdf_signature_dir, self.default_path))
         # Для выбора принтера по умолчанию
         self.comboBox_main_printer.addItems(QtPrintSupport.QPrinterInfo.availablePrinterNames())
         self.comboBox_main_printer.currentTextChanged.connect(lambda: self.text_changed(self.lineEdit_main_printer,
@@ -450,6 +471,12 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                                                      self.lineEdit_module_path_word2pdf_start_dir],
                       'module-word2pdf_finish_path': ['Конечная папка преобразования Word в PDF',
                                                       self.lineEdit_module_path_word2pdf_finish_dir],
+                      'module-sign2pdf_start_path': ['Начальная папка вставки подписи в PDF',
+                                                     self.lineEdit_module_path_sign2pdf_start_dir],
+                      'module-sign2pdf_finish_path': ['Конечная папка вставки подписи в PDF',
+                                                      self.lineEdit_module_path_sign2pdf_finish_dir],
+                      'module-sign2pdf_signature_path': ['Папка с подписями для вставки в PDF',
+                                                         self.lineEdit_module_path_sign2pdf_signature_dir],
                       }
         # Кнопки запуска
         self.pushButton_main_insert.clicked.connect(self.insert_main)
@@ -461,6 +488,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
         self.pushButton_module_print_files.clicked.connect(self.print_files)
         self.pushButton_module_print_CL_print_files.clicked.connect(self.print_certification)
         self.pushButton_module_convert_word2pdf.clicked.connect(self.convert_word2pdf)
+        self.pushButton_module_sign2pdf_create.clicked.connect(self.create_sign2pdf)
         # Кнопки в меню
         self.action_default.triggered.connect((lambda: default_settings(self, self.default_path,
                                                                         self.lines, self.widget_name)))
@@ -564,6 +592,20 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
     def text_changed(self, line_edit, combo_box):  # Если изменился выбор принтера
         line_edit.setText(combo_box.currentText())
         win32print.SetDefaultPrinter(combo_box.currentText())
+
+    def create_sign2pdf(self):
+        queue_create_sign2pdf = queue.Queue(maxsize=1)
+        mode_name = self.mode_description['sign2pdf']['mode_name']
+        name_dir = self.lineEdit_module_path_sign2pdf_start_dir.text().strip()
+        out_dict = {
+            'start_path': self.lineEdit_module_path_sign2pdf_start_dir.text().strip(),
+            'finish_path': self.lineEdit_module_path_sign2pdf_finish_dir.text().strip(),
+            'signature_path': self.lineEdit_module_path_sign2pdf_signature_dir.text().strip(),
+        }
+        data = {**self.default_dict, **out_dict,
+                'queue': queue_create_sign2pdf, 'mode_name': mode_name, 'name_dir': name_dir,
+                'start_function': insert_sign2pdf}
+        start_thread(data, self.logging_dict, self.thread_dict, self, check_sign2pdf, StartThreading)
 
     def convert_word2pdf(self):
         queue_convert_word2pdf = queue.Queue(maxsize=1)

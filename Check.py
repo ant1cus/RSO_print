@@ -480,3 +480,37 @@ def check_word2pdf(incoming: dict) -> dict:
         return {'error': True, 'data': 'В указанной папке для преобразования Word в PDF'
                                        ' нет подходящих файлов для преобразования'}
     return {'error': False, 'data': incoming}
+
+
+def check_sign2pdf(incoming: dict) -> dict:
+    start_path = incoming['start_path']
+    if not start_path:
+        return {'error': True, 'data': 'Путь к файлам для вставки подписи в PDF пуст'}
+    if not os.path.isdir(start_path):
+        return {'error': True, 'data': 'Путь к файлам для вставки подписи в PDF удалён или переименован'}
+    finish_path = incoming['finish_path']
+    if not finish_path:
+        return {'error': True, 'data': 'Путь к конечной папке для вставки подписи в PDF пуст'}
+    if not os.path.isdir(finish_path):
+        return {'error': True, 'data': 'Путь к конечной папке для вставки подписи в PDF удален или переименован'}
+    signature_path = incoming['signature_path']
+    if not signature_path:
+        return {'error': True, 'data': 'Путь к папке с подписями для вставки в PDF пуст'}
+    if not os.path.isdir(signature_path):
+        return {'error': True, 'data': 'Путь к папке с подписями для вставки в PDF удален или переименован'}
+    incoming['signature_files'] = {}
+    for enum, file in enumerate(os.listdir(incoming['signature_path'])):
+        if os.path.isfile(Path(incoming['signature_path'], file)) and re.findall(r'[A-z]*', file):
+            incoming['signature_files'][file.partition('.')[0].lower()] = str(Path(incoming['signature_path'], file))
+    if not len(incoming['signature_files']):
+        return {'error': True, 'data': 'В указанной папке с подписями нет подходящих файлов'}
+    incoming['all_doc'] = 0
+    for file in os.listdir(Path(start_path)):
+        if os.path.isdir(file):
+            continue
+        if file.endswith('.docx') is False:
+            continue
+        incoming['all_doc'] += 1
+    if incoming['all_doc'] == 0:
+        return {'error': True, 'data': 'В указанной папке для вставки подписи в PDF нет подходящих файлов'}
+    return {'error': False, 'data': incoming}
