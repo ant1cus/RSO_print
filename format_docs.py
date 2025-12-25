@@ -254,9 +254,17 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
                 line_doing.emit(f'Создаём 27 форму')
                 logging.info(f'Создаём 27 форму')
                 form_27 = documents.loc[documents['form_27'] == 1]
-                answer = create_form_27(form_27, finish_folder, incoming_data['form27_firm'])
-                if answer['status'] != 'success':
-                    return answer
+                attempts = 0
+                while True:
+                    answer = create_form_27(form_27, finish_folder, incoming_data['form27_firm'])
+                    if answer['status'] == 'success':
+                        break
+                    else:
+                        logging.error(answer['text'])
+                        logging.error(answer['trace'])
+                    if attempts == 3:
+                        return answer
+                    attempts += 1
             line_progress.emit(f'Выполнено {int(90)} %')
             progress_value.emit(int(90))
             if 'main_sp' in incoming_data.keys() and incoming_data['main_sp']:

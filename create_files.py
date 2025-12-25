@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import time
 import traceback
 
 import fitz
@@ -314,10 +315,17 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
             Path(data.finish_path.parent).mkdir(parents=True, exist_ok=True)
         document.save(data.finish_path)  # Сохраняем
         if re.findall(r'сопроводит', data.name.lower()) and re.findall(r'2 экз', data.name.lower()):
-            answer = delete_header_footer_second_acc(data.finish_path, data.first_header_text, data.footer_text,
-                                                     data.text_finish, para)
-            if answer['status'] == 'error':
-                errors.append(answer['text'])
+            attempts = 0
+            while attempts < 3:
+                answer = delete_header_footer_second_acc(data.finish_path, data.first_header_text, data.footer_text,
+                                                         data.text_finish, para)
+                if answer['status'] == 'success':
+                    break
+                if answer['status'] == 'error':
+                    errors.append(answer['text'])
+                time.sleep(3)
+                attempts += 1
+
         if incoming_data['checkBox_signature']:
             pattern = re.compile(r'\{\{\s[A-z]*\s}}')
             find_name = [pattern.findall(p.text)[0] for p in document.paragraphs if pattern.findall(p.text)]

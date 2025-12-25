@@ -27,21 +27,41 @@ from word2pdf import word2pdf
 
 def del_pdf_files(logging, del_path):
     logging.info("Удаляем все созданные pdf из папки")
-    pdf_files = [i for i in os.listdir(del_path) if i.endswith('.pdf')]
+    if Path(del_path).is_dir():
+        pdf_files = [i for i in os.listdir(del_path) if i.endswith('.pdf')]
+    else:
+        pdf_files = [del_path]
     if pdf_files:
         logging.info(f"Удаляем пдф после ошибки")
+        attempts = 0
         for pdf_file in pdf_files:
-            try:
-                os.remove(str(Path(del_path, pdf_file)))
-            except Exception:
-                time.sleep(3)
-                input_file = fitz.open(str(Path(del_path, pdf_file)))
-                input_file.close()
-                try:
-                    os.remove(str(Path(del_path, pdf_file)))
-                except Exception as e:
-                    logging.error(f"Не удалось удалить файл {Path(del_path, pdf_file)}")
-                    logging.error(f"Ошибка:\n {e}'\n'{traceback.format_exc()}")
+            while True:
+                if attempts == 0:
+                    try:
+                        os.remove(str(Path(del_path, pdf_file)))
+                        break
+                    except Exception:
+                        time.sleep(3)
+                        input_file = fitz.open(str(Path(del_path, pdf_file)))
+                        input_file.close()
+                        attempts += 1
+                if attempts == 1:
+                    try:
+                        os.remove(str(Path(del_path, pdf_file)))
+                        break
+                    except Exception:
+                        time.sleep(3)
+                        os.system('taskkill /F /IM "AcroRd32.exe"')
+                        logging('Процессы Acrobat Reader завершены')
+                        attempts += 1
+                if attempts == 2:
+                    try:
+                        os.remove(str(Path(del_path, pdf_file)))
+                        break
+                    except Exception as e:
+                        logging.error(f"Не удалось удалить файл {Path(del_path, pdf_file)}")
+                        logging.error(f"Ошибка:\n {e}'\n'{traceback.format_exc()}")
+                        break
 
 
 def create_element(attrib_name):
@@ -355,7 +375,8 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                             if answer['status'] == 'error':
                                 logging.error(answer['trace'])
                             del_numbers = answer['data']
-                            os.remove(output_1_side)
+                            del_pdf_files(logging, output_1_side)
+                            # os.remove(output_1_side)
                             input_file = fitz.open(doc.pdf_path)  # Открываем пдф
                             selected_page = [pages - 2, pages - 1]  # Страницы для двухсторонней печати
                             input_file.select(selected_page)  # Выбираем страницы
@@ -368,7 +389,8 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
                             if answer['status'] == 'error':
                                 logging.error(answer['trace'])
                             del_numbers = answer['data']
-                            os.remove(output_2_side)
+                            del_pdf_files(logging, output_2_side)
+                            # os.remove(output_2_side)
                         input_file.close()
                     else:
                         answer = print_doc(doc.pdf_path, name_printer, 2, logging,
@@ -385,24 +407,24 @@ def folder_print(incoming_data: dict, start_path: Path, line_doing, line_progres
             except Exception as ex:
                 logging.error("Упс, сорвалась печать файла!")
                 logging.error("Ошибка:\n " + str(ex) + '\n' + traceback.format_exc())
-            pdf_files = [i for i in os.listdir(doc.parent_path) if doc.name.rpartition('.')[0] in i
-                         and i.endswith('.pdf')]
-            if pdf_files:
-                logging.info(f"Удаляем пдф после печати")
-                for pdf_file in pdf_files:
-                    while True:
-                        permission = 0
-                        try:
-                            permission += 1
-                            os.remove(str(Path(doc.parent_path, pdf_file)))
-                            break
-                        except PermissionError as per:
-                            time.sleep(3)
-                            input_file = fitz.open(str(Path(doc.parent_path, pdf_file)))
-                            input_file.close()
-                            logging.warning(f"Ошибка удаления файла {pdf_file} после печати - {per}")
-                            if permission == 3:
-                                break
+            # pdf_files = [i for i in os.listdir(doc.parent_path) if doc.name.rpartition('.')[0] in i
+            #              and i.endswith('.pdf')]
+            # if pdf_files:
+            #     logging.info(f"Удаляем пдф после печати")
+            #     for pdf_file in pdf_files:
+            #         while True:
+            #             permission = 0
+            #             try:
+            #                 permission += 1
+            #                 os.remove(str(Path(doc.parent_path, pdf_file)))
+            #                 break
+            #             except PermissionError as per:
+            #                 time.sleep(3)
+            #                 input_file = fitz.open(str(Path(doc.parent_path, pdf_file)))
+            #                 input_file.close()
+            #                 logging.warning(f"Ошибка удаления файла {pdf_file} после печати - {per}")
+            #                 if permission == 3:
+            #                     break
             current_progress += percent
             line_progress.emit(f'Выполнено {int(current_progress)} %')
             progress_value.emit(int(current_progress))
