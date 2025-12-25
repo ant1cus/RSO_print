@@ -53,7 +53,8 @@ def del_pdf_files(logging, del_path):
                     except Exception:
                         time.sleep(3)
                         for proc in psutil.process_iter(['pid', 'name']):
-                            print(proc.info['name'])
+                            if 'Acro' in proc.info['name']:
+                                logging(proc.info['name'])
                             if 'AcroRd32.exe' in proc.info['name'] or 'Acrobat.exe' in proc.info['name']:
                                 try:
                                     logging(f"Закрываем процесс {proc.info['name']} (PID: {proc.info['pid']})")
