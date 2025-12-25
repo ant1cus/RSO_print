@@ -7,6 +7,7 @@ from pathlib import Path
 import docx
 import fitz
 import numpy as np
+import psutil
 import pythoncom
 import win32com
 import win32print
@@ -51,8 +52,18 @@ def del_pdf_files(logging, del_path):
                         break
                     except Exception:
                         time.sleep(3)
-                        os.system('taskkill /F /IM "AcroRd32.exe"')
-                        logging('Процессы Acrobat Reader завершены')
+                        for proc in psutil.process_iter(['pid', 'name']):
+                            print(proc.info['name'])
+                            if 'AcroRd32.exe' in proc.info['name'] or 'Acrobat.exe' in proc.info['name']:
+                                try:
+                                    logging(f"Закрываем процесс {proc.info['name']} (PID: {proc.info['pid']})")
+                                    proc.kill()
+                                    logging("Процесс завершен.")
+                                except psutil.NoSuchProcess:
+                                    logging("Процесс уже завершен.")
+                                except Exception as e:
+                                    logging(f"Не удалось завершить процесс: {e}")
+                                break
                         attempts += 1
                 if attempts == 2:
                     try:
