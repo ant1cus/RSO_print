@@ -238,27 +238,27 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                         if value1 and re.findall(value2, doc_name.lower()):
                             copy_doc = documents.loc[index_doc].copy()
                             documents.loc[len(documents)] = copy_doc
-                            index_doc = len(documents) - 1
-                            documents.loc[index_doc, 'first_header_text'] = incoming['classified'] + '\n' + incoming[
-                                'list_item'] + '\nЭкз. №' + str(number_folder)
-                            documents.loc[index_doc, 'finish_path'] = Path(
+                            index_doc_new = len(documents) - 1
+                            documents.loc[index_doc_new, 'first_header_text'] = incoming['classified'] + '\n'\
+                                + incoming['list_item'] + '\nЭкз. №' + str(number_folder)
+                            documents.loc[index_doc_new, 'finish_path'] = Path(
                                 documents.loc[index_doc, 'finish_path'].parent,
                                 f"{str(number_folder)} экземпляр",
-                                documents.loc[index_doc, 'finish_path'].name)
-                            documents.loc[index_doc, 'parent_path'] = Path(
+                                documents.loc[index_doc_new, 'finish_path'].name)
+                            documents.loc[index_doc_new, 'parent_path'] = Path(
                                 documents.loc[index_doc, 'finish_path'].parent)
-                            documents.loc[index_doc, 'num_scroll'] = str(number_folder)
+                            documents.loc[index_doc_new, 'num_scroll'] = str(number_folder)
                             documents.loc[
-                                index_doc, 'text_finish'] = f"Уч. № {footer_text}\nОтп. {str(number_folder)}" \
-                                                            f" экз. в адрес\n{incoming['hdd_number']}" \
-                                                            f"\nИсп. {executor}\nТел. {incoming['telephone']}" \
-                                                            f"\nПеч. {incoming['print_executor']}\n{date}\nб/ч"
-                            documents.loc[index_doc, 'account_list_text'] = f"{doc_name[:-5]}" \
-                                                                            f"!{footer_text}" \
-                                                                            f"!№{number_folder}," \
-                                                                            f" {incoming['classified']}" \
-                                                                            f"!{page}"
-                            reindex_list.append(index_doc)
+                                index_doc_new, 'text_finish'] = f"Уч. № {footer_text}\nОтп. {str(number_folder)}" \
+                                                                f" экз. в адрес\n{incoming['hdd_number']}" \
+                                                                f"\nИсп. {executor}\nТел. {incoming['telephone']}" \
+                                                                f"\nПеч. {incoming['print_executor']}\n{date}\nб/ч"
+                            documents.loc[index_doc_new, 'account_list_text'] = f"{doc_name[:-5]}" \
+                                                                                f"!{footer_text}" \
+                                                                                f"!№{number_folder}," \
+                                                                                f" {incoming['classified']}" \
+                                                                                f"!{page}"
+                            reindex_list.append(index_doc_new)
                             break
             if not dict_file and all([True if _ not in doc_name.lower() else False for _ in doc_name_for_continue]):
                 incoming['secret_number_2'] = str(int(incoming['secret_number_2']) + 1)  # Увеличиваем учетный номер

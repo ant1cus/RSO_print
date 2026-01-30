@@ -256,7 +256,7 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
                 form_27 = documents.loc[documents['form_27'] == 1]
                 attempts = 0
                 while True:
-                    answer = create_form_27(form_27, finish_folder, incoming_data['form27_firm'])
+                    answer = create_form_27(form_27, finish_folder, incoming_data)
                     if answer['status'] == 'success':
                         break
                     else:

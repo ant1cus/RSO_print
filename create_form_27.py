@@ -10,7 +10,7 @@ from pathlib import Path
 from openpyxl.utils import get_column_letter
 
 
-def create_form_27(documents: pd.DataFrame, finish_path: Path, firm: str):
+def create_form_27(documents: pd.DataFrame, finish_path: Path, incoming: dict):
     try:
         table_name = ['Порядковый номер', 'Дата регистрации',
                       'Номер, дата поступившего документа и гриф секретности',
@@ -55,10 +55,17 @@ def create_form_27(documents: pd.DataFrame, finish_path: Path, firm: str):
             table_df.loc[index, 'Порядковый номер'] = document.footer_text
             table_df.loc[index, 'Дата регистрации'] = document.date
             table_df.loc[index, 'Номер, дата поступившего документа и гриф секретности'] = document.classified
-            table_df.loc[index, 'Откуда (от кого) поступил или кому направлен документ'] = firm
+            table_df.loc[index, 'Откуда (от кого) поступил или кому направлен документ'] = incoming['form27_firm']
             table_df.loc[index, 'Наименование или краткое содержание документа'] = document.name
             table_df.loc[index, 'Фамилия исполнителя и подразделение'] = document.executor
-            table_df.loc[index, 'экземпляров и их номера'] = '1'
+            if re.findall(r"заключение", document.name, re.I) and incoming['conclusion_instance']:
+                table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
+            elif re.findall(r"протокол", document.name, re.I) and incoming['protocol_instance']:
+                table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
+            elif re.findall(r"предписание", document.name, re.I) and incoming['prescription_instance']:
+                table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
+            else:
+                table_df.loc[index, 'экземпляров и их номера'] = '1'
             index += 1
             table_df.loc[index, 'экземпляров и их номера'] = '№' + str(document.num_scroll)
             table_df.loc[index, 'листов в экземпляре'] = document.pages
