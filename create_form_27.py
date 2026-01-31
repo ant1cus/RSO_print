@@ -58,7 +58,9 @@ def create_form_27(documents: pd.DataFrame, finish_path: Path, incoming: dict):
             table_df.loc[index, 'Откуда (от кого) поступил или кому направлен документ'] = incoming['form27_firm']
             table_df.loc[index, 'Наименование или краткое содержание документа'] = document.name
             table_df.loc[index, 'Фамилия исполнителя и подразделение'] = document.executor
-            if re.findall(r"заключение", document.name, re.I) and incoming['conclusion_instance']:
+            if re.findall(r"сопроводит", document.name, re.I):
+                table_df.loc[index, 'экземпляров и их номера'] = '2'
+            elif re.findall(r"заключение", document.name, re.I) and incoming['conclusion_instance']:
                 table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
             elif re.findall(r"протокол", document.name, re.I) and incoming['protocol_instance']:
                 table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
