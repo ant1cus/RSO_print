@@ -10,9 +10,10 @@ from pathlib import Path
 
 import fitz
 import win32com
+from docx2pdf import convert
 
 from small_functions import replace_object
-from word2pdf import word2pdf
+# from word2pdf import word2pdf
 
 from PyQt5 import QtPrintSupport
 
@@ -36,12 +37,12 @@ def convert_word2pdf(incoming_data: dict, current_progress, now_doc, all_doc, li
             replace = replace_object(convert_file, logging, info_value, event, window_check)
             if replace:
                 try:
-                    word2pdf(str(file), str(convert_file))
+                    convert(str(file), str(convert_file))
                 except BaseException:
                     word = win32com.client.Dispatch("Word.Application")
                     word.Quit()
                     try:
-                        word2pdf(str(file), str(convert_file))
+                        convert(str(file), str(convert_file))
                     except BaseException as ex:
                         logging.error(f"Ошибка при преобразовании {file.name} в PDF: {ex}")
                         errors.append(f"Ошибка при преобразовании {file.name}, проверьте наличие PDF")
