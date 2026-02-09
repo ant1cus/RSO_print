@@ -583,7 +583,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
                         rewrite_settings(self.default_path, self.tab_visible, 'tab_visible')
 
     def start_document(self, document):  # Запускаем окно с настройками по умолчанию.
-        os.startfile(pathlib.Path(self.path_for_default, document))
+        os.startfile(pathlib.Path(self.default_path, document))
 
     def sorting(self):  # Запускаем окно для сортировки.
         window_add = SortingFile(self, logging)
