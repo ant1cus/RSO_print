@@ -1,20 +1,11 @@
-import datetime
-import getpass
-import os
-import re
-import socket
-import time
 import traceback
 import pythoncom
 from pathlib import Path
 
-import fitz
 import win32com
 
 from small_functions import replace_object
 from word2pdf import word2pdf
-
-from PyQt5 import QtPrintSupport
 
 
 def convert_word2pdf(incoming_data: dict, current_progress, now_doc, all_doc, line_doing, line_progress,
