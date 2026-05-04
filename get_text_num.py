@@ -232,11 +232,17 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                                                                     f"\n{incoming['list_item']}\nЭкз.№2"
                 reindex_list.append(index_doc_acc)
             if 'second_copy' in incoming and incoming['second_copy']:
+                max_copy = incoming['number_instance'][len(incoming['number_instance']) - 1]
                 for number_folder in incoming['number_instance']:
                     for index, (value1, value2) in enumerate(
                             zip(incoming['second_copy'], ['заключение', 'протокол', 'предписание'])):
                         if value1 and re.findall(value2, doc_name.lower()):
                             copy_doc = documents.loc[index_doc].copy()
+                            documents.loc[
+                                index_doc, 'text_finish'] = f"Уч. № {footer_text}\nОтп. {str(max_copy)}" \
+                                                            f" экз. в адрес\n{incoming['hdd_number']}" \
+                                                            f"\nИсп. {executor}\nТел. {incoming['telephone']}" \
+                                                            f"\nПеч. {incoming['print_executor']}\n{date}\nб/ч"
                             documents.loc[len(documents)] = copy_doc
                             index_doc_new = len(documents) - 1
                             documents.loc[index_doc_new, 'first_header_text'] = incoming['classified'] + '\n'\
@@ -249,7 +255,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                                 documents.loc[index_doc, 'finish_path'].parent)
                             documents.loc[index_doc_new, 'num_scroll'] = str(number_folder)
                             documents.loc[
-                                index_doc_new, 'text_finish'] = f"Уч. № {footer_text}\nОтп. {str(number_folder)}" \
+                                index_doc_new, 'text_finish'] = f"Уч. № {footer_text}\nОтп. {str(max_copy)}" \
                                                                 f" экз. в адрес\n{incoming['hdd_number']}" \
                                                                 f"\nИсп. {executor}\nТел. {incoming['telephone']}" \
                                                                 f"\nПеч. {incoming['print_executor']}\n{date}\nб/ч"
