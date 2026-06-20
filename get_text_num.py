@@ -95,7 +95,7 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                         documents.loc[index_doc, 'text'] = f"от {date} № "
                     executor = incoming['protocol']
                 else:
-                    act_number = documents[(documents['name'].str.contains(r'акт ', case=False))]
+                    act_number = documents[(documents['name'].str.contains(r'акт', case=False))]
                     documents.loc[index_doc, 'text'] = f"от date № {act_number.loc[0, 'footer_text']}"
                     executor = incoming['act_executor']
                 documents.loc[index_doc, 'change_date'] = True

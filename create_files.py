@@ -18,6 +18,8 @@ from word2pdf import word2pdf
 
 def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str = '', is_not_acc: bool = True) -> None:
     try:
+        if doc.sections[0].different_first_page_header_footer is False:
+            doc.sections[0].different_first_page_header_footer = True
         header_1 = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
         head_1 = header_1.paragraphs[0]  # Параграф
         head_1.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
@@ -65,7 +67,9 @@ def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str 
         #     except FileExistsError:
         #         pass
         # doc.save(save_path)  # Сохраняем
-    except BaseException:
+    except BaseException as ex:
+        print(ex)
+        print(traceback.format_exc())
         return
 
 

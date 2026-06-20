@@ -77,6 +77,8 @@ def insert_header(document: pd.Series):
 			if all(break_flag):
 				break
 
+	if doc_.sections[0].different_first_page_header_footer is False:
+		doc_.sections[0].different_first_page_header_footer = True
 	header_1 = doc_.sections[0].first_page_header  # Верхний колонтитул первой страницы
 	head_1 = header_1.paragraphs[0]  # Параграф
 	head_1.insert_paragraph_before(text_first_header_)  # Вставляем перед колонтитулом

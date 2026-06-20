@@ -187,7 +187,7 @@ def sorting_files(path: Path, path_new: Path, fso: bool, inventory: list) -> dic
             docs_ = [j_ for i_ in
                      ['^Акт', 'Приложение \d? к акту', '^Заключение', 'Приложение \d? к заключению', 'Протокол',
                       'Приложение А', 'Предписание', 'Форма 3', 'Опись', 'Сопроводит'] for j_ in docs if
-                     re.findall(i_, j_, re.I)]
+                     re.findall(i_, " ".join(j_.split()), re.I)]
             docs_not = [i_ for i_ in docs if i_ not in docs_ and '~' not in i_]
             docs = docs_not + docs_
             # Процент для прогресса
