@@ -57,7 +57,7 @@ def insert_sign2pdf(incoming_data: dict, current_progress, now_doc, all_doc, lin
                                 if inst == 'seal':
                                     rect = fitz.Rect(i.x0 - 60, i.y0 - 60, i.x1 + 60, i.y1 + 60)
                                 else:
-                                    rect = fitz.Rect(i.x0 - 25, i.y0 - 25, i.x1 + 25, i.y1 + 25)
+                                    rect = fitz.Rect(i.x0 - 32, i.y0 - 32, i.x1 + 32, i.y1 + 32)
                                 page.insert_image(rect, filename=str(incoming_data['signature_files'][inst]))
                     doc.save(str(finish_pdf_path))
                     doc.close()
