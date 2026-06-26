@@ -331,7 +331,7 @@ def pages_count(file: Path, minus: bool = False) -> dict:
                 time.sleep(3)
                 try_number += 1
         if try_number == 4:
-            return {'error': True, 'text': 'Не удалось переименовать файл'}
+            return {'error': True, 'text': 'Не удалось переименовать файл 326'}
         os.mkdir(Path(parent_path, 'zip'))
         with ZipFile(temp_zip) as my_document:
             my_document.extractall(temp_folder)
@@ -353,7 +353,18 @@ def pages_count(file: Path, minus: bool = False) -> dict:
         if try_number == 4:
             return {'error': True, 'text': 'Не удалось удалить файл'}
         shutil.make_archive(temp_zip.replace(".zip", ""), 'zip', temp_folder)
-        os.rename(temp_zip, temp_docx)  # rename zip file to docx
+        try_number = 0
+        while True:
+            try:
+                os.rename(temp_zip, temp_docx)  # rename zip file to docx
+                break
+            except PermissionError:
+                if try_number == 4:
+                    break
+                time.sleep(3)
+                try_number += 1
+        if try_number == 4:
+            return {'error': True, 'text': 'Не удалось переименовать файл 359'}
         rm(temp_folder)
         rm(Path(parent_path, 'zip'))
         return {'error': False, 'text': '', 'pages': pages, 'trace': ''}
