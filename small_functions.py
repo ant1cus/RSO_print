@@ -320,7 +320,18 @@ def pages_count(file: Path, minus: bool = False) -> dict:
             rm(temp_folder)
         if os.path.exists(Path(parent_path, 'zip')):
             rm(Path(parent_path, 'zip'))
-        os.rename(temp_docx, temp_zip)
+        try_number = 0
+        while True:
+            try:
+                os.rename(temp_docx, temp_zip)
+                break
+            except PermissionError:
+                if try_number == 4:
+                    break
+                time.sleep(3)
+                try_number += 1
+        if try_number == 4:
+            return {'error': True, 'text': 'Не удалось переименовать файл'}
         os.mkdir(Path(parent_path, 'zip'))
         with ZipFile(temp_zip) as my_document:
             my_document.extractall(temp_folder)

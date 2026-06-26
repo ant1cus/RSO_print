@@ -1,4 +1,3 @@
-import logging
 import traceback
 import re
 from pathlib import Path
@@ -6,7 +5,7 @@ import pandas as pd
 from small_functions import pages_count
 
 
-def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line_doing, all_doc, now_doc,
+def create_text_for_docs(log, docs: list, documents: pd.DataFrame, line_doing, all_doc, now_doc,
                          progress_value, line_progress, percent, current_progress,
                          incoming: dict, window_check, event) -> dict:
     """Вставка в основную таблицу номеров, текстовок, дат, исполнителей. Возвращает части секретного номера,
@@ -95,8 +94,9 @@ def create_text_for_docs(log: logging, docs: list, documents: pd.DataFrame, line
                         documents.loc[index_doc, 'text'] = f"от {date} № "
                     executor = incoming['protocol']
                 else:
-                    act_number = documents[(documents['name'].str.contains(r'акт', case=False))]
-                    documents.loc[index_doc, 'text'] = f"от date № {act_number.loc[0, 'footer_text']}"
+                    act_number = documents[documents['name'].str.contains(r'акт', case=False)]
+                    index_act = act_number.index.tolist()[0]
+                    documents.loc[index_doc, 'text'] = f"от date № {act_number.loc[index_act, 'footer_text']}"
                     executor = incoming['act_executor']
                 documents.loc[index_doc, 'change_date'] = True
                 if add_list_item:
