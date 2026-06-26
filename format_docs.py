@@ -32,6 +32,8 @@ def add_documents(incoming_data: dict, start_path: Path, finish_path: Path, line
         errors = []
         logging = incoming_data['logging']
         for file in Path(start_path).rglob('*.*'):
+            if '~' in file.name:
+                continue
             documents = pd.concat([documents, pd.DataFrame({'name': [file.name], 'start_path': [file],
                                                             'finish_path': [Path(finish_path, file.name)],
                                                             'parent_path': [file.parent],
