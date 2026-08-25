@@ -203,20 +203,26 @@ def create_text_for_docs(log, docs: list, documents: pd.DataFrame, line_doing, a
                 progress_value.emit(int(current_progress))
                 now_doc += 1
                 continue
-            pages = pages_count(doc)
-            page = pages['pages']
-            if page == 0:
-                errors.append(f"Для файла {doc_name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
-            documents.loc[index_doc, 'pages'] = page
+            if re.findall(r'приложение а', doc_name.lower()):
+                pages = pages_count(doc)
+                page = pages['pages']
+                if page == 0:
+                    errors.append(f"Для файла {doc_name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
+                documents.loc[index_doc, 'pages'] = page
             documents.loc[index_doc, 'account_list'] = 0
             for dict_40_name in doc_name_for_dict_40:
                 if dict_40_name in doc_name.lower():
                     documents.loc[index_doc, 'account_list'] = 1
+                    # documents.loc[index_doc, 'account_list_text'] = f"{doc_name[:-5]}" \
+                    #                                                 f"!{footer_text}" \
+                    #                                                 f"!№{documents.loc[index_doc, 'num_scroll']}," \
+                    #                                                 f" {incoming['classified']}" \
+                    #                                                 f"!{page}"
                     documents.loc[index_doc, 'account_list_text'] = f"{doc_name[:-5]}" \
                                                                     f"!{footer_text}" \
                                                                     f"!№{documents.loc[index_doc, 'num_scroll']}," \
                                                                     f" {incoming['classified']}" \
-                                                                    f"!{page}"
+                                                                    f"!page"
             # Добавляем 2 сопроводительный, если это сопроводительный :)
             if re.findall('сопроводит', doc_name.lower()):
                 documents.loc[
@@ -259,11 +265,16 @@ def create_text_for_docs(log, docs: list, documents: pd.DataFrame, line_doing, a
                                                                 f" экз. в адрес\n{incoming['hdd_number']}" \
                                                                 f"\nИсп. {executor}\nТел. {incoming['telephone']}" \
                                                                 f"\nПеч. {incoming['print_executor']}\n{date}\nб/ч"
+                            # documents.loc[index_doc_new, 'account_list_text'] = f"{doc_name[:-5]}" \
+                            #                                                     f"!{footer_text}" \
+                            #                                                     f"!№{number_folder}," \
+                            #                                                     f" {incoming['classified']}" \
+                            #                                                     f"!{page}"
                             documents.loc[index_doc_new, 'account_list_text'] = f"{doc_name[:-5]}" \
                                                                                 f"!{footer_text}" \
                                                                                 f"!№{number_folder}," \
                                                                                 f" {incoming['classified']}" \
-                                                                                f"!{page}"
+                                                                                f"!main_page"
                             reindex_list.append(index_doc_new)
                             break
             if not dict_file and all([True if _ not in doc_name.lower() else False for _ in doc_name_for_continue]):

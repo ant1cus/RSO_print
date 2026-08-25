@@ -358,30 +358,32 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 doc.save(str(Path(data.finish_path.parent, data.finish_path.stem + '.pdf')))
                 doc.close()
                 os.remove(pdf_path)
-        # if re.findall(r'сопроводит', data.name.lower()) or re.findall(r'опись', data.name.lower()):
         minus = True if len(re.findall(r'приложение а', data.name.lower())) == 0 else False
-        pages = pages_count(data.finish_path, minus)
-        page = pages['pages']
-        if page == 0:
-            errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
-            errors.append(pages['trace'])
+        page = 0
+        if not re.findall(r'приложение а', data.name.lower()):
+            pages = pages_count(data.finish_path, minus)
+            page = pages['pages']
+            if page == 0:
+                errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
+                errors.append(pages['trace'])
         index_doc = documents.loc[documents['name'] == data.name].index[0]
-        if documents.loc[index_doc, 'pages'] != page:
-            documents.loc[index_doc, 'pages'] = page
-            if isinstance(documents.loc[index_doc, 'account_list_text'], str)\
-                    and len(documents.loc[index_doc, 'account_list_text']) > 0:
-                a_text = documents.loc[index_doc, 'account_list_text'].split('!')
-                if '/' in a_text[3]:
-                    text_in_page = a_text[3].split('/')
-                    a_text[3] = '/'.join([str(page), text_in_page[1]])
-                else:
-                    a_text[3] = str(page)
-                documents.loc[index_doc, 'account_list_text'] = '!'.join(a_text)
+        # if documents.loc[index_doc, 'pages'] != page:
+        documents.loc[index_doc, 'pages'] = page
+        if isinstance(documents.loc[index_doc, 'account_list_text'], str)\
+                and len(documents.loc[index_doc, 'account_list_text']) > 0:
+            documents.loc[index_doc, 'account_list_text'] = re.sub('page', str(page),
+                                                                   documents.loc[index_doc, 'account_list_text'])
+            # a_text = documents.loc[index_doc, 'account_list_text'].split('!')
+            # if '/' in a_text[3]:
+            #     text_in_page = a_text[3].split('/')
+            #     a_text[3] = '/'.join([str(page), text_in_page[1]])
+            # else:
+            #     a_text[3] = re.sub('main_page', str(page), a_text[3])
+            # documents.loc[index_doc, 'account_list_text'] = '!'.join(a_text)
         if errors:
             return {'status': 'warning', 'text': errors, 'documents': documents}
         return {'status': 'success', 'text': f'Документ {data.name} заполнен и сохранён', 'documents': documents}
         # не забыть посмотреть запрос
     except BaseException as ex:
         return {'status': 'error', 'text': f'Ошибка при создании документа {data.name}: {ex}',
-                'trace': traceback.format_exc(),
-                'documents': documents}
+                'trace': traceback.format_exc(), 'documents': documents}
