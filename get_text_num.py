@@ -274,7 +274,7 @@ def create_text_for_docs(log, docs: list, documents: pd.DataFrame, line_doing, a
                                                                                 f"!{footer_text}" \
                                                                                 f"!№{number_folder}," \
                                                                                 f" {incoming['classified']}" \
-                                                                                f"!main_page"
+                                                                                f"!page"
                             reindex_list.append(index_doc_new)
                             break
             if not dict_file and all([True if _ not in doc_name.lower() else False for _ in doc_name_for_continue]):

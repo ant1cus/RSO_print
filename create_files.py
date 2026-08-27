@@ -246,12 +246,14 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 elif re.findall(r'Приложение:', p.text):
                     if account_docs.empty:
                         numbering = 1
-                        if service:
-                            ness_df = documents.loc[documents['name'].str.contains('заключение|предписание',
-                                                                                   case=False)]
-                        else:
-                            ness_df = documents.loc[documents['name'].str.contains('заключение|протокол|предписание',
-                                                                                   case=False)]
+                        search_string = 'заключение|предписание' if service else 'заключение|протокол|предписание'
+                        ness_df = documents.loc[documents['name'].str.contains(search_string, case=False)]
+                        # if service:
+                        #     ness_df = documents.loc[documents['name'].str.contains('заключение|предписание',
+                        #                                                            case=False)]
+                        # else:
+                        #     ness_df = documents.loc[documents['name'].str.contains('заключение|протокол|предписание',
+                        #                                                            case=False)]
                         for file in ness_df.itertuples():
                             number_page = file.pages
                             page = 'листе' if int(number_page) in page_text['all']['листе'] else 'листах'
@@ -359,20 +361,18 @@ def create_file(documents, data, pt_num, incoming_data, account_docs) -> dict:
                 doc.close()
                 os.remove(pdf_path)
         minus = True if len(re.findall(r'приложение а', data.name.lower())) == 0 else False
-        page = 0
-        if not re.findall(r'приложение а', data.name.lower()):
-            pages = pages_count(data.finish_path, minus)
-            page = pages['pages']
-            if page == 0:
-                errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
-                errors.append(pages['trace'])
-        index_doc = documents.loc[documents['name'] == data.name].index[0]
-        # if documents.loc[index_doc, 'pages'] != page:
-        documents.loc[index_doc, 'pages'] = page
-        if isinstance(documents.loc[index_doc, 'account_list_text'], str)\
-                and len(documents.loc[index_doc, 'account_list_text']) > 0:
-            documents.loc[index_doc, 'account_list_text'] = re.sub('page', str(page),
-                                                                   documents.loc[index_doc, 'account_list_text'])
+        pages = pages_count(data.finish_path, minus)
+        page = pages['pages']
+        if page == 0:
+            errors.append(f"Для файла {data.name} подсчёт кол-ва страниц завершился с ошибкой: {pages['text']}")
+            errors.append(pages['trace'])
+        index_docs = documents.loc[documents['name'] == data.name].index
+        for index_doc in index_docs:
+            documents.loc[index_doc, 'pages'] = page
+            if isinstance(documents.loc[index_doc, 'account_list_text'], str)\
+                    and len(documents.loc[index_doc, 'account_list_text']) > 0:
+                documents.loc[index_doc, 'account_list_text'] = re.sub('page', str(page),
+                                                                       documents.loc[index_doc, 'account_list_text'])
             # a_text = documents.loc[index_doc, 'account_list_text'].split('!')
             # if '/' in a_text[3]:
             #     text_in_page = a_text[3].split('/')
