@@ -779,7 +779,7 @@ class MainWindow(QMainWindow, Main.Ui_MainWindow):  # Главное окно
     def insert_41101(self):
         queue_41101_insert = queue.Queue(maxsize=1)
         mode_name = self.mode_description['insert_41101']['mode_name']
-        name_dir = self.lineEdit_main_start_path_insert_dir.text().strip()
+        name_dir = self.lineEdit_41101_start_path_insert_dir.text().strip()
         out_dict = {
             'package': True if self.action_package.isChecked() else False,
             'action_mo': True if self.action_report_MO.isChecked() else False,

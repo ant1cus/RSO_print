@@ -232,11 +232,11 @@ def format_doc(incoming_data: dict, current_progress, now_doc, all_doc, line_doi
                 if re.findall(r'опись', document.name.lower()):
                     account_dict = documents.loc[documents['account_list'] == document.name]
                     if '41101' in incoming_data['mode_name']:
-                        account_dict['float'] = np.nan
-                        account_dict['float'] = account_dict['number'].apply(lambda x: x.partition('.')[2])
-                        account_dict['number'] = account_dict['number'].apply(lambda x: x.partition('.')[0])
-                        account_dict['number'] = pd.to_numeric(account_dict['number'], errors='coerce')
-                        account_dict['float'] = pd.to_numeric(account_dict['float'], errors='coerce')
+                        account_dict.loc[:, 'float'] = np.nan
+                        account_dict.loc[:, 'float'] = account_dict['number'].apply(lambda x: x.partition('.')[2])
+                        account_dict.loc[:, 'number'] = account_dict['number'].apply(lambda x: x.partition('.')[0])
+                        account_dict.loc[:, 'number'] = pd.to_numeric(account_dict['number'], errors='coerce')
+                        account_dict.loc[:, 'float'] = pd.to_numeric(account_dict['float'], errors='coerce')
                         account_dict.sort_values(by=['float', 'number'], ascending=[True, True],
                                                  inplace=True, na_position='first')
                 if re.findall(r'сопроводит', document.name.lower()):

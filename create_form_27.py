@@ -60,11 +60,14 @@ def create_form_27(documents: pd.DataFrame, finish_path: Path, incoming: dict):
             table_df.loc[index, 'Фамилия исполнителя и подразделение'] = document.executor
             if re.findall(r"сопроводит", document.name, re.I):
                 table_df.loc[index, 'экземпляров и их номера'] = '2'
-            elif re.findall(r"заключение", document.name, re.I) and incoming['conclusion_instance']:
+            elif re.findall(r"заключение", document.name, re.I) and \
+                    ('conclusion_instance' in incoming and incoming['conclusion_instance']):
                 table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
-            elif re.findall(r"протокол", document.name, re.I) and incoming['protocol_instance']:
+            elif re.findall(r"протокол", document.name, re.I) and \
+                    ('protocol_instance' in incoming and incoming['protocol_instance']):
                 table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
-            elif re.findall(r"предписание", document.name, re.I) and incoming['prescription_instance']:
+            elif re.findall(r"предписание", document.name, re.I) and \
+                    ('prescription_instance' in incoming and incoming['prescription_instance']):
                 table_df.loc[index, 'экземпляров и их номера'] = f"{1 + len(incoming['number_instance'])}"
             else:
                 table_df.loc[index, 'экземпляров и их номера'] = '1'
