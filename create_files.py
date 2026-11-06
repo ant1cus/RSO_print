@@ -22,11 +22,17 @@ def insert_header(doc, text_first_header, text_for_foot, fso_, text_finish: str 
             doc.sections[0].different_first_page_header_footer = True
         header_1 = doc.sections[0].first_page_header  # Верхний колонтитул первой страницы
         head_1 = header_1.paragraphs[0]  # Параграф
-        head_1.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+        head_1.insert_paragraph_before('')  # Вставляем перед колонтитулом
         head_1 = header_1.paragraphs[0]  # Выбираем новый первый параграф
-        for header_styles in head_1.runs:
-            header_styles.font.size = Pt(11)
-            header_styles.font.name = 'Times New Roman'
+        underline_text = True
+        for i, text in enumerate(text_first_header.split('\n')):
+            new_line = '\n' if i + 1 < len(text_first_header.split('\n')) else ''
+            run = head_1.add_run(text + new_line)
+            if underline_text:
+                run.underline = True
+                underline_text = False
+            run.font.size = Pt(11)
+            run.font.name = 'Times New Roman'
         head_1_format = head_1.paragraph_format  # Настройки параграфа
         head_1_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
         if is_not_acc:
