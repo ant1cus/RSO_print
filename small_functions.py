@@ -558,9 +558,24 @@ def delete_header_footer_second_acc(path: Path, text_first_header: str, secret_n
         if len(footer.paragraphs) == 0:
             footer.add_paragraph()
         footer.paragraphs[0].text = secret_num
+
+        # head = header.paragraphs[0]  # Параграф
+        # head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+        # head = header.paragraphs[0]  # Выбираем новый первый параграф
+        # head_format = head.paragraph_format  # Настройки параграфа
+        # head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
         head = header.paragraphs[0]  # Параграф
-        head.insert_paragraph_before(text_first_header)  # Вставляем перед колонтитулом
+        head.insert_paragraph_before('')  # Вставляем перед колонтитулом
         head = header.paragraphs[0]  # Выбираем новый первый параграф
+        underline_text = True
+        for i, text in enumerate(text_first_header.split('\n')):
+            new_line = '\n' if i + 1 < len(text_first_header.split('\n')) else ''
+            run = head.add_run(text + new_line)
+            if underline_text:
+                run.underline = True
+                underline_text = False
+            run.font.size = Pt(11)
+            run.font.name = 'Times New Roman'
         head_format = head.paragraph_format  # Настройки параграфа
         head_format.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT  # Выравниваем по правому краю
         # Текст для фонарика
